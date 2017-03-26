@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+
+	<body>
+		<div id="id1" class="class1">
+			<span :class="{{active}}-{{active1}}-{{active2}}">{{span.a | upper}}{{span1.b}} {{span2.c}} - {{span3.d}}</span>
+			<div :class="{{active}}">
+				<span>{{span3.c}}</span>
+				123
+			</div>
+			<my-com></my-com>
+			<my-com2></my-com2>
+		</div>
+		
+		<template id="app">
+			<div>
+				{{span1.b}}
+			</div>
+		</template>
+		
+		<script id="sc" src="dist/js/vdom.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			/*var ul = {
+				tagName: "div",
+				props: {
+					id: "id1",
+					class: "class1"
+				},
+				childrens: [{
+					tagName: "a",
+					props: {
+						id: "id2",
+						class: "class2"
+					},
+					childrens: ['123',{
+						tagName:'span',
+						props:{
+							'data-id':123
+						},
+						childrens:['span']
+					}]
+				}, '123']
+			}*/
+		
+			let div = document.querySelector("#id1");
+			let span = document.querySelector(".active>span");
+//			//虚拟dom
+//			let element = new Element();
+//			//创建旧树
+//			let oldTree = element.resolve(div);
+////			console.log(oldTree);
+////			console.log(element.elementList);
+//			//修改内容
+//			/*div.setAttribute('class','class2');
+//			div.setAttribute('aaa','data1');
+//			div.querySelector('span').innerHTML = 123;
+//			div.querySelector('span').setAttribute('data-span','1212312312312asdasdas3');
+//			span.innerHTML = 'asdasdsadasd';*/
+//			//构建新树
+//			let newTree = element.resolve(div);
+//			//修改的差值
+//			var diff = element.diff(oldTree,newTree);
+			
+			//observer
+			let data = {
+				span:{
+					a:'aaaaaa'
+				},
+				span1:{
+					b:2
+				},
+				span2:{
+					c:3	
+				},
+				span3:{
+					d:4,
+					c:2
+				}				
+			}
+			
+			var v = new View({
+				el:"id1",
+				data:data,
+				components:{
+					'my-com':`
+						<div>{{span.a}}</div>
+					`,
+					'my-com2':"app"
+				}
+			});
+			
+			console.log(v);
+			
+		</script>
+	</body>
+
+</html>
