@@ -1,9 +1,10 @@
 import Observer from './../observer';
 import vdom from './../vdom';
-import { getEl, getKeyLink } from './../tools';
+import { getEl, getKeyLink,deepCopy } from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
+import { ifUpdate } from './../if';
 
 class View {
 	constructor({
@@ -51,13 +52,15 @@ class View {
 		this.__ob__ = {
 			dom: {},
 			attr: {},
-			show:{},
-			if:{}
+			show: {},
+			if: {},
+			for:{}
 		};
 	}
 	update(keys) {
 		attrUpdate.call(this, keys);
-		showUpdate.call(this,keys);
+		showUpdate.call(this, keys);
+		ifUpdate.call(this, keys);
 		domUpdate.call(this, keys);
 	}
 	_get(keyLink) {
@@ -82,10 +85,53 @@ class View {
 			return null;
 		}
 	}
+	_set(obj, val, key) {
+		let data = this['data'],
+			objs = obj.split('.'),
+			keyLen = objs.length,
+			parentObj = objs[0], //对象中顶级key
+			i = 0,
+			tempObject = data,
+			tempVal;
+		//如果存在多层值
+		if(keyLen != 1) {
+			//最后一个key
+			let lastIndex = objs[objs.length - 1];
+			//移除最后一个值
+			objs.pop();
+			//把key链重组
+			obj = objs.join('.');
+			if(this._get(obj) !== null) {
+					//设置新的值
+					if(key != undefined) {
+						this._get(obj)[lastIndex][key] = val;
+					} else {
+						this._get(obj)[lastIndex] = val;
+					}
+					//设置新的值
+					if(!(typeof val === 'string')){
+						this._get(obj)[lastIndex] = deepCopy(this._get(obj)[lastIndex]);						
+					}
+			}
+		} else {
+			/*只有一个key值*/
+			if(this._get(obj) !== null) {
+				if(key != undefined) {
+					this._get(obj)[key] = val;
+					var getData = this._get(obj);
+					getData = deepCopy(this._get(obj));
+				} else {
+					//2017年03月06日20:32:59 优化两次更新  //this.data[obj] = val;
+					//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : this.data[obj]);
+					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : val);
+				}
+			}
+		}
+	}
 	expr(expr) {
-		let dataValues = getKeyLink.call(this, expr),
-			dataValueLen = dataValues.length,
-			newExpr = expr;
+		let dataValues = getKeyLink.call(this, expr);
+		let	dataValueLen = dataValues.length;
+		let	newExpr = expr;
 
 		//返回的不是主key数组
 		if(!(dataValues instanceof Array)) {

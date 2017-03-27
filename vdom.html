@@ -26,12 +26,15 @@
 			</div>
 			<my-com></my-com>
 			<my-com2></my-com2>
-			<ul>
-				<li _v-if="{{ifStatus.if1}}"></li>
-				<li _v-elseif="{{ifStatus.if2}}"></li>
-				<li _v-elseif="{{ifStatus.if3}}"></li>
-				<li _v-else></li>
+			<ul _v-show="{{isShow}}">
+				<li _v-if="{{ifStatus.if1}}">111</li>
+				<li _v-elseif="{{ifStatus.if2}}">222</li>
+				<li _v-elseif="{{ifStatus.if3}}">333</li>
+				<li _v-else>444</li>
 			</ul>
+			<div>{{input.val2}}</div>
+			<div>{{input.val}}</div>
+			<input type="text" _v-model="{{input.val}}"/>
 		</div>
 		
 		<template id="app">
@@ -104,11 +107,15 @@
 				},
 				active1:'active1',
 				active2:'active2',
-				isShow:false,
+				isShow:true,
 				ifStatus:{
 					if1:false,
 					if2:true,
 					if3:true
+				},
+				input:{
+					val2:22222,
+					val:1
 				}
 			}
 			

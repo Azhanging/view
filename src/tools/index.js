@@ -45,9 +45,25 @@ function getKeyLink(expr) {
 	}
 }
 
+//深拷贝
+function deepCopy(p, c) {
+	//如果拷贝的对象是dom节点
+	var c = c || (p instanceof Array ? [] : {});
+	for(var i in p) {　　　　　　
+		if(typeof p[i] === 'object' && !(p[i].nodeType)) {　　　　　　
+			c[i] = (p[i].constructor === Array) ? [] : {};　　　　　　　　
+			deepCopy(p[i], c[i]);　　　　　　
+		} else {
+			c[i] = p[i];
+		}　　　　
+	}　　　
+	return c;
+}
+
 export {
 	getEl,
 	disassembly,
 	getDisassemblyKey,
-	getKeyLink
+	getKeyLink,
+	deepCopy
 }

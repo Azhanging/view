@@ -2,6 +2,7 @@
 import { disassembly, getDisassemblyKey } from './../tools';
 import { setShow } from './../show';
 import { setIf } from './../if';
+import { setModel } from './../model';
 /*查找element对象中的属性*/
 function setAttr(element, vdom) {
 
@@ -48,10 +49,10 @@ function setAttr(element, vdom) {
 				case 'if':
 					setIf.call(this, element, propName, propValue);
 					break;
-				/*case 'model':
-					setModel.call(this, el, attrVal);
+				case 'model':
+					setModel.call(this, element, propValue);
 				default:
-					;*/
+					;
 			}
 		}
 	}

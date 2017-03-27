@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "./dist";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 9);
+/******/ 	return __webpack_require__(__webpack_require__.s = 13);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -76,6 +76,9 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 function getEl(id) {
 	return document.getElementById(id);
 }
@@ -125,10 +128,26 @@ function getKeyLink(expr) {
 	}
 }
 
+//深拷贝
+function deepCopy(p, c) {
+	//如果拷贝的对象是dom节点
+	var c = c || (p instanceof Array ? [] : {});
+	for (var i in p) {
+		if (_typeof(p[i]) === 'object' && !p[i].nodeType) {
+			c[i] = p[i].constructor === Array ? [] : {};
+			deepCopy(p[i], c[i]);
+		} else {
+			c[i] = p[i];
+		}
+	}
+	return c;
+}
+
 exports.getEl = getEl;
 exports.disassembly = disassembly;
 exports.getDisassemblyKey = getDisassemblyKey;
 exports.getKeyLink = getKeyLink;
+exports.deepCopy = deepCopy;
 
 /***/ }),
 /* 1 */
@@ -141,7 +160,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setAttr = __webpack_require__(4);
+var _setAttr = __webpack_require__(5);
 
 Object.defineProperty(exports, 'setAttr', {
   enumerable: true,
@@ -150,7 +169,7 @@ Object.defineProperty(exports, 'setAttr', {
   }
 });
 
-var _update = __webpack_require__(5);
+var _update = __webpack_require__(6);
 
 Object.defineProperty(exports, 'attrUpdate', {
   enumerable: true,
@@ -170,7 +189,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _update = __webpack_require__(8);
+var _update = __webpack_require__(9);
 
 Object.defineProperty(exports, 'domUpdate', {
   enumerable: true,
@@ -179,7 +198,7 @@ Object.defineProperty(exports, 'domUpdate', {
   }
 });
 
-var _setDom = __webpack_require__(7);
+var _setDom = __webpack_require__(8);
 
 Object.keys(_setDom).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -199,16 +218,53 @@ Object.keys(_setDom).forEach(function (key) {
 
 
 Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setShow = __webpack_require__(15);
+
+Object.keys(_setShow).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _setShow[key];
+    }
+  });
+});
+
+var _update = __webpack_require__(16);
+
+Object.keys(_update).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _update[key];
+    }
+  });
+});
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _observer = __webpack_require__(10);
+var _observer = __webpack_require__(14);
 
 var _observer2 = _interopRequireDefault(_observer);
 
-var _vdom = __webpack_require__(13);
+var _vdom = __webpack_require__(17);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
@@ -218,7 +274,9 @@ var _dom = __webpack_require__(2);
 
 var _attr = __webpack_require__(1);
 
-var _show = __webpack_require__(11);
+var _show = __webpack_require__(3);
+
+var _if = __webpack_require__(10);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -287,7 +345,8 @@ var View = function () {
 				dom: {},
 				attr: {},
 				show: {},
-				if: {}
+				if: {},
+				for: {}
 			};
 		}
 	}, {
@@ -295,6 +354,7 @@ var View = function () {
 		value: function update(keys) {
 			_attr.attrUpdate.call(this, keys);
 			_show.showUpdate.call(this, keys);
+			_if.ifUpdate.call(this, keys);
 			_dom.domUpdate.call(this, keys);
 		}
 	}, {
@@ -322,11 +382,57 @@ var View = function () {
 			}
 		}
 	}, {
+		key: '_set',
+		value: function _set(obj, val, key) {
+			var data = this['data'],
+			    objs = obj.split('.'),
+			    keyLen = objs.length,
+			    parentObj = objs[0],
+			    //对象中顶级key
+			i = 0,
+			    tempObject = data,
+			    tempVal = void 0;
+			//如果存在多层值
+			if (keyLen != 1) {
+				//最后一个key
+				var lastIndex = objs[objs.length - 1];
+				//移除最后一个值
+				objs.pop();
+				//把key链重组
+				obj = objs.join('.');
+				if (this._get(obj) !== null) {
+					//设置新的值
+					if (key != undefined) {
+						this._get(obj)[lastIndex][key] = val;
+					} else {
+						this._get(obj)[lastIndex] = val;
+					}
+					//设置新的值
+					if (!(typeof val === 'string')) {
+						this._get(obj)[lastIndex] = (0, _tools.deepCopy)(this._get(obj)[lastIndex]);
+					}
+				}
+			} else {
+				/*只有一个key值*/
+				if (this._get(obj) !== null) {
+					if (key != undefined) {
+						this._get(obj)[key] = val;
+						var getData = this._get(obj);
+						getData = (0, _tools.deepCopy)(this._get(obj));
+					} else {
+						//2017年03月06日20:32:59 优化两次更新  //this.data[obj] = val;
+						//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : this.data[obj]);
+						this.data[obj] = (typeof val === 'undefined' ? 'undefined' : _typeof(val)) == 'object' ? (0, _tools.deepCopy)(val) : val;
+					}
+				}
+			}
+		}
+	}, {
 		key: 'expr',
 		value: function expr(_expr) {
-			var dataValues = _tools.getKeyLink.call(this, _expr),
-			    dataValueLen = dataValues.length,
-			    newExpr = _expr;
+			var dataValues = _tools.getKeyLink.call(this, _expr);
+			var dataValueLen = dataValues.length;
+			var newExpr = _expr;
 
 			//返回的不是主key数组
 			if (!(dataValues instanceof Array)) {
@@ -409,7 +515,7 @@ View.filterHandlers = {
 exports.default = View;
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -422,11 +528,14 @@ exports.setAttr = undefined;
 
 var _tools = __webpack_require__(0);
 
-var _show = __webpack_require__(11);
+var _show = __webpack_require__(3);
 
-var _if = __webpack_require__(15);
+var _if = __webpack_require__(10);
+
+var _model = __webpack_require__(18);
 
 /*查找element对象中的属性*/
+/*拆解绑定的信息*/
 function setAttr(element, vdom) {
 	var _this = this;
 
@@ -473,10 +582,10 @@ function setAttr(element, vdom) {
 				case 'if':
 					_if.setIf.call(_this, element, propName, propValue);
 					break;
-				/*case 'model':
-    	setModel.call(this, el, attrVal);
-    default:
-    	;*/
+				case 'model':
+					_model.setModel.call(_this, element, propValue);
+				default:
+					;
 			}
 		}
 	};
@@ -484,11 +593,12 @@ function setAttr(element, vdom) {
 	for (var _index in Object.keys(element.attributes)) {
 		_loop(_index);
 	}
-} /*拆解绑定的信息*/
+}
+
 exports.setAttr = setAttr;
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -556,7 +666,7 @@ function attrUpdate(key) {
 exports.attrUpdate = attrUpdate;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -587,7 +697,7 @@ function componentHandler(node) {
 exports.default = componentHandler;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -682,7 +792,7 @@ exports.createTextNodes = createTextNodes;
 exports.replaceTextNode = replaceTextNode;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -732,13 +842,186 @@ function filter(val, filters) {
 exports.domUpdate = domUpdate;
 
 /***/ }),
-/* 9 */
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setIf = __webpack_require__(11);
+
+Object.defineProperty(exports, 'setIf', {
+  enumerable: true,
+  get: function get() {
+    return _setIf.setIf;
+  }
+});
+
+var _update = __webpack_require__(12);
+
+Object.defineProperty(exports, 'ifUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.ifUpdate;
+  }
+});
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.setIf = undefined;
+
+var _tools = __webpack_require__(0);
+
+function nextSibling(element, ifCount) {
+	var _this = this;
+
+	if (element.nodeType === 1) {
+		var attributes = element.attributes;
+		Object.keys(attributes).forEach(function (key, index) {
+			var propName = attributes[index].name;
+			var propValue = attributes[index].value;
+			if (/_v-.?/.test(propName)) {
+				propName = propName.replace('_v-', '');
+				//再遇到if就跳出
+				if (propName == 'if') {
+					return;
+				}
+				//else和elseif的对象
+				if (propName == 'elseif' || propName == 'else') {
+					var ifKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
+					ifKeys.forEach(function (key, index) {
+						if (key) {
+							if (!(_this.__ob__.if[key] instanceof Array)) {
+								_this.__ob__.if[key] = [];
+							}
+							_this.__ob__.if[key].push(ifCount);
+						}
+					});
+					if (propName == 'else') {
+						//因为要过match，必须为字符串类型的true
+						element.__if__ = 'true';
+					} else {
+						element.__if__ = propValue;
+					}
+
+					ifCount.push(element);
+
+					if (element.nextSibling) {
+						var nextElement = element.nextSibling;
+						nextSibling.call(_this, nextElement, ifCount);
+					}
+				}
+			}
+		});
+	} else {
+		//其他内容节点直接跳过
+		if (element.nextSibling) {
+			var nextElement = element.nextSibling;
+			nextSibling.call(this, nextElement, ifCount);
+		}
+	}
+}
+
+function setIf(element, propName, propValue) {
+	var _this2 = this;
+
+	var ifCount = void 0;
+	var ifKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
+	ifKeys.forEach(function (key, index) {
+		if (key) {
+			if (!(_this2.__ob__.if[key] instanceof Array)) {
+				_this2.__ob__.if[key] = [];
+			}
+			if (propName === 'if') {
+				ifCount = [];
+				element.__if__ = propValue;
+				ifCount.push(element);
+				if (element.nextSibling) {
+					nextSibling.call(_this2, element.nextSibling, ifCount);
+				}
+			}
+			_this2.__ob__.if[key].push(ifCount);
+		}
+	});
+};
+
+exports.setIf = setIf;
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+/*更新if*/
+function ifUpdate(key) {
+	var _this = this;
+
+	//初始化
+	if (key === undefined || key === '') {
+		Object.keys(this.__ob__.if).forEach(function (keyLine, index) {
+			updateFn.call(_this, keyLine);
+		});
+	} else {
+		//如果不存在键值，不执行更新
+		if (!this.__ob__.if[key]) {
+			return;
+		}
+		updateFn.call(this, key);
+	}
+
+	function updateFn(keyLine) {
+		var _this2 = this;
+
+		var ifNodes = this.__ob__.if[keyLine];
+		//if集合中的if和else/elseif
+		ifNodes.forEach(function (keyLineItem, index) {
+			for (var j = 0; j < keyLineItem.length; j++) {
+				var obj = _this2.expr(keyLineItem[j].__if__);
+				if (obj) {
+					keyLineItem.forEach(function (el, _index) {
+						el.style.display = 'none';
+					});
+					//初始化所有的对象隐藏,当前的对象显示
+					keyLineItem[j].style.display = 'block';
+					break;
+				}
+				if (j == keyLineItem.length - 1) {
+					keyLineItem.forEach(function (el, _index) {
+						el.style.display = 'none';
+					});
+				}
+			}
+		});
+	}
+};
+
+exports.ifUpdate = ifUpdate;
+
+/***/ }),
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
-var _init = __webpack_require__(3);
+var _init = __webpack_require__(4);
 
 var _init2 = _interopRequireDefault(_init);
 
@@ -765,7 +1048,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 });
 
 /***/ }),
-/* 10 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -852,42 +1135,7 @@ var Observer = function () {
 exports.default = Observer;
 
 /***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _setShow = __webpack_require__(12);
-
-Object.keys(_setShow).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _setShow[key];
-    }
-  });
-});
-
-var _update = __webpack_require__(14);
-
-Object.keys(_update).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _update[key];
-    }
-  });
-});
-
-/***/ }),
-/* 12 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -918,7 +1166,51 @@ function setShow(element, propValue) {
 exports.setShow = setShow;
 
 /***/ }),
-/* 13 */
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+function showUpdate(key) {
+	var _this = this;
+
+	if (key === undefined || key === '') {
+		Object.keys(this.__ob__.show).forEach(function (keyLine, index) {
+			updateFn.call(_this, keyLine);
+		});
+	} else {
+		//如果不存在键值，不执行更新
+		if (!this.__ob__.show[key]) {
+			return;
+		}
+		updateFn.call(this, key);
+	}
+
+	function updateFn(keyLine) {
+		var _this2 = this;
+
+		var showElements = this.__ob__.show[keyLine];
+		showElements.forEach(function (element, index) {
+			var showValue = _this2.expr(element.__show__);
+
+			if (showValue == true || showValue == 'block' || showValue.toString().toLocaleLowerCase() === 'ok') {
+				showValue = 'block';
+			} else if (showValue == false || showValue == 'none' || showValue.toString().toLocaleLowerCase() === 'no') {
+				showValue = 'none';
+			}
+			element.style.display = showValue;
+		});
+	}
+}
+
+exports.showUpdate = showUpdate;
+
+/***/ }),
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -934,7 +1226,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _dom = __webpack_require__(2);
 
-var _component = __webpack_require__(6);
+var _component = __webpack_require__(7);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -1192,7 +1484,7 @@ var _ELement = function () {
 exports.default = _ELement;
 
 /***/ }),
-/* 14 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1201,224 +1493,24 @@ exports.default = _ELement;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-function showUpdate(key) {
+function setModel(element, propValue) {
 	var _this = this;
-
-	if (key === undefined || key === '') {
-		Object.keys(this.__ob__.show).forEach(function (keyLine, index) {
-			updateFn.call(_this, keyLine);
-		});
-	} else {
-		//如果不存在键值，不执行更新
-		if (!this.__ob__.show[key]) {
-			return;
-		}
-		updateFn.call(this, key);
-	}
-
-	function updateFn(keyLine) {
-		var _this2 = this;
-
-		var showElements = this.__ob__.show[keyLine];
-		showElements.forEach(function (element, index) {
-			var showValue = _this2.expr(element.__show__);
-
-			if (showValue == true || showValue == 'block' || showValue.toString().toLocaleLowerCase() === 'ok') {
-				showValue = 'block';
-			} else if (showValue == false || showValue == 'none' || showValue.toString().toLocaleLowerCase() === 'no') {
-				showValue = 'none';
+	var resolveVal = propValue.replace(/\{?\}?/g, '');
+	var elTagName = element.tagName.toLocaleLowerCase();
+	//初始化值
+	element.value = this._get(resolveVal);
+	//绑定按键事件
+	if (elTagName === 'input' || elTagName === 'textarea') {
+		element.addEventListener('keyup', function (event) {
+			if (event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || event.keyCode >= 65 && event.keyCode <= 90 || event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode >= 96 && event.keyCode <= 99 || event.keyCode >= 101 && event.keyCode <= 103 || event.keyCode >= 186 && event.keyCode <= 222) {
+				var value = this.value;
+				_this._set(resolveVal, value);
 			}
-			element.style.display = showValue;
 		});
 	}
 }
 
-exports.showUpdate = showUpdate;
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _setIf = __webpack_require__(16);
-
-Object.defineProperty(exports, 'setIf', {
-  enumerable: true,
-  get: function get() {
-    return _setIf.setIf;
-  }
-});
-
-var _update = __webpack_require__(17);
-
-Object.defineProperty(exports, 'ifUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.ifUpdate;
-  }
-});
-
-/***/ }),
-/* 16 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.setIf = undefined;
-
-var _tools = __webpack_require__(0);
-
-function nextSibling(el, ifCount) {
-	if (el.nodeType === 1) {
-		var elAttrs = el.attributes,
-		    i = 0,
-		    len = elAttrs.length,
-		    attrName,
-		    attrVal;
-		for (; i < len; i++) {
-			attrName = elAttrs[i].name;
-			attrVal = elAttrs[i].textContent;
-			if (/_v-.?/.test(attrName)) {
-				attrName = attrName.replace('_v-', '');
-				//再遇到if就跳出
-				if (attrName == 'if') {
-					return;
-				}
-				//else和elseif的对象
-				if (attrName == 'elseif' || attrName == 'else') {
-					if (attrName == 'else') {
-						el['ifStatus'] = 'true';
-					} else {
-						el['ifStatus'] = attrVal;
-					}
-					ifCount.push(el);
-					if (el.nextSibling) {
-						el = el.nextSibling;
-						nextSibling.call(this, el, ifCount);
-					}
-				}
-			}
-		}
-	} else {
-		//其他内容节点直接跳过
-		if (el.nextSibling) {
-			el = el.nextSibling;
-			nextSibling.call(this, el, ifCount);
-		}
-	}
-}
-
-function setIf(element, propName, propValue) {
-	var _this = this;
-
-	var ifCount = void 0;
-	var ifKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
-	console.log(ifKeys);
-	ifKeys.forEach(function (key, index) {
-		if (key) {
-			if (!(_this.__ob__.if[key] instanceof Array)) {
-				_this.__ob__.if[key] = [];
-			}
-			if (propName === 'if') {
-				ifCount = [];
-				element.__if__ = propValue;
-				ifCount.push(element);
-				if (element.nextSibling) {
-					nextSibling.call(_this, element.nextSibling, ifCount);
-				}
-			}
-			_this.__ob__.if[key].push(ifCount);
-		}
-	});
-};
-
-exports.setIf = setIf;
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-/*更新if*/
-function ifUpdate(mainKey) {
-	var _this = this;
-
-	//初始化
-	if (mainKey === undefined || mainKey === '') {
-		Object.keys(this.ifEls).forEach(function (key, index) {
-			updateFn.call(_this, _this.ifEls[key]);
-		});
-
-		//主key
-		/*for(var i in this.ifEls) {
-  	var keyObj = this.ifEls[i];
-  	updateFn.call(this, keyObj);
-  }*/
-	} else {
-		var keyObj = this.ifEls[mainKey] ? this.ifEls[mainKey] : [];
-		updateFn.call(this, keyObj);
-	}
-
-	function updateFn(keyObj) {
-		var _this2 = this;
-
-		//if集合中的if和else/elseif
-		keyObj.forEach(function (item, index) {
-			for (var j = 0; j < item.length; j++) {
-				var obj = _this2.expr(item[j]['ifStatus']);
-				if (obj) {
-					item.forEach(function (el, _index) {
-						el.style.display = 'none';
-					});
-					//初始化所有的对象隐藏,当前的对象显示
-					item[j].style.display = 'block';
-					break;
-				}
-				if (j == item.length - 1) {
-					item.forEach(function (el, _index) {
-						el.style.display = 'none';
-					});
-				}
-			}
-		});
-
-		/*keyObj.forEach(function(item, index) {
-  	for(var j = 0; j < item.length; j++) {
-  		var obj = this.expr(item[j]['ifStatus']);
-  		if(obj) {
-  			for(var l = 0; l < item.length; l++) {
-  				item[l].style.display = 'none';
-  			}
-  			//初始化所有的对象隐藏,当前的对象显示
-  			item[j].style.display = 'block';
-  			break;
-  		}
-  		if(j == item.length - 1) {
-  			for(var l = 0; l < item.length; l++) {
-  				item[l].style.display = 'none';
-  			}
-  		}
-  	}
-  }.bind(this));*/
-	}
-};
-
-exports.ifUpdate = ifUpdate;
+exports.setModel = setModel;
 
 /***/ })
 /******/ ]);
