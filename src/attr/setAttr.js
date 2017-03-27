@@ -1,80 +1,60 @@
-//import {getKeys} from './../tools'; 
-//import {setFor} from './../for'; 
-//import {setIf} from './../if'; 
-//import {setShow} from './../show'; 
-//import {setModel} from './../model'; 
-
+/*拆解绑定的信息*/
+import { disassembly, getDisassemblyKey } from './../tools';
+import { setShow } from './../show';
+import { setIf } from './../if';
 /*查找element对象中的属性*/
-function setAttr(el) {
-	let elAttrs = el.attributes,
-		attrName,
-		attrVal,
-		key,
-		splitKeys;
+function setAttr(element, vdom) {
 
-	for(let i = 0; i < elAttrs.length; i++) {
-		attrName = elAttrs[i].name;
-		attrVal = elAttrs[i].textContent;
-		if(/:.?/.test(attrName)) {
-			//删除绑定属性
-			el.removeAttribute(attrName);
-			i -= 1;
+	for(let _index in Object.keys(element.attributes)) {
+		let prop = element.attributes,
+			propName = prop[_index].name,
+			propValue = prop[_index].value;
 
-			attrName = attrName.replace(':', '');
-			//获取到主Key的数组
-			key = getKeys.call(this, attrVal);
-			//存在数据绑定,不存在数据绑定的值无意义,不进行计算,则不会添加属性
-			key.forEach((item, index)=>{
-				if(item) {
-					if(!(this.attrBindings[item])) {
-						this.attrBindings[item] = [];
-					}
-					if(!(el['attrbindingKey'] instanceof Object)) {
-						el['attrbindingKey'] = {};
-					}
-					el['attrbindingKey'][attrName] = attrVal;
-					this.attrBindings[item].push(el);
+		if(/:.?/.test(propName)) {
+			//删除当前绑定到真实attr上的属性
+//			element.removeAttribute(propName);
+			//清除:号
+			propName = propName.replace(':', '');
+			//给vdom加上属性
+			vdom.props[propName] = propValue;
+			let attrKeys = getDisassemblyKey(disassembly(propValue));
+			attrKeys.forEach((val, index) => {
+				if(!this.__ob__.attr[val]) {
+					this.__ob__.attr[val] = [];
 				}
+				//设置attrs的expr
+				if(!(element.__attrs__ instanceof Object)) {
+					element.__attrs__ = {};
+				}
+				//给element元素加上__attrs__依赖
+				element.__attrs__[propName] = propValue;
+				//在__ob__设置attr的依赖
+				this.__ob__.attr[val].push(element);
 			});
-			
-			/*key.forEach(function(item, index) {
-				if(item) {
-					if(!(this.attrBindings[item])) {
-						this.attrBindings[item] = [];
-					}
-					if(!(el['attrbindingKey'] instanceof Object)) {
-						el['attrbindingKey'] = {};
-					}
-					el['attrbindingKey'][attrName] = attrVal;
-					this.attrBindings[item].push(el);
-				}
-			}.bind(this));*/
 		}
-		if(/_v-.?/.test(attrName)) {
-			//删除绑定属性
-			el.removeAttribute(attrName);
-			i -= 1;
 
-			attrName = attrName.replace('_v-', '');
+		if(/_v-.?/.test(propName)) {
+			//删除绑定属性
+//			element.removeAttribute(propName);
+			propName = propName.replace('_v-', '');
 			//获取到主Key的数组
-			key = getKeys.call(this, attrVal);
-			switch(attrName) {
-				case 'for':
-					setFor.call(this, el, attrVal);
+			switch(propName) {
+				//				case 'for':
+				//					setFor.call(this, el, attrVal);
+				//					break;
+				case 'show':
+					setShow.call(this, element, propValue);
 					break;
 				case 'if':
-					setIf.call(this, el, key, attrName, attrVal);
+					setIf.call(this, element, propName, propValue);
 					break;
-				case 'show':
-					setShow.call(this, el, key, attrVal);
-					break;
-				case 'model':
+				/*case 'model':
 					setModel.call(this, el, attrVal);
 				default:
-					;
+					;*/
 			}
 		}
 	}
 }
 
-export {setAttr};
+export { setAttr };

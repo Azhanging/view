@@ -1,7 +1,9 @@
 import Observer from './../observer';
 import vdom from './../vdom';
-import {getEl} from './../tools';
-import {domUpdate,createTextNodes,replaceTextNode} from './../dom';
+import { getEl, getKeyLink } from './../tools';
+import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
+import { attrUpdate } from './../attr';
+import { showUpdate } from './../show';
 
 class View {
 	constructor({
@@ -15,29 +17,29 @@ class View {
 		created = () => {},
 		ready = () => {}
 	} = options) {
-		
+
 		//解析对象
 		this.el = (el && typeof getEl(el) !== 'null' && template === undefined ? getEl(el) : '');
 		//组件
 		this.components = components;
 		//设置data值
 		this.data = data;
-		
+
 		//判断是否绑定节点或者模板
 		if(!(this.el) && !(this.template)) {
 			return false;
 		}
-		
+
 		//配置对象
 		this.config();
 		//设置observe
-		new Observer(this.data,undefined,this);
+		new Observer(this.data, undefined, this);
 		//初始化内容
 		this.init();
 	}
-	init(){
+	init() {
 		//创建vdom内容
-		this.vdom = new vdom().resolve(this.el,this);
+		this.vdom = new vdom().resolve(this.el, this);
 		//创建存在绑定的文本节点
 		createTextNodes.call(this);
 		//新建和替换绑定的文本节点信息
@@ -45,14 +47,18 @@ class View {
 		//初始化更新
 		this.update();
 	}
-	config(){
+	config() {
 		this.__ob__ = {
-			dom:{},
-			attr:{}
+			dom: {},
+			attr: {},
+			show:{},
+			if:{}
 		};
 	}
-	update(keys){
-		domUpdate.call(this,keys);
+	update(keys) {
+		attrUpdate.call(this, keys);
+		showUpdate.call(this,keys);
+		domUpdate.call(this, keys);
 	}
 	_get(keyLink) {
 		let key = '';
@@ -76,8 +82,46 @@ class View {
 			return null;
 		}
 	}
+	expr(expr) {
+		let dataValues = getKeyLink.call(this, expr),
+			dataValueLen = dataValues.length,
+			newExpr = expr;
+
+		//返回的不是主key数组
+		if(!(dataValues instanceof Array)) {
+			//解析表达式抛出
+			try {
+				return eval("(" + expr + ")");
+			} catch(e) {
+				return '';
+			}
+		}
+
+		for(let i = 0; i < dataValueLen; i++) {
+			if(this._get(dataValues[i]) !== null) {
+				let data = this._get(dataValues[i]);
+				//处理for绑定,for只允许绑定一个data,不支持表达式
+				if(arguments[1] === 'for') {
+					return this._get(dataValues[i]);
+				}
+				//更新为绑定表达式
+				newExpr = newExpr.replace(new RegExp('\{\{' + dataValues[i] + '\}\}', 'g'), (data === false || data === true) ? data : "'" + data + "'");
+			} else {
+				//处理不存在数据流空值替换对象内容
+				newExpr = newExpr.replace(new RegExp('\{\{' + dataValues[i] + '\}\}', 'g'), "''");
+			}
+		}
+		try {
+			//解析表达式
+			return eval(newExpr);
+		} catch(e) {
+			//报错返回空值
+			return '';
+		}
+	}
+
 	/*设置过滤器*/
-	static setFilter(filterName, handler){
+	static setFilter(filterName, handler) {
 		this.filterHandlers[filterName] = handler;
 	}
 }

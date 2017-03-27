@@ -2,37 +2,24 @@
 function attrUpdate(key) {
 	//初始化
 	if(key === undefined || key === '') {
-
-		Object.keys(this.attrBindings).forEach((key, index) => {
-			let keyObj = this.attrBindings[key];
-			updateFn.call(this, keyObj);
+		Object.keys(this.__ob__.attr).forEach((keyLine, index) => {
+			updateFn.call(this,keyLine);
 		});
-
-		/*for(var _key in this.attrBindings) {
-			var keyObj = this.attrBindings[_key];
-			updateFn.call(this, keyObj);
-		}*/
-	} else {
-		//存在key时候更新属性
-		let keyObj = this.attrBindings[key] ? this.attrBindings[key] : [];
-		updateFn.call(this, keyObj);
+	}else{
+		//如果不存在键值，不执行更新
+		if(!this.__ob__.attr[key]){
+			return;
+		}
+		updateFn.call(this,key);
 	}
 
-	function updateFn(keyObj) {
-		keyObj.forEach((item, index)=>{
-			Object.keys(item['attrbindingKey']).forEach((key, _index)=>{
-				let obj = this.expr(item['attrbindingKey'][key]);
-				item.setAttribute(key, obj);
-				item[key] = obj;
-			});
-			/*for(var k in item['attrbindingKey']) {
-				if(item['attrbindingKey'].hasOwnProperty(k)) {
-					//表达式或者不为data绑定的值
-					var obj = this.expr(item['attrbindingKey'][k]);
-					item.setAttribute(k, obj);
-					item.k = obj;
-				}
-			}*/
+	function updateFn(keyLine) {
+		let attrNodes = this.__ob__.attr[keyLine];
+		attrNodes.forEach((element, index)=>{
+			let attrs = element.__attrs__;
+			for(let [propName,propValue] of Object.entries(attrs)){
+				element.setAttribute(propName,this.expr(propValue));
+			}
 		});
 	}
 }

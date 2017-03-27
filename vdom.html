@@ -4,17 +4,34 @@
 	<head>
 		<meta charset="UTF-8">
 		<title></title>
+		<style type="text/css">
+			.active{
+				background-color: azure;
+			}
+			.active1{
+				color: red;
+			}
+			.active2{
+				border:1px solid blue;
+			}
+		</style>
 	</head>
 
 	<body>
 		<div id="id1" class="class1">
-			<span :class="{{active}}-{{active1}}-{{active2}}">{{span.a | upper}}{{span1.b}} {{span2.c}} - {{span3.d}}</span>
-			<div :class="{{active}}">
+			<span :class="{{active.a}}+' '+{{active1}}+' '+{{active2}}">{{span.a | upper}}{{span1.b}} {{span2.c}} - {{span3.d}}</span>
+			<div :class="{{active.a}}" _v-show="{{isShow}}">
 				<span>{{span3.c}}</span>
 				123
 			</div>
 			<my-com></my-com>
 			<my-com2></my-com2>
+			<ul>
+				<li _v-if="{{ifStatus.if1}}"></li>
+				<li _v-elseif="{{ifStatus.if2}}"></li>
+				<li _v-elseif="{{ifStatus.if3}}"></li>
+				<li _v-else></li>
+			</ul>
 		</div>
 		
 		<template id="app">
@@ -80,7 +97,19 @@
 				span3:{
 					d:4,
 					c:2
-				}				
+				},
+				/*{{active.a}}-{{active1}}-{{active2}}*/
+				active:{
+					a:'active'
+				},
+				active1:'active1',
+				active2:'active2',
+				isShow:false,
+				ifStatus:{
+					if1:false,
+					if2:true,
+					if3:true
+				}
 			}
 			
 			var v = new View({

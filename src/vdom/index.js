@@ -1,8 +1,7 @@
 import {setDom} from './../dom';
 import component from './../component';
 import {setAttr} from './../attr';
-/*拆解绑定的信息*/
-import {disassembly,getDisassemblyKey} from './../tools';
+
 
 //状态
 const REPLACE = 0;
@@ -56,26 +55,8 @@ class _ELement{
 				el:element
 			};
 			
-			for(let _index in Object.keys(element.attributes)){
-				let prop = element.attributes,
-					propName = prop[_index].name,
-					propValue = prop[_index].value;
-				
-				if(/:.?/.test(propName)) {
-					//清除:号
-					propName = propName.replace(':', '');
-					//给vdom加上属性
-					vdom.props[propName] = propValue;
-					let attrKeys = getDisassemblyKey(disassembly(propValue));
-					attrKeys.forEach((val,index)=>{
-						if(!_this.__ob__.attr[val]){
-							_this.__ob__.attr[val] = [];
-						}
-						_this.__ob__.attr[val].push(element);
-					});
-				}
-					
-			}
+			//设置属性的绑定
+			setAttr.call(_this,element,vdom);
 			
 			[...element.childNodes].forEach((el)=>{
 				//设置索引

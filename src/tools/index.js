@@ -2,6 +2,7 @@ function getEl(id){
 	return document.getElementById(id);
 }
 
+//拆分数据
 function disassembly(text){
 	let textNodes = [];
 	//把文本节点拆开,只存在文本
@@ -20,6 +21,7 @@ function disassembly(text){
 	return textNodes;
 }
 
+//获取key数据链
 function getDisassemblyKey(keys){
 	let newKeys = keys.map((val,index)=>{
 		if(/\{\{\S+\}\}/.test(val)){
@@ -30,8 +32,22 @@ function getDisassemblyKey(keys){
 	return newKeys.filter((value)=>value!=undefined);
 }
 
+/*获取表达式中data绑定的值*/
+function getKeyLink(expr) {
+	var tempExpr = expr.match(/\{\{.*?\}\}/g);
+	if(tempExpr != null) {
+		var _this = this;
+		return tempExpr.map(function(item, index) {
+			return item.replace(/\{?\}?/g, '');
+		});
+	} else {
+		return expr;
+	}
+}
+
 export {
 	getEl,
 	disassembly,
-	getDisassemblyKey
+	getDisassemblyKey,
+	getKeyLink
 }
