@@ -13,7 +13,6 @@ function setAttr(element, vdom) {
 
 		if(/:.?/.test(propName)) {
 			//删除当前绑定到真实attr上的属性
-//			element.removeAttribute(propName);
 			//清除:号
 			propName = propName.replace(':', '');
 			//给vdom加上属性
@@ -36,7 +35,6 @@ function setAttr(element, vdom) {
 
 		if(/_v-.?/.test(propName)) {
 			//删除绑定属性
-//			element.removeAttribute(propName);
 			propName = propName.replace('_v-', '');
 			//获取到主Key的数组
 			switch(propName) {

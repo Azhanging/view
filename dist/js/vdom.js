@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "./dist";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 13);
+/******/ 	return __webpack_require__(__webpack_require__.s = 14);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -143,11 +143,26 @@ function deepCopy(p, c) {
 	return c;
 }
 
+//通过父级的节点查找$index
+function getIndex(el) {
+	//当前默认节点存在了$index对象 || 模板使用data-index代替
+	if (el.$index != undefined || el.$index != null) {
+		return el.$index;
+	} else if (el.dataset['index']) {
+		return el.dataset['index'];
+	} else if (el.id != this.$element) {
+		return getIndex.call(this, el.parentNode);
+	} else {
+		return false;
+	}
+}
+
 exports.getEl = getEl;
 exports.disassembly = disassembly;
 exports.getDisassemblyKey = getDisassemblyKey;
 exports.getKeyLink = getKeyLink;
 exports.deepCopy = deepCopy;
+exports.getIndex = getIndex;
 
 /***/ }),
 /* 1 */
@@ -160,7 +175,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setAttr = __webpack_require__(5);
+var _setAttr = __webpack_require__(6);
 
 Object.defineProperty(exports, 'setAttr', {
   enumerable: true,
@@ -169,7 +184,7 @@ Object.defineProperty(exports, 'setAttr', {
   }
 });
 
-var _update = __webpack_require__(6);
+var _update = __webpack_require__(7);
 
 Object.defineProperty(exports, 'attrUpdate', {
   enumerable: true,
@@ -189,7 +204,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _update = __webpack_require__(9);
+var _update = __webpack_require__(10);
 
 Object.defineProperty(exports, 'domUpdate', {
   enumerable: true,
@@ -198,7 +213,7 @@ Object.defineProperty(exports, 'domUpdate', {
   }
 });
 
-var _setDom = __webpack_require__(8);
+var _setDom = __webpack_require__(9);
 
 Object.keys(_setDom).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -221,7 +236,36 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setShow = __webpack_require__(15);
+var _setIf = __webpack_require__(12);
+
+Object.defineProperty(exports, 'setIf', {
+  enumerable: true,
+  get: function get() {
+    return _setIf.setIf;
+  }
+});
+
+var _update = __webpack_require__(13);
+
+Object.defineProperty(exports, 'ifUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.ifUpdate;
+  }
+});
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setShow = __webpack_require__(18);
 
 Object.keys(_setShow).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -233,7 +277,7 @@ Object.keys(_setShow).forEach(function (key) {
   });
 });
 
-var _update = __webpack_require__(16);
+var _update = __webpack_require__(19);
 
 Object.keys(_update).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -246,7 +290,7 @@ Object.keys(_update).forEach(function (key) {
 });
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -260,11 +304,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _observer = __webpack_require__(14);
+var _observer = __webpack_require__(17);
 
 var _observer2 = _interopRequireDefault(_observer);
 
-var _vdom = __webpack_require__(17);
+var _method = __webpack_require__(15);
+
+var _method2 = _interopRequireDefault(_method);
+
+var _vdom = __webpack_require__(20);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
@@ -274,9 +322,11 @@ var _dom = __webpack_require__(2);
 
 var _attr = __webpack_require__(1);
 
-var _show = __webpack_require__(3);
+var _show = __webpack_require__(4);
 
-var _if = __webpack_require__(10);
+var _if = __webpack_require__(3);
+
+var _watch = __webpack_require__(21);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -306,37 +356,63 @@ var View = function () {
 
 		_classCallCheck(this, View);
 
+		this.$element = el;
 		//解析对象
-		this.el = el && typeof (0, _tools.getEl)(el) !== 'null' && template === undefined ? (0, _tools.getEl)(el) : '';
-		//组件
-		this.components = components;
+		if (el && typeof (0, _tools.getEl)(el) !== 'null') {
+			this.el = (0, _tools.getEl)(el);
+			if (this.el.tagName == 'TEMPLATE') {
+				this.el = this.el.content.firstElementChild;
+				this.isTemplate = true;
+			}
+		} else {
+			this.el = '';
+		}
 		//设置data值
 		this.data = data;
+		//实例方法	
+		this.methods = methods;
+		//组件
+		this.components = components;
+		//模板
+		this.isTemplate ? this.data['templateData'] = {} : '';
+		//data监听
+		this.watch = watch;
+		//钩子函数
+		this.init = init;
+		this.created = created;
+		this.ready = ready;
 
 		//判断是否绑定节点或者模板
-		if (!this.el && !this.template) {
+		if (!this.el) {
 			return false;
 		}
-
-		//配置对象
-		this.config();
-		//设置observe
-		new _observer2.default(this.data, undefined, this);
 		//初始化内容
-		this.init();
+		this._init();
 	}
 
 	_createClass(View, [{
-		key: 'init',
-		value: function init() {
+		key: '_init',
+		value: function _init() {
+			//构建前钩子函数
+			this.init();
+			//配置对象
+			this.config();
+			//设置方法
+			_method2.default.call(this);
+			//设置observe
+			new _observer2.default(this.data, undefined, this);
 			//创建vdom内容
 			this.vdom = new _vdom2.default().resolve(this.el, this);
 			//创建存在绑定的文本节点
 			_dom.createTextNodes.call(this);
 			//新建和替换绑定的文本节点信息
 			_dom.replaceTextNode.call(this);
+			//创建钩子函数
+			this.created();
 			//初始化更新
 			this.update();
+			//准备钩子函数
+			this.ready();
 		}
 	}, {
 		key: 'config',
@@ -356,6 +432,7 @@ var View = function () {
 			_show.showUpdate.call(this, keys);
 			_if.ifUpdate.call(this, keys);
 			_dom.domUpdate.call(this, keys);
+			_watch.watchUpdate.call(this, keys);
 		}
 	}, {
 		key: '_get',
@@ -466,6 +543,29 @@ var View = function () {
 				return '';
 			}
 		}
+	}, {
+		key: 'createTemplate',
+		value: function createTemplate(vals, appendEl) {
+			var html = void 0,
+			    cloneNode = void 0;
+			//循环添加到指定的DOM节点上
+			vals.forEach(function (item, index) {
+				//设置数据流更新
+				this.data.templateData = item;
+				for (var k = 0; k < this.template.content.childNodes.length; k++) {
+					//复制临时节点
+					var tempNode = this.template.content.childNodes[k].cloneNode(true);
+					//添加到对应节点上
+					document.getElementById(appendEl).appendChild(tempNode);
+					//绑定当前节点事件
+					if (tempNode.nodeType == 1) {
+						eventBinding.call(this, tempNode);
+					}
+					//模板添加事件
+					setChildTemplateEvent.call(this, tempNode);
+				}
+			}.bind(this));
+		}
 
 		/*设置过滤器*/
 
@@ -515,7 +615,7 @@ View.filterHandlers = {
 exports.default = View;
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -528,11 +628,11 @@ exports.setAttr = undefined;
 
 var _tools = __webpack_require__(0);
 
-var _show = __webpack_require__(3);
+var _show = __webpack_require__(4);
 
-var _if = __webpack_require__(10);
+var _if = __webpack_require__(3);
 
-var _model = __webpack_require__(18);
+var _model = __webpack_require__(16);
 
 /*查找element对象中的属性*/
 /*拆解绑定的信息*/
@@ -546,7 +646,6 @@ function setAttr(element, vdom) {
 
 		if (/:.?/.test(propName)) {
 			//删除当前绑定到真实attr上的属性
-			//			element.removeAttribute(propName);
 			//清除:号
 			propName = propName.replace(':', '');
 			//给vdom加上属性
@@ -569,7 +668,6 @@ function setAttr(element, vdom) {
 
 		if (/_v-.?/.test(propName)) {
 			//删除绑定属性
-			//			element.removeAttribute(propName);
 			propName = propName.replace('_v-', '');
 			//获取到主Key的数组
 			switch (propName) {
@@ -598,7 +696,7 @@ function setAttr(element, vdom) {
 exports.setAttr = setAttr;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -666,7 +764,7 @@ function attrUpdate(key) {
 exports.attrUpdate = attrUpdate;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -697,7 +795,7 @@ function componentHandler(node) {
 exports.default = componentHandler;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -792,7 +890,7 @@ exports.createTextNodes = createTextNodes;
 exports.replaceTextNode = replaceTextNode;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -818,15 +916,23 @@ function domUpdate(key) {
 	}
 
 	function updateFn(keyLine) {
-		var val = this._get(keyLine),
-		    textNodes = this.__ob__.dom[keyLine];
-
+		var val = this._get(keyLine);
+		var textNodes = this.__ob__.dom[keyLine];
 		textNodes.forEach(function (element) {
 			//是否存在过滤器
 			if (element['filters'].length > 0) {
 				val = filter(val, element['filters']);
 			}
-			element.textContent = val;
+			//如果返回的是节点
+			if (val instanceof Array && val.length > 0 && val[0].nodeType) {
+				//走接点过滤处理
+				htmlNode(val, element);
+			} else {
+				//检查是否存在过滤器或者数组插入的dom节点
+				isTextNodePrevSibline(element);
+				//直接为数据节点
+				element.textContent = val;
+			}
 		});
 	}
 }
@@ -839,39 +945,154 @@ function filter(val, filters) {
 	return val;
 };
 
+//处理过滤器html内容
+function htmlNode(domNodes, item) {
+	//存在过节点
+	isTextNodePrevSibline(item);
+	//把新的dom插入到对应的节点中
+	domNodes.forEach(function (dom, index) {
+		dom.htmlNode = true;
+		item.parentNode.insertBefore(dom, item);
+		item.appendNode = item.appendNode instanceof Array ? item.appendNode : [];
+		item.appendNode.push(dom);
+	});
+
+	//清空占位文本节点的内容
+	item.textContent !== "" ? item.textContent = '' : false;
+}
+
+//查看文本节点中是否存在插入式的dom对象
+function isTextNodePrevSibline(item) {
+	if (item.previousSibling != null && !!item.previousSibling.htmlNode) {
+		for (var i = 0, len = item.appendNode.length; i < len; i++) {
+			var dom = item.appendNode.shift();
+			item.parentNode.removeChild(dom);
+		}
+	}
+}
+
 exports.domUpdate = domUpdate;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
+exports.setChildTemplateEvent = exports.setForEvent = exports.setEvent = undefined;
 
-var _setIf = __webpack_require__(11);
+var _tools = __webpack_require__(0);
 
-Object.defineProperty(exports, 'setIf', {
-  enumerable: true,
-  get: function get() {
-    return _setIf.setIf;
-  }
-});
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var _update = __webpack_require__(12);
+//事件绑定
+function setEvent(el) {
+	var _this = this;
 
-Object.defineProperty(exports, 'ifUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.ifUpdate;
-  }
-});
+	var elAttrs = el.attributes,
+	    attrName = void 0,
+	    attrVal = void 0;
+
+	[].concat(_toConsumableArray(el.attributes)).forEach(function (item, index) {
+		attrName = item.name;
+		attrVal = item.textContent;
+		var filterAttrVal = attrVal.replace(/\(+\S+\)+/g, '');
+		if (/@.?/.test(attrName)) {
+			attrName = attrName.replace('@', '');
+			//存在这个方法
+			if (_this[filterAttrVal]) {
+				//存在参数值
+				if (attrVal.match(/\(\S+\)/) instanceof Array) {
+					var args = attrVal.match(/\(\S+\)/)[0].replace(/\(?\)?/g, '').split(',');
+					//绑定事件
+					el.addEventListener(attrName, function (event) {
+						//对数组内的数据查看是否存在的数据流进行过滤
+						var filterArgs = args.map(function (item, index) {
+							//如果传入的对象是$index,获取当前父级中所在的索引
+							if (item === '$index') {
+								return _tools.getIndex.call(_this, el);
+							} else if (item === '$event') {
+								return event;
+							} else {
+								//解析data中的值
+								return _this.expr(item).toString();
+							}
+						});
+
+						//运行绑定的event
+						_this[filterAttrVal].apply(_this, filterArgs);
+					}, false);
+				} else {
+					//不存在参数值过滤掉空的括号
+					el.addEventListener(attrName, function (event) {
+						_this[filterAttrVal].call(_this, event);
+					}, false);
+				}
+			}
+		}
+	});
+}
+
+/*_v-for对象循环添加事件*/
+function setForEvent(el, index) {
+	var _this2 = this;
+
+	var childEls = el.childNodes,
+	    childElsLen = childEls.length;
+	if (el.nodeType === 1) {
+		//这里为查看是否通过数组循环出来的，添加index到当前循环对象
+		if (!isNaN(index)) {
+			//如果使用的是模板，cloneNode中无法赋值私有的属性，通过data-index设置所有值
+			if (this.template) {
+				el.dataset['index'] = index;
+			} else {
+				el.$index = index;
+			}
+		}
+		//绑定循环中的事件
+		setEvent.call(this, el);
+		if (childElsLen > 0) {
+			[].concat(_toConsumableArray(childEls)).forEach(function (item, index) {
+				if (item.nodeType == 1) {
+					setEvent.call(_this2, item);
+				}
+			});
+		}
+	}
+}
+
+/*
+ *	在templateData中,$index的参数会根据插入的节点对象进行返回index的值
+ *	模板子对象循环添加事件
+ */
+
+function setChildTemplateEvent(el) {
+	var _this3 = this;
+
+	var childEls = el.childNodes,
+	    childElsLen = childEls.length,
+	    i = 0;
+
+	[].concat(_toConsumableArray(el.childNodes)).forEach(function (el, index) {
+		if (el.nodeType == 1) {
+			if (el.childNodes.length > 0) {
+				setChildTemplateEvent.call(_this3, el);
+			}
+			setEvent.call(_this3, el);
+		}
+	});
+}
+
+exports.setEvent = setEvent;
+exports.setForEvent = setForEvent;
+exports.setChildTemplateEvent = setChildTemplateEvent;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -960,7 +1181,7 @@ function setIf(element, propName, propValue) {
 exports.setIf = setIf;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1015,13 +1236,13 @@ function ifUpdate(key) {
 exports.ifUpdate = ifUpdate;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
-var _init = __webpack_require__(4);
+var _init = __webpack_require__(5);
 
 var _init2 = _interopRequireDefault(_init);
 
@@ -1048,7 +1269,58 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 });
 
 /***/ }),
-/* 14 */
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+//methods添加到实例对象的方法(不是添加到原型链上继承)
+function method() {
+	var methods = this.methods;
+	for (var i in methods) {
+		if (methods.hasOwnProperty(i)) {
+			this[i] = methods[i];
+		}
+	}
+}
+
+exports.default = method;
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+function setModel(element, propValue) {
+	var _this = this;
+	var resolveVal = propValue.replace(/\{?\}?/g, '');
+	var elTagName = element.tagName.toLocaleLowerCase();
+	//初始化值
+	element.value = this._get(resolveVal);
+	//绑定按键事件
+	if (elTagName === 'input' || elTagName === 'textarea') {
+		element.addEventListener('keyup', function (event) {
+			if (event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || event.keyCode >= 65 && event.keyCode <= 90 || event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode >= 96 && event.keyCode <= 99 || event.keyCode >= 101 && event.keyCode <= 103 || event.keyCode >= 186 && event.keyCode <= 222) {
+				var value = this.value;
+				_this._set(resolveVal, value);
+			}
+		});
+	}
+}
+
+exports.setModel = setModel;
+
+/***/ }),
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1135,7 +1407,7 @@ var Observer = function () {
 exports.default = Observer;
 
 /***/ }),
-/* 15 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1166,7 +1438,7 @@ function setShow(element, propValue) {
 exports.setShow = setShow;
 
 /***/ }),
-/* 16 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1210,7 +1482,7 @@ function showUpdate(key) {
 exports.showUpdate = showUpdate;
 
 /***/ }),
-/* 17 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1226,11 +1498,13 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _dom = __webpack_require__(2);
 
-var _component = __webpack_require__(7);
+var _component = __webpack_require__(8);
 
 var _component2 = _interopRequireDefault(_component);
 
 var _attr = __webpack_require__(1);
+
+var _event = __webpack_require__(11);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1346,6 +1620,8 @@ var _ELement = function () {
 
 				//设置属性的绑定
 				_attr.setAttr.call(_this, element, vdom);
+				//设置事件
+				_event.setEvent.call(_this, element);
 
 				[].concat(_toConsumableArray(element.childNodes)).forEach(function (el) {
 					//设置索引
@@ -1484,7 +1760,7 @@ var _ELement = function () {
 exports.default = _ELement;
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1493,24 +1769,14 @@ exports.default = _ELement;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-function setModel(element, propValue) {
-	var _this = this;
-	var resolveVal = propValue.replace(/\{?\}?/g, '');
-	var elTagName = element.tagName.toLocaleLowerCase();
-	//初始化值
-	element.value = this._get(resolveVal);
-	//绑定按键事件
-	if (elTagName === 'input' || elTagName === 'textarea') {
-		element.addEventListener('keyup', function (event) {
-			if (event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || event.keyCode >= 65 && event.keyCode <= 90 || event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode >= 96 && event.keyCode <= 99 || event.keyCode >= 101 && event.keyCode <= 103 || event.keyCode >= 186 && event.keyCode <= 222) {
-				var value = this.value;
-				_this._set(resolveVal, value);
-			}
-		});
+//watch监听data的keyLine更新
+function watchUpdate(keyLine) {
+	if (this.watch[keyLine] && typeof this.watch[keyLine] === 'function') {
+		this.watch[keyLine].call(this, this._get(keyLine));
 	}
 }
 
-exports.setModel = setModel;
+exports.watchUpdate = watchUpdate;
 
 /***/ })
 /******/ ]);

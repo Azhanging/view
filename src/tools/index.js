@@ -60,10 +60,25 @@ function deepCopy(p, c) {
 	return c;
 }
 
+//通过父级的节点查找$index
+function getIndex(el) {
+	//当前默认节点存在了$index对象 || 模板使用data-index代替
+	if(el.$index != undefined || el.$index != null) {
+		return el.$index;
+	} else if(el.dataset['index']){
+		return el.dataset['index'];
+	}else if(el.id != this.$element){
+		return getIndex.call(this,el.parentNode);
+	}else{
+		return false;
+	}
+}
+
 export {
 	getEl,
 	disassembly,
 	getDisassemblyKey,
 	getKeyLink,
-	deepCopy
+	deepCopy,
+	getIndex
 }

@@ -1,10 +1,12 @@
 import Observer from './../observer';
+import method from './../method';
 import vdom from './../vdom';
 import { getEl, getKeyLink,deepCopy } from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
 import { ifUpdate } from './../if';
+import { watchUpdate } from './../watch';
 
 class View {
 	constructor({
@@ -18,35 +20,60 @@ class View {
 		created = () => {},
 		ready = () => {}
 	} = options) {
-
+		this.$element = el; 
 		//解析对象
-		this.el = (el && typeof getEl(el) !== 'null' && template === undefined ? getEl(el) : '');
-		//组件
-		this.components = components;
+		if(el && typeof getEl(el) !== 'null'){
+			this.el = getEl(el);
+			if(this.el.tagName == 'TEMPLATE'){
+				this.el = this.el.content.firstElementChild;
+				this.isTemplate = true;
+			}
+		}else{
+			this.el = '';
+		}
 		//设置data值
 		this.data = data;
+		//实例方法	
+		this.methods = methods;
+		//组件
+		this.components = components;
+		//模板
+		this.isTemplate ? (this.data['templateData'] = {}) : '';
+		//data监听
+		this.watch = watch;
+		//钩子函数
+		this.init = init;
+		this.created = created;
+		this.ready = ready;
 
 		//判断是否绑定节点或者模板
-		if(!(this.el) && !(this.template)) {
+		if(!(this.el)) {
 			return false;
 		}
-
+		//初始化内容
+		this._init();
+	}
+	_init() {
+		//构建前钩子函数
+		this.init();	
 		//配置对象
 		this.config();
+		//设置方法
+		method.call(this);
 		//设置observe
 		new Observer(this.data, undefined, this);
-		//初始化内容
-		this.init();
-	}
-	init() {
 		//创建vdom内容
 		this.vdom = new vdom().resolve(this.el, this);
 		//创建存在绑定的文本节点
 		createTextNodes.call(this);
 		//新建和替换绑定的文本节点信息
 		replaceTextNode.call(this);
+		//创建钩子函数
+		this.created();
 		//初始化更新
 		this.update();
+		//准备钩子函数
+		this.ready();	
 	}
 	config() {
 		this.__ob__ = {
@@ -62,6 +89,7 @@ class View {
 		showUpdate.call(this, keys);
 		ifUpdate.call(this, keys);
 		domUpdate.call(this, keys);
+		watchUpdate.call(this, keys);
 	}
 	_get(keyLink) {
 		let key = '';
@@ -164,6 +192,27 @@ class View {
 			//报错返回空值
 			return '';
 		}
+	}
+	createTemplate(vals, appendEl) {
+		let html,
+			cloneNode;
+		//循环添加到指定的DOM节点上
+		vals.forEach(function(item, index) {
+			//设置数据流更新
+			this.data.templateData = item;
+			for(let k = 0; k < this.template.content.childNodes.length; k++) {
+				//复制临时节点
+				let tempNode = this.template.content.childNodes[k].cloneNode(true);
+				//添加到对应节点上
+				document.getElementById(appendEl).appendChild(tempNode);
+				//绑定当前节点事件
+				if(tempNode.nodeType == 1) {
+					eventBinding.call(this, tempNode);
+				}
+				//模板添加事件
+				setChildTemplateEvent.call(this, tempNode);
+			}
+		}.bind(this));
 	}
 
 	/*设置过滤器*/
