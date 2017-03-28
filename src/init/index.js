@@ -26,7 +26,7 @@ class View {
 			this.el = getEl(el);
 			if(this.el.tagName == 'TEMPLATE'){
 				this.el = this.el.content.firstElementChild;
-				this.isTemplate = true;
+//				this.isTemplate = true;
 			}
 		}else{
 			this.el = '';
@@ -38,7 +38,7 @@ class View {
 		//组件
 		this.components = components;
 		//模板
-		this.isTemplate ? (this.data['templateData'] = {}) : '';
+//		this.isTemplate ? (this.data['templateData'] = {}) : '';
 		//data监听
 		this.watch = watch;
 		//钩子函数
@@ -81,10 +81,22 @@ class View {
 			attr: {},
 			show: {},
 			if: {},
-			for:{}
+			for:{},
+			bind:[]
 		};
 	}
-	update(keys) {
+	dep(keys) {
+		let updates = [keys];
+		for(let key of this.__ob__.bind){
+			if(key.indexOf(keys+'.') != -1){
+				updates.push(key);
+			}
+		}
+		updates.forEach((keyLine)=>{
+			this.update(keyLine);
+		});
+	}
+	update(keys){
 		attrUpdate.call(this, keys);
 		showUpdate.call(this, keys);
 		ifUpdate.call(this, keys);
@@ -92,18 +104,17 @@ class View {
 		watchUpdate.call(this, keys);
 	}
 	_get(keyLink) {
-		let key = '';
 		//存在实例屬性對象
 		if(/\./g.test(keyLink)) {
-			let obj = keyLink.split('.'),
-				newObject = this['data'];
+			let obj = keyLink.split('.');
+			let	getVal = this['data'];
 			//存在值
 			if(this['data'][obj[0]]) {
 				for(let i = 0; i < obj.length; i++) {
-					key = obj[i];
-					newObject = newObject[key] !== undefined ? newObject[key] : null;
+					let key = obj[i];
+					getVal = getVal[key] !== undefined ? getVal[key] : null;
 				}
-				return newObject;
+				return getVal;
 			} else {
 				return null;
 			}

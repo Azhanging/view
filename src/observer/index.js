@@ -36,7 +36,7 @@ class Observer{
 						//设置新值
 						val = newVal;
 						
-						_this.view.update(keyLine);
+						_this.view.dep(keyLine);
 					}
 				});
 			});

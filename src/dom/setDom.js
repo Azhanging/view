@@ -1,4 +1,4 @@
-import {disassembly} from './../tools';
+import {disassembly,setBind} from './../tools';
 
 //let textNodes = []; //拆分的文本节点内容
 let textNodeLists = []; //拆分的文本节点内容集合
@@ -46,6 +46,7 @@ function createTextNodeElements(textNodes, el) {
 				let key = textNodes[i].replace(/(\{)?(\})?/g, '');
 				if(!(this.__ob__.dom[key] instanceof Object)) {
 					this.__ob__.dom[key] = [];
+					setBind.call(this,key);
 				}
 				//设置节点的过滤器
 				textNode['filters'] = filters;

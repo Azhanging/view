@@ -74,11 +74,19 @@ function getIndex(el) {
 	}
 }
 
+//设置绑定的依赖
+function setBind(keyLine){
+	if(this.__ob__.bind.indexOf(keyLine) == -1){
+		this.__ob__.bind.push(keyLine);
+	}
+}
+
 export {
 	getEl,
 	disassembly,
 	getDisassemblyKey,
 	getKeyLink,
 	deepCopy,
-	getIndex
+	getIndex,
+	setBind
 }

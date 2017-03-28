@@ -157,12 +157,20 @@ function getIndex(el) {
 	}
 }
 
+//设置绑定的依赖
+function setBind(keyLine) {
+	if (this.__ob__.bind.indexOf(keyLine) == -1) {
+		this.__ob__.bind.push(keyLine);
+	}
+}
+
 exports.getEl = getEl;
 exports.disassembly = disassembly;
 exports.getDisassemblyKey = getDisassemblyKey;
 exports.getKeyLink = getKeyLink;
 exports.deepCopy = deepCopy;
 exports.getIndex = getIndex;
+exports.setBind = setBind;
 
 /***/ }),
 /* 1 */
@@ -362,7 +370,7 @@ var View = function () {
 			this.el = (0, _tools.getEl)(el);
 			if (this.el.tagName == 'TEMPLATE') {
 				this.el = this.el.content.firstElementChild;
-				this.isTemplate = true;
+				//				this.isTemplate = true;
 			}
 		} else {
 			this.el = '';
@@ -374,7 +382,7 @@ var View = function () {
 		//组件
 		this.components = components;
 		//模板
-		this.isTemplate ? this.data['templateData'] = {} : '';
+		//		this.isTemplate ? (this.data['templateData'] = {}) : '';
 		//data监听
 		this.watch = watch;
 		//钩子函数
@@ -422,8 +430,46 @@ var View = function () {
 				attr: {},
 				show: {},
 				if: {},
-				for: {}
+				for: {},
+				bind: []
 			};
+		}
+	}, {
+		key: 'dep',
+		value: function dep(keys) {
+			var _this = this;
+
+			var updates = [keys];
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+
+			try {
+				for (var _iterator = this.__ob__.bind[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var key = _step.value;
+
+					if (key.indexOf(keys + '.') != -1) {
+						updates.push(key);
+					}
+				}
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
+
+			updates.forEach(function (keyLine) {
+				_this.update(keyLine);
+			});
 		}
 	}, {
 		key: 'update',
@@ -437,18 +483,17 @@ var View = function () {
 	}, {
 		key: '_get',
 		value: function _get(keyLink) {
-			var key = '';
 			//存在实例屬性對象
 			if (/\./g.test(keyLink)) {
-				var obj = keyLink.split('.'),
-				    newObject = this['data'];
+				var obj = keyLink.split('.');
+				var getVal = this['data'];
 				//存在值
 				if (this['data'][obj[0]]) {
 					for (var i = 0; i < obj.length; i++) {
-						key = obj[i];
-						newObject = newObject[key] !== undefined ? newObject[key] : null;
+						var key = obj[i];
+						getVal = getVal[key] !== undefined ? getVal[key] : null;
 					}
-					return newObject;
+					return getVal;
 				} else {
 					return null;
 				}
@@ -654,6 +699,7 @@ function setAttr(element, vdom) {
 			attrKeys.forEach(function (val, index) {
 				if (!_this.__ob__.attr[val]) {
 					_this.__ob__.attr[val] = [];
+					_tools.setBind.call(_this, val);
 				}
 				//设置attrs的expr
 				if (!(element.__attrs__ instanceof Object)) {
@@ -684,6 +730,40 @@ function setAttr(element, vdom) {
 					_model.setModel.call(_this, element, propValue);
 				default:
 					;
+			}
+		}
+		if (/@.?/.test(propName)) {
+			var filterpropValue = propValue.replace(/\(+\S+\)+/g, '');
+			propName = propName.replace('@', '');
+			//存在这个方法
+			if (_this[filterpropValue]) {
+				//存在参数值
+				if (propValue.match(/\(\S+\)/) instanceof Array) {
+					var args = propValue.match(/\(\S+\)/)[0].replace(/\(?\)?/g, '').split(',');
+					//绑定事件
+					element.addEventListener(propName, function (event) {
+						//对数组内的数据查看是否存在的数据流进行过滤
+						var filterArgs = args.map(function (item, index) {
+							//如果传入的对象是$index,获取当前父级中所在的索引
+							if (item === '$index') {
+								return getIndex.call(_this, el);
+							} else if (item === '$event') {
+								return event;
+							} else {
+								//解析data中的值
+								return _this.expr(item).toString();
+							}
+						});
+
+						//运行绑定的event
+						_this[filterpropValue].apply(_this, filterArgs);
+					}, false);
+				} else {
+					//不存在参数值过滤掉空的括号
+					el.addEventListener(propName, function (event) {
+						_this[filterpropValue].call(_this, event);
+					}, false);
+				}
 			}
 		}
 	};
@@ -861,6 +941,7 @@ function createTextNodeElements(textNodes, el) {
 				var key = textNodes[i].replace(/(\{)?(\})?/g, '');
 				if (!(this.__ob__.dom[key] instanceof Object)) {
 					this.__ob__.dom[key] = [];
+					_tools.setBind.call(this, key);
 				}
 				//设置节点的过滤器
 				textNode['filters'] = filters;
@@ -917,6 +998,8 @@ function domUpdate(key) {
 
 	function updateFn(keyLine) {
 		var val = this._get(keyLine);
+		//如果当前的对象获取到的为null，返回一个空的字符串
+		val = val == null ? '' : val;
 		var textNodes = this.__ob__.dom[keyLine];
 		textNodes.forEach(function (element) {
 			//是否存在过滤器
@@ -1164,6 +1247,7 @@ function setIf(element, propName, propValue) {
 		if (key) {
 			if (!(_this2.__ob__.if[key] instanceof Array)) {
 				_this2.__ob__.if[key] = [];
+				_tools.setBind.call(_this2, key);
 			}
 			if (propName === 'if') {
 				ifCount = [];
@@ -1381,7 +1465,7 @@ var Observer = function () {
 							//设置新值
 							val = newVal;
 
-							_this.view.update(keyLine);
+							_this.view.dep(keyLine);
 						}
 					});
 				});
@@ -1427,6 +1511,7 @@ function setShow(element, propValue) {
 	attrKeys.forEach(function (val, index) {
 		if (!(_this.__ob__.show[val] instanceof Array)) {
 			_this.__ob__.show[val] = [];
+			_tools.setBind.call(_this, val);
 		}
 		//给element元素加上__attrs__依赖
 		element.__show__ = propValue;
@@ -1505,6 +1590,8 @@ var _component2 = _interopRequireDefault(_component);
 var _attr = __webpack_require__(1);
 
 var _event = __webpack_require__(11);
+
+var _tools = __webpack_require__(0);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1621,7 +1708,7 @@ var _ELement = function () {
 				//设置属性的绑定
 				_attr.setAttr.call(_this, element, vdom);
 				//设置事件
-				_event.setEvent.call(_this, element);
+				//			setEvent.call(_this,element);
 
 				[].concat(_toConsumableArray(element.childNodes)).forEach(function (el) {
 					//设置索引

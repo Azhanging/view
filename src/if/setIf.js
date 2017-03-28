@@ -1,4 +1,4 @@
-import { disassembly, getDisassemblyKey } from './../tools';
+import { disassembly, getDisassemblyKey ,setBind} from './../tools';
 
 function nextSibling(element, ifCount) {
 	if(element.nodeType === 1) {
@@ -55,6 +55,7 @@ function setIf(element, propName, propValue) {
 		if(key) {
 			if(!(this.__ob__.if[key] instanceof Array)) {
 				this.__ob__.if[key] = [];
+				setBind.call(this,key);
 			}
 			if(propName === 'if') {
 				ifCount = [];

@@ -14,6 +14,8 @@ function domUpdate(key) {
 	
 	function updateFn(keyLine){
 		let val = this._get(keyLine);
+		//如果当前的对象获取到的为null，返回一个空的字符串
+		val = (val == null?'':val);
 		let textNodes = this.__ob__.dom[keyLine];
 		textNodes.forEach((element) => {
 			//是否存在过滤器
