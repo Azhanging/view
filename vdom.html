@@ -29,6 +29,7 @@
 			<my-com2></my-com2>
 			<ul _v-show="{{isShow}}">
 				<li _v-if="{{ifStatus.if1}}">111</li>
+				<li>true</li>
 				<li _v-elseif="{{ifStatus.if2}}">222</li>
 				<li _v-elseif="{{ifStatus.if3}}">333</li>
 				<li _v-else>444</li>
@@ -38,9 +39,23 @@
 			<div>{{input.val.a}}</div>
 			<input type="text" _v-model="{{input.val}}" :value="{{input.val}}"/>
 		</div>
+		
+		<div id="tempWrap">
+			
+		</div>
+		
 		<template id="app">
 			<div>
 				{{span1.b}}
+			</div>
+		</template>
+		
+		<template id="temp">
+			<div :class="{{templateData.class}}" @click="event($event,1)">
+				{{templateData.data}}
+				<div _v-for="i in {{arr}}">
+					{{i}}	
+				</div>
 			</div>
 		</template>
 
@@ -148,8 +163,46 @@
 					}
 				}
 			});
+			
+			var v1 = new View({
+				el:"temp",
+				methods:{
+					event: function(event, arg) {
+						console.log(event, arg);
+					}
+				}
+			});
+			
+			var data1 = [{
+				data:1,
+				class:'class1',
+				arr:[
+					1,2,3,4
+				]
+			},{
+				data:2,
+				class:'class2',
+				arr:[
+					1,2,3,4
+				]
+			},{
+				data:3,
+				class:'class3',
+				arr:[
+					1,2,3,4
+				]
+			},{
+				data:4,
+				class:'class4',
+				arr:[
+					1,2,3,4
+				]
+			}];
+			
+			v1.createTemplate(data1,'tempWrap');
 
 			console.log(v);
+			console.log(v1);
 		</script>
 	</body>
 

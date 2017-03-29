@@ -6,12 +6,12 @@ let tempFragmentElements = []; //插入拆分的文本节点内容
 
 function setDom(element) {
 	let textNodes = disassembly(element.textContent);
-	textNodeLists.push([textNodes, element]);
+	this.__bind__.textNodeLists.push([textNodes, element]);
 }
 
 //创建文本节点单独循环执行
 function createTextNodes() {
-	textNodeLists.forEach((item, index) => {
+	this.__bind__.textNodeLists.forEach((item, index) => {
 		let [textNodes, el] = item;
 		createTextNodeElements.call(this, textNodes, el);
 	});
@@ -56,12 +56,12 @@ function createTextNodeElements(textNodes, el) {
 		}
 	}
 	//el为父级节点,fragment为文档片段,index为索取文本节点在父级节点的位置
-	tempFragmentElements.push([el.parentNode, fragment, el]);
+	this.__bind__.tempFragmentElements.push([el.parentNode, fragment, el]);
 }
 
 //替换原文本节点
 function replaceTextNode() {
-	tempFragmentElements.forEach((item, index) => {
+	this.__bind__.tempFragmentElements.forEach((item, index) => {
 		let [parentNode, fragmentNode, oldTextNode] = item;
 		parentNode.replaceChild(fragmentNode, oldTextNode);
 	});

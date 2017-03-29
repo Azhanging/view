@@ -59,8 +59,6 @@ class _ELement{
 			
 			//设置属性的绑定
 			setAttr.call(_this,element,vdom);
-			//设置事件
-//			setEvent.call(_this,element);
 
 			[...element.childNodes].forEach((el)=>{
 				//设置索引
@@ -70,7 +68,7 @@ class _ELement{
 			
 		}else{
 			//设置文本节点绑定的更新
-			setDom(element);
+			setDom.call(_this,element);
 			//文本节点
 			vdom = {
 				textContent:element.textContent,

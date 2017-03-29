@@ -7,6 +7,8 @@ import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
 import { ifUpdate } from './../if';
 import { watchUpdate } from './../watch';
+import { setEvent ,setChildTemplateEvent} from './../event';
+
 
 class View {
 	constructor({
@@ -21,18 +23,18 @@ class View {
 		ready = () => {}
 	} = options) {
 		this.$element = el; 
+		//设置data值
+		this.data = data;
 		//解析对象
 		if(el && typeof getEl(el) !== 'null'){
 			this.el = getEl(el);
 			if(this.el.tagName == 'TEMPLATE'){
 				this.el = this.el.content.firstElementChild;
-//				this.isTemplate = true;
+				this.data['templateData'] = {};
 			}
 		}else{
 			this.el = '';
 		}
-		//设置data值
-		this.data = data;
 		//实例方法	
 		this.methods = methods;
 		//组件
@@ -84,6 +86,11 @@ class View {
 			for:{},
 			bind:[]
 		};
+		
+		this.__bind__ = {
+			textNodeLists:[],
+			tempFragmentElements:[]
+		}
 	}
 	dep(keys) {
 		let updates = [keys];
@@ -205,27 +212,22 @@ class View {
 		}
 	}
 	createTemplate(vals, appendEl) {
-		let html,
-			cloneNode;
 		//循环添加到指定的DOM节点上
-		vals.forEach(function(item, index) {
+		vals.forEach((item, index)=>{
 			//设置数据流更新
 			this.data.templateData = item;
-			for(let k = 0; k < this.template.content.childNodes.length; k++) {
-				//复制临时节点
-				let tempNode = this.template.content.childNodes[k].cloneNode(true);
-				//添加到对应节点上
-				document.getElementById(appendEl).appendChild(tempNode);
-				//绑定当前节点事件
-				if(tempNode.nodeType == 1) {
-					eventBinding.call(this, tempNode);
-				}
-				//模板添加事件
-				setChildTemplateEvent.call(this, tempNode);
+			//复制临时节点
+			let tempNode = this.el.cloneNode(true);
+			//添加到对应节点上
+			document.getElementById(appendEl).appendChild(tempNode);
+			//绑定当前节点事件
+			if(tempNode.nodeType == 1) {
+				setEvent.call(this, tempNode);
 			}
-		}.bind(this));
+			//模板添加事件
+			setChildTemplateEvent.call(this, tempNode);
+		});
 	}
-
 	/*设置过滤器*/
 	static setFilter(filterName, handler) {
 		this.filterHandlers[filterName] = handler;

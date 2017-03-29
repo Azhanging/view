@@ -2,10 +2,10 @@
 import { disassembly, getDisassemblyKey,setBind } from './../tools';
 import { setShow } from './../show';
 import { setIf } from './../if';
+import { setFor } from './../for';
 import { setModel } from './../model';
 /*查找element对象中的属性*/
 function setAttr(element, vdom) {
-
 	for(let _index in Object.keys(element.attributes)) {
 		let prop = element.attributes,
 			propName = prop[_index].name,
@@ -39,14 +39,14 @@ function setAttr(element, vdom) {
 			propName = propName.replace('_v-', '');
 			//获取到主Key的数组
 			switch(propName) {
-				//				case 'for':
-				//					setFor.call(this, el, attrVal);
-				//					break;
 				case 'show':
 					setShow.call(this, element, propValue);
 					break;
 				case 'if':
 					setIf.call(this, element, propName, propValue);
+					break;
+				case 'for':
+					setFor.call(this, element, propValue);
 					break;
 				case 'model':
 					setModel.call(this, element, propValue);
@@ -89,7 +89,6 @@ function setAttr(element, vdom) {
 				}
 			}
 		}
-
 	}
 }
 
