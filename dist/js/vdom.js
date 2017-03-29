@@ -128,6 +128,15 @@ function getKeyLink(expr) {
 	}
 }
 
+/*获取到keyLine中的主key*/
+function getKey(keyLine) {
+	var keys = keyLine.split('.');
+	if (this.data[keys[0]] != undefined) {
+		return keys[0];
+	}
+	return null;
+}
+
 //深拷贝
 function deepCopy(p, c) {
 	//如果拷贝的对象是dom节点
@@ -168,6 +177,7 @@ exports.getEl = getEl;
 exports.disassembly = disassembly;
 exports.getDisassemblyKey = getDisassemblyKey;
 exports.getKeyLink = getKeyLink;
+exports.getKey = getKey;
 exports.deepCopy = deepCopy;
 exports.getIndex = getIndex;
 exports.setBind = setBind;
@@ -301,7 +311,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setAttr = __webpack_require__(8);
+var _setAttr = __webpack_require__(9);
 
 Object.defineProperty(exports, 'setAttr', {
   enumerable: true,
@@ -310,7 +320,7 @@ Object.defineProperty(exports, 'setAttr', {
   }
 });
 
-var _update = __webpack_require__(9);
+var _update = __webpack_require__(10);
 
 Object.defineProperty(exports, 'attrUpdate', {
   enumerable: true,
@@ -330,7 +340,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _update = __webpack_require__(12);
+var _update = __webpack_require__(13);
 
 Object.defineProperty(exports, 'domUpdate', {
   enumerable: true,
@@ -339,7 +349,7 @@ Object.defineProperty(exports, 'domUpdate', {
   }
 });
 
-var _setDom = __webpack_require__(11);
+var _setDom = __webpack_require__(12);
 
 Object.keys(_setDom).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -353,6 +363,35 @@ Object.keys(_setDom).forEach(function (key) {
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setFor = __webpack_require__(14);
+
+Object.defineProperty(exports, 'setFor', {
+  enumerable: true,
+  get: function get() {
+    return _setFor.setFor;
+  }
+});
+
+var _update = __webpack_require__(15);
+
+Object.defineProperty(exports, 'forUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.forUpdate;
+  }
+});
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -381,7 +420,7 @@ Object.defineProperty(exports, 'ifUpdate', {
 });
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -416,7 +455,7 @@ Object.keys(_update).forEach(function (key) {
 });
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -432,7 +471,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _dom = __webpack_require__(3);
 
-var _component = __webpack_require__(10);
+var _component = __webpack_require__(11);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -536,14 +575,14 @@ var _ELement = function () {
 		}
 	}, {
 		key: 'resolve',
-		value: function resolve(element, _this) {
+		value: function resolve(element, _this, isSet) {
 			var _this2 = this;
 
 			var vdom = void 0;
 			//dom节点
 			if (element.nodeType === 1) {
 				//当前的ELement是否为组件
-				if (_this.components[element.tagName.toLowerCase()] && element.tagName.indexOf('-') > -1) {
+				if (_this.components[element.tagName.toLowerCase()] && element.tagName.indexOf('-') > -1 && isSet) {
 					element = _component2.default.call(_this, element);
 				}
 				vdom = {
@@ -554,17 +593,21 @@ var _ELement = function () {
 					el: element
 				};
 
-				//设置属性的绑定
-				_attr.setAttr.call(_this, element, vdom);
+				if (isSet) {
+					//设置属性的绑定
+					_attr.setAttr.call(_this, element, vdom);
+				}
 
 				[].concat(_toConsumableArray(element.childNodes)).forEach(function (el) {
 					//设置索引
 					_this2.id++;
-					vdom.childrens.push(_this2.resolve(el, _this));
+					vdom.childrens.push(_this2.resolve(el, _this, isSet));
 				});
 			} else {
-				//设置文本节点绑定的更新
-				_dom.setDom.call(_this, element);
+				if (isSet) {
+					//设置文本节点绑定的更新
+					_dom.setDom.call(_this, element);
+				}
 				//文本节点
 				vdom = {
 					textContent: element.textContent,
@@ -694,7 +737,7 @@ var _ELement = function () {
 exports.default = _ELement;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -716,7 +759,7 @@ var _method = __webpack_require__(19);
 
 var _method2 = _interopRequireDefault(_method);
 
-var _vdom = __webpack_require__(6);
+var _vdom = __webpack_require__(7);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
@@ -726,9 +769,11 @@ var _dom = __webpack_require__(3);
 
 var _attr = __webpack_require__(2);
 
-var _show = __webpack_require__(5);
+var _show = __webpack_require__(6);
 
-var _if = __webpack_require__(4);
+var _if = __webpack_require__(5);
+
+var _for = __webpack_require__(4);
 
 var _watch = __webpack_require__(24);
 
@@ -805,10 +850,10 @@ var View = function () {
 			this.config();
 			//设置方法
 			_method2.default.call(this);
+			//创建vdom内容
+			this.vdom = new _vdom2.default().resolve(this.el, this, true);
 			//设置observe
 			new _observer2.default(this.data, undefined, this);
-			//创建vdom内容
-			this.vdom = new _vdom2.default().resolve(this.el, this);
 			//创建存在绑定的文本节点
 			_dom.createTextNodes.call(this);
 			//新建和替换绑定的文本节点信息
@@ -834,8 +879,13 @@ var View = function () {
 
 			this.__bind__ = {
 				textNodeLists: [],
-				tempFragmentElements: []
+				tempFragmentElements: [],
+				forEls: {},
+				forKeyLineDate: {},
+				forItem: {}
 			};
+			//for中的对应的参数值
+			this.forItem = {};
 		}
 	}, {
 		key: 'dep',
@@ -882,6 +932,7 @@ var View = function () {
 			_if.ifUpdate.call(this, keys);
 			_dom.domUpdate.call(this, keys);
 			_watch.watchUpdate.call(this, keys);
+			_for.forUpdate.call(this, keys);
 		}
 	}, {
 		key: '_get',
@@ -1060,7 +1111,7 @@ View.filterHandlers = {
 exports.default = View;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1073,11 +1124,11 @@ exports.setAttr = undefined;
 
 var _tools = __webpack_require__(0);
 
-var _show = __webpack_require__(5);
+var _show = __webpack_require__(6);
 
-var _if = __webpack_require__(4);
+var _if = __webpack_require__(5);
 
-var _for = __webpack_require__(13);
+var _for = __webpack_require__(4);
 
 var _model = __webpack_require__(20);
 
@@ -1176,7 +1227,7 @@ function setAttr(element, vdom) {
 exports.setAttr = setAttr;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1244,7 +1295,7 @@ function attrUpdate(key) {
 exports.attrUpdate = attrUpdate;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1275,7 +1326,7 @@ function componentHandler(node) {
 exports.default = componentHandler;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1371,7 +1422,7 @@ exports.createTextNodes = createTextNodes;
 exports.replaceTextNode = replaceTextNode;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1457,35 +1508,6 @@ function isTextNodePrevSibline(item) {
 exports.domUpdate = domUpdate;
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _setFor = __webpack_require__(14);
-
-Object.defineProperty(exports, 'setFor', {
-  enumerable: true,
-  get: function get() {
-    return _setFor.setFor;
-  }
-});
-
-var _update = __webpack_require__(15);
-
-Object.defineProperty(exports, 'forUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.forUpdate;
-  }
-});
-
-/***/ }),
 /* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1497,88 +1519,27 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.setFor = undefined;
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+var _vdom = __webpack_require__(7);
 
-var _tools = __webpack_require__(0);
+var _vdom2 = _interopRequireDefault(_vdom);
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 //一直往上找for父节点中是否存在for
 function findParentForUpdateKey(parent) {
 	if (parent.forUpdateKey) {
 		return parent;
-	} else if (parent.id == this.$element) {
+	} else if (parent.id == this.$element || parent.parentNode == null) {
 		return false;
 	} else {
-		return findParentForUpdateKey(parent.parentNode);
+		return findParentForUpdateKey.call(this, parent.parentNode);
 	}
 }
 
-function setFor(el, attrVal) {
-	var _watch;
-
-	//el存放
-	var fragment = document.createDocumentFragment(),
-	    seize = document.createTextNode(''),
-	    keyAndExpr = attrVal.split(' in '),
-	    _keyAndExpr = _slicedToArray(keyAndExpr, 2),
-	    key = _keyAndExpr[0],
-	    expr = _keyAndExpr[1],
-	    resolveKey = _tools.getKey.call(this, expr.replace(/\{?\}?/g, ''));
-	//for数据存放点ob数据
-	this.data[key] = {};
-
-	//for中依赖的参数键
-	if (!Array.isArray(this.forItem[key])) {
-		this.forItem[key] = [];
-	}
-	if (this.forItem[key].indexOf(resolveKey) == -1) {
-		this.forItem[key].push(resolveKey);
-	}
-
-	//給el贴上for标签
-	el.forTag = resolveKey;
-	//el未添加到文档片段前的父级节点
-	var parentNode = el.parentNode;
-
-	//插入占位节点
-	el.parentNode.insertBefore(seize, el);
-	//储存elements
-	fragment.appendChild(el);
-	//绑定key的订阅者数据
-	var watch = (_watch = {}, _defineProperty(_watch, 'data', expr), _defineProperty(_watch, 'key', key), _defineProperty(_watch, 'el', fragment), _defineProperty(_watch, 'seize', seize), _defineProperty(_watch, 'appendEls', []), _watch);
-
-	//for中的父级
-	var _parentNode = findParentForUpdateKey.call(this, parentNode);
-	//判断是否为顶节点，继承更新key
-	if (_parentNode) {
-		el.forUpdateKey = _parentNode.forUpdateKey;
-	} else {
-		el.forUpdateKey = resolveKey;
-	}
-
-	//设置依赖更新的keys
-	if (resolveKey != el.forUpdateKey && !this.forItem[resolveKey]) {
-		if (!Array.isArray(this.forKeyLineDate[resolveKey])) {
-			this.forKeyLineDate[resolveKey] = [];
-		}
-		//如果存在相同的主key，只push一次
-		if (this.forKeyLineDate[resolveKey].indexOf(el.forUpdateKey) == -1) {
-			this.forKeyLineDate[resolveKey].push(el.forUpdateKey);
-		}
-	}
-	//为节点设置订阅者信息
-	if (_parentNode.forTag) {
-		if (!(_parentNode['forChild'] instanceof Array)) {
-			_parentNode['forChild'] = [];
-		}
-		_parentNode['forChild'].push(watch);
-	} else {
-		if (!(this.forEls[resolveKey] instanceof Array)) {
-			this.forEls[resolveKey] = [];
-		}
-		this.forEls[resolveKey].push(watch);
-	}
+function setFor(el, propValue) {
+	var vdom = new _vdom2.default();
+	var oldTree = vdom.resolve(el, this);
+	console.log(oldTree);
 };
 
 exports.setFor = setFor;
@@ -1599,267 +1560,13 @@ var _event = __webpack_require__(1);
 
 var _tools = __webpack_require__(0);
 
-var _vdom = __webpack_require__(6);
+var _vdom = __webpack_require__(7);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function forUpdate(key) {
-	var _this = this;
-
-	//创建文档片段
-	var forDomBackUp = document.createDocumentFragment();
-	if (key === undefined || key === '') {
-		//顶层的_v-for循环
-		Object.keys(this.forEls).forEach(function (value, index) {
-			updateFn.call(_this, _this.forEls[value]);
-		});
-
-		/*for(var i in this.forEls) {
-  	var keyObj = this.forEls[key];
-  	updateFn.call(this, this.forEls[i]);
-  }*/
-	} else {
-		var updateKeys = [];
-		//插件更新值是否存在依赖if，show，attr绑定，存在绑定更新for列表数据
-		if (!this.forItem[key] && (this.ifEls[key] || this.showEls[key] || this.attrBindings[key])) {
-			forUpdate.call(this);
-			return;
-		}
-
-		//存在key中或者key中是多层结构以及为循环的参数项，将会跳出
-		if (!this.forKeyLineDate[key] && this.forItem[key]) {
-			return;
-		}
-
-		//需要更新的主keys存储
-		if (this.forEls[key]) {
-			if (updateKeys.indexOf(key) == -1) {
-				updateKeys.push(key);
-			}
-		}
-
-		//依赖主键的更新
-		if (Array.isArray(this.forKeyLineDate[key]) && this.forKeyLineDate[key].length > 0) {
-			for (var i = 0; i < this.forKeyLineDate[key].length; i++) {
-				if (updateKeys.indexOf(this.forKeyLineDate[key][i]) == -1) {
-					updateKeys.push(this.forKeyLineDate[key][i]);
-				}
-			}
-		}
-
-		//主键依赖集合更新
-		updateKeys.forEach(function (value, index) {
-			updateFn.call(_this, _this.forEls[value]);
-		});
-	}
-
-	function updateFn(keyObj) {
-		var _this2 = this;
-
-		keyObj.forEach(function (item, index) {
-			//订阅者数据
-			var data = item.data,
-			    getKey = item.key,
-			    seize = item.seize,
-			    appendEls = item.appendEls,
-			    el = item.el;
-
-			data = _this2.expr(data, 'for');
-			el = el.childNodes[0];
-
-			//删除原有的添加的节点内容
-			for (var l = 0; l < appendEls.length; l++) {
-				appendEls[l].remove();
-			}
-
-			//子节点也是存在循环的
-			// if(el['forChild']) {
-			Object.keys(data).forEach(function (key, index) {
-				forDatadDeepCopy.apply(_this2, [getKey, data[key]]);
-				if (el['forChild']) {
-					computeFor.call(_this2, el['forChild']);
-				}
-				var cloneEl = el.cloneNode(true);
-				forDomBackUp.appendChild(cloneEl);
-				appendEls.push(cloneEl);
-				_event.setEvent.call(_this2, cloneEl, index);
-			});
-
-			/*for(var j in data) {
-   	if(data.hasOwnProperty(j)) {
-   		//for迭代出来的对象是否解耦依赖
-   		forDatadDeepCopy.apply(this, [getKey, data[j]]);
-   		computeFor.call(this, el['forChild']);
-   		var cloneEl = el.cloneNode(true);
-   		forDomBackUp.appendChild(cloneEl);
-   		appendEls.push(cloneEl);
-   		setEvent.call(this, cloneEl, j);
-   	}
-   }*/
-			/*			} else {
-   				Object.keys(data).forEach((key,index)=>{
-   					//设置下层的依赖数据流
-   					forDatadDeepCopy.apply(this, [getKey, data[key]]);
-   					let cloneEl = el.cloneNode(true);
-   					forDomBackUp.appendChild(cloneEl);
-   					appendEls.push(cloneEl);
-   					setEvent.call(this, cloneEl, index);
-   				});
-   
-   				for(var j in data) {
-   					if(data.hasOwnProperty(j)) {
-   						//设置下层的依赖数据流
-   						forDatadDeepCopy.apply(this, [getKey, data[j]]);
-   						var cloneEl = el.cloneNode(true);
-   						forDomBackUp.appendChild(cloneEl);
-   						appendEls.push(cloneEl);
-   						setEvent.call(this, cloneEl, j);
-   					}
-   				}
-   			}*/
-
-			var parentNode = seize.parentNode;
-			parentNode.insertBefore(forDomBackUp, seize);
-		});
-
-		/*for(var k = 0; k < keyObj.length; k++) {
-  	//订阅者数据
-  	var item = keyObj[k],
-  		data = this.expr(item['data'], 'for'),
-  		getKey = item['key'],
-  		seize = item['seize'],
-  		appendEls = item['appendEls'],
-  		el = item['el'].childNodes[0];
-  	//删除原有的添加的节点内容
-  	for(var l = 0; l < appendEls.length; l++) {
-  		appendEls[l].remove();
-  	}
-  			//子节点也是存在循环的
-  	if(el['forChild']) {
-  		for(var j in data) {
-  			if(data.hasOwnProperty(j)) {
-  				//设置下层的依赖数据流
-  						//for迭代出来的对象是否解耦依赖
-  				forDatadDeepCopy.apply(this, [getKey, data[j]]);
-  				computeFor.call(this, el['forChild']);
-  				var cloneEl = el.cloneNode(true);
-  				forDomBackUp.appendChild(cloneEl);
-  				appendEls.push(cloneEl);
-  				setEvent.call(this, cloneEl, j);
-  			}
-  		}
-  	} else {
-  		for(var j in data) {
-  			if(data.hasOwnProperty(j)) {
-  				//设置下层的依赖数据流
-  				forDatadDeepCopy.apply(this, [getKey, data[j]]);
-  				var cloneEl = el.cloneNode(true);
-  				forDomBackUp.appendChild(cloneEl);
-  				appendEls.push(cloneEl);
-  				setEvent.call(this, cloneEl, j);
-  			}
-  		}
-  	}
-  			var parentNode = seize.parentNode;
-  	parentNode.insertBefore(forDomBackUp, seize);
-  }*/
-	}
-}
-
-//for迭代出来的对象是否解耦依赖
-function forDatadDeepCopy(getKey, data) {
-	if (data instanceof Array || data instanceof Object) {
-		this.data[getKey] = (0, _tools.deepCopy)(data);
-	} else {
-		//如果只是字符串，数字对象，直接赋值
-		this.data[getKey] = data;
-	}
-}
-
-//递归计算for
-function computeFor(forChild, updateKeys) {
-	var _this3 = this;
-
-	//创建文档片段
-	var forDomBackUp = document.createDocumentFragment();
-
-	forChild.forEach(function (item, index) {
-		var data = item.data,
-		    getKey = item.key,
-		    seize = item.seize,
-		    appendEls = item.appendEls,
-		    el = item.el;
-
-		data = _this3.expr(data, 'for');
-		el = el.childNodes[0];
-
-		//删除原有的添加的节点内容
-		for (var l = 0; l < appendEls.length; l++) {
-			appendEls[l].remove();
-		}
-
-		//子节点也是存在循环的
-		Object.keys(data).forEach(function (key, index) {
-			forDatadDeepCopy.apply(_this3, [getKey, data[key]]);
-			if (el['forChild']) {
-				computeFor.call(_this3, el['forChild'], updateKeys);
-			}
-			var cloneEl = el.cloneNode(true);
-			forDomBackUp.appendChild(cloneEl);
-			appendEls.push(cloneEl);
-			_event.setEvent.call(_this3, cloneEl, index);
-		});
-		var parentNode = seize.parentNode;
-		parentNode.insertBefore(forDomBackUp, seize);
-	});
-
-	//[]子节点
-	/*for(var i = 0; i < forChild.length; i++) {
- 	//订阅者数据
- 	var item = forChild[i],
- 		data = this.expr(item['data'], 'for'),
- 		getKey = item['key'],
- 		seize = item['seize'],
- 		appendEls = item['appendEls'],
- 		el = item['el'].childNodes[0];
- 	//删除原有的添加的节点内容
- 	for(var l = 0; l < appendEls.length; l++) {
- 		appendEls[l].remove();
- 	}
- 
- 	//子节点也是存在循环的
- 	if(el['forChild']) {
- 		for(var j in data) {
- 			if(data.hasOwnProperty(j)) {
- 				//设置下层的依赖数据流
- 				forDatadDeepCopy.apply(this, [getKey, data[j]]);
- 				computeFor.call(this, el['forChild'], updateKeys);
- 				var cloneEl = el.cloneNode(true);
- 				forDomBackUp.appendChild(cloneEl);
- 				appendEls.push(cloneEl);
- 				setEvent.call(this, cloneEl, j);
- 			}
- 		}
- 	} else {
- 		//子节点不存在循环
- 		for(var j in data) {
- 			if(data.hasOwnProperty(j)) {
- 				//设置下层的依赖数据流
- 				forDatadDeepCopy.apply(this, [getKey, data[j]]);
- 				var cloneEl = el.cloneNode(true);
- 				forDomBackUp.appendChild(cloneEl);
- 				appendEls.push(cloneEl);
- 				setEvent.call(this, cloneEl, j);
- 			}
- 		}
- 	}
- 
- 	var parentNode = seize.parentNode;
- 	parentNode.insertBefore(forDomBackUp, seize);
- }*/
-}
+function forUpdate(keyLine) {}
 
 exports.forUpdate = forUpdate;
 
@@ -2022,7 +1729,7 @@ exports.ifUpdate = ifUpdate;
 "use strict";
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
-var _init = __webpack_require__(7);
+var _init = __webpack_require__(8);
 
 var _init2 = _interopRequireDefault(_init);
 

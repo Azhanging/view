@@ -41,12 +41,12 @@ class _ELement{
 		
 		return el; 
 	}
-	resolve(element,_this){
+	resolve(element,_this,isSet){
 		let vdom;
 		//dom节点
 		if(element.nodeType === 1){
 			//当前的ELement是否为组件
-			if(_this.components[element.tagName.toLowerCase()] && element.tagName.indexOf('-') > -1) {
+			if(_this.components[element.tagName.toLowerCase()] && element.tagName.indexOf('-') > -1 && isSet) {
 				element = component.call(_this, element);
 			}
 			vdom = {
@@ -57,18 +57,22 @@ class _ELement{
 				el:element
 			};
 			
-			//设置属性的绑定
-			setAttr.call(_this,element,vdom);
+			if(isSet){
+				//设置属性的绑定
+				setAttr.call(_this,element,vdom);
+			}
 
 			[...element.childNodes].forEach((el)=>{
 				//设置索引
 				this.id++;
-				vdom.childrens.push(this.resolve(el,_this));
+				vdom.childrens.push(this.resolve(el,_this,isSet));
 			});
 			
 		}else{
-			//设置文本节点绑定的更新
-			setDom.call(_this,element);
+			if(isSet){
+				//设置文本节点绑定的更新
+				setDom.call(_this,element);
+			}
 			//文本节点
 			vdom = {
 				textContent:element.textContent,

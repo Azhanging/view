@@ -1,14 +1,14 @@
 import Observer from './../observer';
 import method from './../method';
 import vdom from './../vdom';
-import { getEl, getKeyLink,deepCopy } from './../tools';
+import { getEl, getKeyLink, deepCopy } from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
 import { ifUpdate } from './../if';
+import { forUpdate } from './../for';
 import { watchUpdate } from './../watch';
-import { setEvent ,setChildTemplateEvent} from './../event';
-
+import { setEvent, setChildTemplateEvent } from './../event';
 
 class View {
 	constructor({
@@ -22,17 +22,17 @@ class View {
 		created = () => {},
 		ready = () => {}
 	} = options) {
-		this.$element = el; 
+		this.$element = el;
 		//设置data值
 		this.data = data;
 		//解析对象
-		if(el && typeof getEl(el) !== 'null'){
+		if(el && typeof getEl(el) !== 'null') {
 			this.el = getEl(el);
-			if(this.el.tagName == 'TEMPLATE'){
+			if(this.el.tagName == 'TEMPLATE') {
 				this.el = this.el.content.firstElementChild;
 				this.data['templateData'] = {};
 			}
-		}else{
+		} else {
 			this.el = '';
 		}
 		//实例方法	
@@ -40,7 +40,7 @@ class View {
 		//组件
 		this.components = components;
 		//模板
-//		this.isTemplate ? (this.data['templateData'] = {}) : '';
+		//		this.isTemplate ? (this.data['templateData'] = {}) : '';
 		//data监听
 		this.watch = watch;
 		//钩子函数
@@ -57,15 +57,15 @@ class View {
 	}
 	_init() {
 		//构建前钩子函数
-		this.init();	
+		this.init();
 		//配置对象
 		this.config();
 		//设置方法
 		method.call(this);
+		//创建vdom内容
+		this.vdom = new vdom().resolve(this.el, this,true);
 		//设置observe
 		new Observer(this.data, undefined, this);
-		//创建vdom内容
-		this.vdom = new vdom().resolve(this.el, this);
 		//创建存在绑定的文本节点
 		createTextNodes.call(this);
 		//新建和替换绑定的文本节点信息
@@ -75,7 +75,7 @@ class View {
 		//初始化更新
 		this.update();
 		//准备钩子函数
-		this.ready();	
+		this.ready();
 	}
 	config() {
 		this.__ob__ = {
@@ -83,38 +83,45 @@ class View {
 			attr: {},
 			show: {},
 			if: {},
-			for:{},
-			bind:[]
+			for: {},
+			bind: []
 		};
-		
+
 		this.__bind__ = {
-			textNodeLists:[],
-			tempFragmentElements:[]
+			textNodeLists: [],
+			tempFragmentElements: [],
+			forEls: {},
+			forKeyLineDate:{},
+			forItem:{}
 		}
+		//for中的对应的参数值
+		this.forItem = {};
+
 	}
 	dep(keys) {
 		let updates = [keys];
-		for(let key of this.__ob__.bind){
-			if(key.indexOf(keys+'.') != -1){
+		for(let key of this.__ob__.bind) {
+			if(key.indexOf(keys + '.') != -1) {
 				updates.push(key);
 			}
 		}
-		updates.forEach((keyLine)=>{
+		updates.forEach((keyLine) => {
 			this.update(keyLine);
 		});
 	}
-	update(keys){
+	update(keys) {
 		attrUpdate.call(this, keys);
 		showUpdate.call(this, keys);
 		ifUpdate.call(this, keys);
 		domUpdate.call(this, keys);
 		watchUpdate.call(this, keys);
+		forUpdate.call(this, keys);
 	}
 	_get(keyLink) {
 		//存在实例屬性對象
 		if(/\./g.test(keyLink)) {
 			let obj = keyLink.split('.');
-			let	getVal = this['data'];
+			let getVal = this['data'];
 			//存在值
 			if(this['data'][obj[0]]) {
 				for(let i = 0; i < obj.length; i++) {
@@ -148,16 +155,16 @@ class View {
 			//把key链重组
 			obj = objs.join('.');
 			if(this._get(obj) !== null) {
-					//设置新的值
-					if(key != undefined) {
-						this._get(obj)[lastIndex][key] = val;
-					} else {
-						this._get(obj)[lastIndex] = val;
-					}
-					//设置新的值
-					if(!(typeof val === 'string')){
-						this._get(obj)[lastIndex] = deepCopy(this._get(obj)[lastIndex]);						
-					}
+				//设置新的值
+				if(key != undefined) {
+					this._get(obj)[lastIndex][key] = val;
+				} else {
+					this._get(obj)[lastIndex] = val;
+				}
+				//设置新的值
+				if(!(typeof val === 'string')) {
+					this._get(obj)[lastIndex] = deepCopy(this._get(obj)[lastIndex]);
+				}
 			}
 		} else {
 			/*只有一个key值*/
@@ -176,8 +183,8 @@ class View {
 	}
 	expr(expr) {
 		let dataValues = getKeyLink.call(this, expr);
-		let	dataValueLen = dataValues.length;
-		let	newExpr = expr;
+		let dataValueLen = dataValues.length;
+		let newExpr = expr;
 
 		//返回的不是主key数组
 		if(!(dataValues instanceof Array)) {
@@ -213,7 +220,7 @@ class View {
 	}
 	createTemplate(vals, appendEl) {
 		//循环添加到指定的DOM节点上
-		vals.forEach((item, index)=>{
+		vals.forEach((item, index) => {
 			//设置数据流更新
 			this.data.templateData = item;
 			//复制临时节点
