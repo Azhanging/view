@@ -37,22 +37,24 @@
 			<div>{{input.val2}}</div>
 			<div>{{input.val.b}}</div>
 			<div>{{input.val.a}}</div>
-			<input type="text" _v-model="{{input.val}}" :value="{{input.val}}"/>
+			<input type="text" _v-model="{{input.val}}" :value="{{input.val}}" />
 			<div _v-for="i in {{arr}}">
-				
+				<div _v-for="n in {{arr}}">
+					{{n}}
+				</div>	
 			</div>
 		</div>
-		
+
 		<div id="tempWrap">
-			
+
 		</div>
-		
+
 		<template id="app">
 			<div>
 				{{span1.b}}
 			</div>
 		</template>
-		
+
 		<template id="temp">
 			<div :class="{{templateData.class}}" @click="event($event,1)">
 				{{templateData.data}}
@@ -69,26 +71,26 @@
 		<script id="sc" src="dist/js/vdom.js" type="text/javascript" charset="utf-8"></script>
 		<script>
 			/*var ul = {
-							tagName: "div",
-							props: {
-								id: "id1",
-								class: "class1"
-							},
-							childrens: [{
-								tagName: "a",
-								props: {
-									id: "id2",
-									class: "class2"
-								},
-								childrens: ['123',{
-									tagName:'span',
-									props:{
-										'data-id':123
-									},
-									childrens:['span']
-								}]
-							}, '123']
-						}*/
+													tagName: "div",
+													props: {
+														id: "id1",
+														class: "class1"
+													},
+													childrens: [{
+														tagName: "a",
+														props: {
+															id: "id2",
+															class: "class2"
+														},
+														childrens: ['123',{
+															tagName:'span',
+															props:{
+																'data-id':123
+															},
+															childrens:['span']
+														}]
+													}, '123']
+												}*/
 
 			let div = document.querySelector("#id1");
 			let span = document.querySelector(".active>span");
@@ -138,37 +140,12 @@
 				},
 				input: {
 					val2: 22222,
-					val:{
-						a:1,
-						b:2
+					val: {
+						a: 1,
+						b: 2
 					}
 				},
-				arr:[
-					[
-						{
-							a:[
-								1,2,3
-							]
-						},
-						{
-							a:[
-								4,5,6
-							]
-						}
-					],
-					[
-						{
-							a:[
-								7,8,9
-							]
-						},
-						{
-							a:[
-								0,1,2
-							]
-						}
-					]
-				]
+				arr: [1,2,3,4]
 			}
 
 			let newDiv = document.createElement('div');
@@ -194,48 +171,50 @@
 					event: function(event, arg) {
 						console.log(event, arg);
 					}
+				},ready:function(){
+					this.data.n = 1;
 				}
 			});
-			
+
 			var v1 = new View({
-				el:"temp",
-				data:{
-					arr:[1,2,3]
+				el: "temp",
+				data: {
+					arr: [1, 2, 3]
 				},
-				methods:{
+				methods: {
 					event: function(event, arg) {
 						console.log(event, arg);
 					}
 				}
 			});
-			
+
 			var data1 = [{
-				data:1,
-				class:'class1',
-				arr:[
-					1,2,3,4
+				data: 1,
+				class: 'class1',
+				arr: [
+					1, 2, 3, 4
 				]
-			},{
-				data:2,
-				class:'class2',
-				arr:[
-					1,2,3,4
+			}, {
+				data: 2,
+				class: 'class2',
+				arr: [
+					1, 2, 3, 4
 				]
-			},{
-				data:3,
-				class:'class3',
-				arr:[
-					1,2,3,4
+			}, {
+				data: 3,
+				class: 'class3',
+				arr: [
+					1, 2, 3, 4
 				]
-			},{
-				data:4,
-				class:'class4',
-				arr:[
-					1,2,3,4
+			}, {
+				data: 4,
+				class: 'class4',
+				arr: [
+					1, 2, 3, 4
 				]
 			}];
-			
-//			v1.createTemplate(data1,'tempWrap');
+
+			//			v1.createTemplate(data1,'tempWrap');
 
 			console.log(v);
 			console.log(v1);

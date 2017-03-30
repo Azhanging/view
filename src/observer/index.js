@@ -1,6 +1,6 @@
 //观察者
-class Observer{
-	constructor(data, keyLine,_this) {
+class Observer {
+	constructor(data, keyLine, _this) {
 		this.element = data;
 		this.view = _this;
 		this.bind(keyLine);
@@ -14,9 +14,16 @@ class Observer{
 
 				//查看对象是否为顶层对象，然后保存主键
 				if(this.isObject(this.element[key])) {
-					new Observer(this.element[key], keyLine,_this.view);
+					new Observer(this.element[key], keyLine, _this.view);
+					Object.defineProperties(this.element[key], {
+						__keyLine__: {
+							enumerable: false,
+							configurable: false,
+							value: keyLine
+						}
+					});
 				}
-				
+
 				//闭包内值代理
 				var val = this.element[key];
 
@@ -32,10 +39,10 @@ class Observer{
 							return;
 						}
 						//设置对象或数组对象
-						_this.setVal(newVal,keyLine,_this.view);
+						_this.setVal(newVal, keyLine, _this.view);
 						//设置新值
 						val = newVal;
-						
+
 						_this.view.dep(keyLine);
 					}
 				});

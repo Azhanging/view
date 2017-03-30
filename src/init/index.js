@@ -63,7 +63,7 @@ class View {
 		//设置方法
 		method.call(this);
 		//创建vdom内容
-		this.vdom = new vdom().resolve(this.el, this,true);
+		this.vdom = new vdom().resolve(this.el, this);
 		//设置observe
 		new Observer(this.data, undefined, this);
 		//创建存在绑定的文本节点

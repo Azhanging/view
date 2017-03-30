@@ -39,14 +39,14 @@ function setAttr(element, vdom) {
 			propName = propName.replace('_v-', '');
 			//获取到主Key的数组
 			switch(propName) {
+				case 'for':
+					setFor.call(this, element, propValue);
+					break;
 				case 'show':
 					setShow.call(this, element, propValue);
 					break;
 				case 'if':
 					setIf.call(this, element, propName, propValue);
-					break;
-				case 'for':
-					setFor.call(this, element, propValue);
 					break;
 				case 'model':
 					setModel.call(this, element, propValue);

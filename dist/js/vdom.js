@@ -308,160 +308,6 @@ exports.setChildTemplateEvent = setChildTemplateEvent;
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _setAttr = __webpack_require__(9);
-
-Object.defineProperty(exports, 'setAttr', {
-  enumerable: true,
-  get: function get() {
-    return _setAttr.setAttr;
-  }
-});
-
-var _update = __webpack_require__(10);
-
-Object.defineProperty(exports, 'attrUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.attrUpdate;
-  }
-});
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _update = __webpack_require__(13);
-
-Object.defineProperty(exports, 'domUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.domUpdate;
-  }
-});
-
-var _setDom = __webpack_require__(12);
-
-Object.keys(_setDom).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _setDom[key];
-    }
-  });
-});
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _setFor = __webpack_require__(14);
-
-Object.defineProperty(exports, 'setFor', {
-  enumerable: true,
-  get: function get() {
-    return _setFor.setFor;
-  }
-});
-
-var _update = __webpack_require__(15);
-
-Object.defineProperty(exports, 'forUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.forUpdate;
-  }
-});
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _setIf = __webpack_require__(16);
-
-Object.defineProperty(exports, 'setIf', {
-  enumerable: true,
-  get: function get() {
-    return _setIf.setIf;
-  }
-});
-
-var _update = __webpack_require__(17);
-
-Object.defineProperty(exports, 'ifUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.ifUpdate;
-  }
-});
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _setShow = __webpack_require__(22);
-
-Object.keys(_setShow).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _setShow[key];
-    }
-  });
-});
-
-var _update = __webpack_require__(23);
-
-Object.keys(_update).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _update[key];
-    }
-  });
-});
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
@@ -469,21 +315,19 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _dom = __webpack_require__(3);
+var _dom = __webpack_require__(4);
 
 var _component = __webpack_require__(11);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _attr = __webpack_require__(2);
+var _attr = __webpack_require__(3);
 
 var _event = __webpack_require__(1);
 
 var _tools = __webpack_require__(0);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -575,14 +419,12 @@ var _ELement = function () {
 		}
 	}, {
 		key: 'resolve',
-		value: function resolve(element, _this, isSet) {
-			var _this2 = this;
-
+		value: function resolve(element, _this) {
 			var vdom = void 0;
 			//dom节点
 			if (element.nodeType === 1) {
 				//当前的ELement是否为组件
-				if (_this.components[element.tagName.toLowerCase()] && element.tagName.indexOf('-') > -1 && isSet) {
+				if (_this.components[element.tagName.toLowerCase()] && element.tagName.indexOf('-') > -1) {
 					element = _component2.default.call(_this, element);
 				}
 				vdom = {
@@ -592,22 +434,43 @@ var _ELement = function () {
 					index: this.id,
 					el: element
 				};
+				//设置属性的绑定
+				_attr.setAttr.call(_this, element, vdom);
 
-				if (isSet) {
-					//设置属性的绑定
-					_attr.setAttr.call(_this, element, vdom);
+				var _iteratorNormalCompletion3 = true;
+				var _didIteratorError3 = false;
+				var _iteratorError3 = undefined;
+
+				try {
+					for (var _iterator3 = element.childNodes[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+						var el = _step3.value;
+
+						this.id++;
+						vdom.childrens.push(this.resolve(el, _this));
+					}
+
+					/*[...element.childNodes].forEach((el) => {
+     	//设置索引
+     	this.id++;
+     	vdom.childrens.push(this.resolve(el, _this));
+     });*/
+				} catch (err) {
+					_didIteratorError3 = true;
+					_iteratorError3 = err;
+				} finally {
+					try {
+						if (!_iteratorNormalCompletion3 && _iterator3.return) {
+							_iterator3.return();
+						}
+					} finally {
+						if (_didIteratorError3) {
+							throw _iteratorError3;
+						}
+					}
 				}
-
-				[].concat(_toConsumableArray(element.childNodes)).forEach(function (el) {
-					//设置索引
-					_this2.id++;
-					vdom.childrens.push(_this2.resolve(el, _this, isSet));
-				});
 			} else {
-				if (isSet) {
-					//设置文本节点绑定的更新
-					_dom.setDom.call(_this, element);
-				}
+				//设置文本节点绑定的更新
+				_dom.setDom.call(_this, element);
 				//文本节点
 				vdom = {
 					textContent: element.textContent,
@@ -665,15 +528,15 @@ var _ELement = function () {
 		key: 'diffProps',
 		value: function diffProps(oldTree, newTree) {
 			var props = {};
-			var _iteratorNormalCompletion3 = true;
-			var _didIteratorError3 = false;
-			var _iteratorError3 = undefined;
+			var _iteratorNormalCompletion4 = true;
+			var _didIteratorError4 = false;
+			var _iteratorError4 = undefined;
 
 			try {
-				for (var _iterator3 = Object.entries(newTree.props)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-					var _step3$value = _slicedToArray(_step3.value, 2),
-					    key = _step3$value[0],
-					    value = _step3$value[1];
+				for (var _iterator4 = Object.entries(newTree.props)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+					var _step4$value = _slicedToArray(_step4.value, 2),
+					    key = _step4$value[0],
+					    value = _step4$value[1];
 
 					//如果当前的属性存在，值不相同，存值
 					if (Reflect.has(oldTree.props, key) && !(oldTree.props[key] === value)) {
@@ -684,16 +547,16 @@ var _ELement = function () {
 				}
 				//添加修改过属性内容
 			} catch (err) {
-				_didIteratorError3 = true;
-				_iteratorError3 = err;
+				_didIteratorError4 = true;
+				_iteratorError4 = err;
 			} finally {
 				try {
-					if (!_iteratorNormalCompletion3 && _iterator3.return) {
-						_iterator3.return();
+					if (!_iteratorNormalCompletion4 && _iterator4.return) {
+						_iterator4.return();
 					}
 				} finally {
-					if (_didIteratorError3) {
-						throw _iteratorError3;
+					if (_didIteratorError4) {
+						throw _iteratorError4;
 					}
 				}
 			}
@@ -723,10 +586,10 @@ var _ELement = function () {
 	}, {
 		key: 'diffChildNode',
 		value: function diffChildNode(oldTree, newTree, patched) {
-			var _this3 = this;
+			var _this2 = this;
 
 			oldTree.childrens.forEach(function (childNode, _index) {
-				_this3.diffTag(childNode, newTree.childrens[_index], patched);
+				_this2.diffTag(childNode, newTree.childrens[_index], patched);
 			});
 		}
 	}]);
@@ -735,6 +598,160 @@ var _ELement = function () {
 }();
 
 exports.default = _ELement;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setAttr = __webpack_require__(9);
+
+Object.defineProperty(exports, 'setAttr', {
+  enumerable: true,
+  get: function get() {
+    return _setAttr.setAttr;
+  }
+});
+
+var _update = __webpack_require__(10);
+
+Object.defineProperty(exports, 'attrUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.attrUpdate;
+  }
+});
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _update = __webpack_require__(13);
+
+Object.defineProperty(exports, 'domUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.domUpdate;
+  }
+});
+
+var _setDom = __webpack_require__(12);
+
+Object.keys(_setDom).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _setDom[key];
+    }
+  });
+});
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setFor = __webpack_require__(14);
+
+Object.defineProperty(exports, 'setFor', {
+  enumerable: true,
+  get: function get() {
+    return _setFor.setFor;
+  }
+});
+
+var _update = __webpack_require__(15);
+
+Object.defineProperty(exports, 'forUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.forUpdate;
+  }
+});
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setIf = __webpack_require__(16);
+
+Object.defineProperty(exports, 'setIf', {
+  enumerable: true,
+  get: function get() {
+    return _setIf.setIf;
+  }
+});
+
+var _update = __webpack_require__(17);
+
+Object.defineProperty(exports, 'ifUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.ifUpdate;
+  }
+});
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setShow = __webpack_require__(22);
+
+Object.keys(_setShow).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _setShow[key];
+    }
+  });
+});
+
+var _update = __webpack_require__(23);
+
+Object.keys(_update).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _update[key];
+    }
+  });
+});
 
 /***/ }),
 /* 8 */
@@ -759,21 +776,21 @@ var _method = __webpack_require__(19);
 
 var _method2 = _interopRequireDefault(_method);
 
-var _vdom = __webpack_require__(7);
+var _vdom = __webpack_require__(2);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
 var _tools = __webpack_require__(0);
 
-var _dom = __webpack_require__(3);
+var _dom = __webpack_require__(4);
 
-var _attr = __webpack_require__(2);
+var _attr = __webpack_require__(3);
 
-var _show = __webpack_require__(6);
+var _show = __webpack_require__(7);
 
-var _if = __webpack_require__(5);
+var _if = __webpack_require__(6);
 
-var _for = __webpack_require__(4);
+var _for = __webpack_require__(5);
 
 var _watch = __webpack_require__(24);
 
@@ -851,7 +868,7 @@ var View = function () {
 			//设置方法
 			_method2.default.call(this);
 			//创建vdom内容
-			this.vdom = new _vdom2.default().resolve(this.el, this, true);
+			this.vdom = new _vdom2.default().resolve(this.el, this);
 			//设置observe
 			new _observer2.default(this.data, undefined, this);
 			//创建存在绑定的文本节点
@@ -1124,11 +1141,11 @@ exports.setAttr = undefined;
 
 var _tools = __webpack_require__(0);
 
-var _show = __webpack_require__(6);
+var _show = __webpack_require__(7);
 
-var _if = __webpack_require__(5);
+var _if = __webpack_require__(6);
 
-var _for = __webpack_require__(4);
+var _for = __webpack_require__(5);
 
 var _model = __webpack_require__(20);
 
@@ -1169,14 +1186,14 @@ function setAttr(element, vdom) {
 			propName = propName.replace('_v-', '');
 			//获取到主Key的数组
 			switch (propName) {
+				case 'for':
+					_for.setFor.call(_this, element, propValue);
+					break;
 				case 'show':
 					_show.setShow.call(_this, element, propValue);
 					break;
 				case 'if':
 					_if.setIf.call(_this, element, propName, propValue);
-					break;
-				case 'for':
-					_for.setFor.call(_this, element, propValue);
 					break;
 				case 'model':
 					_model.setModel.call(_this, element, propValue);
@@ -1517,13 +1534,8 @@ exports.domUpdate = domUpdate;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.setFor = undefined;
 
-var _vdom = __webpack_require__(7);
-
-var _vdom2 = _interopRequireDefault(_vdom);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 //一直往上找for父节点中是否存在for
 function findParentForUpdateKey(parent) {
@@ -1537,9 +1549,25 @@ function findParentForUpdateKey(parent) {
 }
 
 function setFor(el, propValue) {
-	var vdom = new _vdom2.default();
-	var oldTree = vdom.resolve(el, this);
-	console.log(oldTree);
+	var _propValue$split = propValue.split(' in '),
+	    _propValue$split2 = _slicedToArray(_propValue$split, 2),
+	    forKey = _propValue$split2[0],
+	    forVal = _propValue$split2[1];
+
+	var getForVal = this.expr(forVal, 'for');
+	var seize = document.createTextNode('');
+
+	this.data[forKey] = {};
+
+	el.parentNode.insertBefore(seize, el);
+	el.removeAttribute('_v-for');
+
+	Object.keys(getForVal).forEach(function (i) {
+		var cloneNode = el.cloneNode(true);
+		seize.parentNode.insertBefore(cloneNode, seize.nextSibling);
+	});
+
+	el.remove();
 };
 
 exports.setFor = setFor;
@@ -1560,7 +1588,7 @@ var _event = __webpack_require__(1);
 
 var _tools = __webpack_require__(0);
 
-var _vdom = __webpack_require__(7);
+var _vdom = __webpack_require__(2);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
@@ -1847,6 +1875,13 @@ var Observer = function () {
 					//查看对象是否为顶层对象，然后保存主键
 					if (_this2.isObject(_this2.element[key])) {
 						new Observer(_this2.element[key], keyLine, _this.view);
+						Object.defineProperties(_this2.element[key], {
+							__keyLine__: {
+								enumerable: false,
+								configurable: false,
+								value: keyLine
+							}
+						});
 					}
 
 					//闭包内值代理
