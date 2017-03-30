@@ -6,4 +6,8 @@ function forUpdate(keyLine) {
 	
 }
 
-export {forUpdate};
+function forTools(){
+	
+}
+
+export {forUpdate,forTools};

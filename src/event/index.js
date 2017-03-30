@@ -6,11 +6,12 @@ function setEvent(el) {
 		attrName,
 		attrVal;
 
-	[...el.attributes].forEach((item, index) => {
-		attrName = item.name;
-		attrVal = item.textContent;
-		let filterAttrVal = attrVal.replace(/\(+\S+\)+/g, '');
+	Object.keys(el.attributes).forEach((key, index) => {
+		let attributes = el.attributes;
+		attrName = attributes[key].name;
+		attrVal = attributes[key].textContent;
 		if(/@.?/.test(attrName)) {
+			let filterAttrVal = attrVal.replace(/\(+\S+\)+/g, '');
 			attrName = attrName.replace('@', '');
 			//存在这个方法
 			if(this[filterAttrVal]) {
@@ -64,9 +65,9 @@ function setForEvent(el, index) {
 		//绑定循环中的事件
 		setEvent.call(this, el);
 		if(childElsLen > 0) {
-			[...childEls].forEach((item, index) => {
-				if(item.nodeType == 1) {
-					setEvent.call(this, item);
+			Object.keys(childEls).forEach((index) => {
+				if(childEls[index].nodeType == 1) {
+					setEvent.call(this, childEls[index]);
 				}
 			});
 		}
@@ -79,11 +80,9 @@ function setForEvent(el, index) {
  */
 
 function setChildTemplateEvent(el) {
-	var childEls = el.childNodes,
-		childElsLen = childEls.length,
-		i = 0;
-		
-	[...el.childNodes].forEach((el,index)=>{
+	let childEls = el.childNodes;
+	Object.keys(childEls).forEach((index)=>{
+		let el = childEls[index]
 		if(el.nodeType == 1) {
 			if(el.childNodes.length > 0) {
 				setChildTemplateEvent.call(this, el);

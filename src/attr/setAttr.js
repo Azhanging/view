@@ -6,7 +6,7 @@ import { setFor } from './../for';
 import { setModel } from './../model';
 /*查找element对象中的属性*/
 function setAttr(element, vdom) {
-	for(let _index in Object.keys(element.attributes)) {
+	for(let _index = 0;_index<element.attributes.length;_index++) {
 		let prop = element.attributes,
 			propName = prop[_index].name,
 			propValue = prop[_index].value;
@@ -40,7 +40,8 @@ function setAttr(element, vdom) {
 			//获取到主Key的数组
 			switch(propName) {
 				case 'for':
-					setFor.call(this, element, propValue);
+					_index-=1;
+					setFor.call(this, element, propValue,_index);
 					break;
 				case 'show':
 					setShow.call(this, element, propValue);
@@ -55,7 +56,7 @@ function setAttr(element, vdom) {
 			}
 		}
 		if(/@.?/.test(propName)) {
-			let filterpropValue = propValue.replace(/\(+\S+\)+/g, '')
+			let filterpropValue = propValue.replace(/\(+\S+\)+/g, '');
 			propName = propName.replace('@', '');
 			//存在这个方法
 			if(this[filterpropValue]) {
@@ -76,7 +77,6 @@ function setAttr(element, vdom) {
 								return this.expr(item).toString();
 							}
 						});
-
 						//运行绑定的event
 						this[filterpropValue].apply(this, filterArgs);
 					}, false);

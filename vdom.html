@@ -38,10 +38,13 @@
 			<div>{{input.val.b}}</div>
 			<div>{{input.val.a}}</div>
 			<input type="text" _v-model="{{input.val}}" :value="{{input.val}}" />
-			<div _v-for="i in {{arr}}">
-				<div _v-for="n in {{arr}}">
-					{{n}}
-				</div>	
+			<div>{{arr}}</div>
+			<div _v-for="i in {{arr}}" _v-if="{{isShow}}">
+				<div _v-for="m in {{i.a}}">
+					<span _v-for="n in {{m}}">
+						{{n}}
+					</span>
+				</div>
 			</div>
 		</div>
 
@@ -145,7 +148,29 @@
 						b: 2
 					}
 				},
-				arr: [1,2,3,4]
+				arr: [
+					{
+						a:[
+							{
+								b:1
+							}
+						]
+					},
+					{
+						a:[
+							{
+								b:2
+							}
+						]
+					},
+					{
+						a:[
+							{
+								b:4
+							}
+						]
+					}
+				]
 			}
 
 			let newDiv = document.createElement('div');

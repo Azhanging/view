@@ -62,10 +62,10 @@ class View {
 		this.config();
 		//设置方法
 		method.call(this);
-		//创建vdom内容
-		this.vdom = new vdom().resolve(this.el, this);
 		//设置observe
 		new Observer(this.data, undefined, this);
+		//创建vdom内容
+		this.vdom = new vdom().resolve(this.el, this);
 		//创建存在绑定的文本节点
 		createTextNodes.call(this);
 		//新建和替换绑定的文本节点信息
@@ -89,14 +89,8 @@ class View {
 
 		this.__bind__ = {
 			textNodeLists: [],
-			tempFragmentElements: [],
-			forEls: {},
-			forKeyLineDate:{},
-			forItem:{}
+			tempFragmentElements: []
 		}
-		//for中的对应的参数值
-		this.forItem = {};
-
 	}
 	dep(keys) {
 		let updates = [keys];
