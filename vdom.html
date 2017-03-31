@@ -39,8 +39,8 @@
 			<div>{{input.val.a}}</div>
 			<input type="text" _v-model="{{input.val}}" :value="{{input.val}}" />
 			<div>{{arr.1.a}}</div>
-			<div _v-for="i in {{arr}}" _v-if="{{isShow}}" >
-				<div _v-for="m in {{i.a}}">
+			<div _v-for="i in {{arr}}" _v-if="{{isShow}}">
+				<div _v-for="m in {{i.a}}" _v-if="{{i.a}}">
 					{{m}}
 				</div>
 			</div>
@@ -72,26 +72,26 @@
 		<script id="sc" src="dist/js/vdom.js" type="text/javascript" charset="utf-8"></script>
 		<script>
 			/*var ul = {
-													tagName: "div",
-													props: {
-														id: "id1",
-														class: "class1"
-													},
-													childrens: [{
-														tagName: "a",
-														props: {
-															id: "id2",
-															class: "class2"
-														},
-														childrens: ['123',{
-															tagName:'span',
-															props:{
-																'data-id':123
-															},
-															childrens:['span']
-														}]
-													}, '123']
-												}*/
+																tagName: "div",
+																props: {
+																	id: "id1",
+																	class: "class1"
+																},
+																childrens: [{
+																	tagName: "a",
+																	props: {
+																		id: "id2",
+																		class: "class2"
+																	},
+																	childrens: ['123',{
+																		tagName:'span',
+																		props:{
+																			'data-id':123
+																		},
+																		childrens:['span']
+																	}]
+																}, '123']
+															}*/
 
 			let div = document.querySelector("#id1");
 			let span = document.querySelector(".active>span");
@@ -114,16 +114,15 @@
 
 			//observer
 			var newArr = [{
-				a:[1,2,3]
-			},{
-				a:[4,5,6]
-			},{
-				a:[7,8,9]
-			},{
-				a:[10,11,12]
+				a: [1, 2, 3]
+			}, {
+				a: [4, 5, 6]
+			}, {
+				a: [7, 8, 9]
+			}, {
+				a: [10, 11, 12]
 			}]
-			
-			
+
 			let data = {
 				span: {
 					a: 'aaaaaa'
@@ -183,8 +182,9 @@
 					event: function(event, arg) {
 						console.log(event, arg);
 					}
-				},ready:function(){
-					this.data.n = 1;
+				},
+				ready: function() {
+					this.data.arr[1].a = [123, 456, 789, 123123123, 123123, 123123123]
 				}
 			});
 

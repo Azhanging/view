@@ -1,9 +1,5 @@
 import {disassembly,setBind} from './../tools';
 
-//let textNodes = []; //拆分的文本节点内容
-let textNodeLists = []; //拆分的文本节点内容集合
-let tempFragmentElements = []; //插入拆分的文本节点内容
-
 function setDom(element) {
 	let textNodes = disassembly(element.textContent);
 	this.__bind__.textNodeLists.push([textNodes, element]);
@@ -15,6 +11,7 @@ function createTextNodes() {
 		let [textNodes, el] = item;
 		createTextNodeElements.call(this, textNodes, el);
 	});
+	this.__bind__.textNodeLists = [];
 }
 
 //创建文本节点对象,推送到临时的存放点
@@ -65,6 +62,7 @@ function replaceTextNode() {
 		let [parentNode, fragmentNode, oldTextNode] = item;
 		parentNode.replaceChild(fragmentNode, oldTextNode);
 	});
+	this.__bind__.tempFragmentElements = [];
 }
 
 export {

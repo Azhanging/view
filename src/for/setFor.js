@@ -11,8 +11,8 @@ function setFor(el, propValue,propIndex) {
 		//setBind.call(this,filterForVal);
 	}
 	el.parentNode.insertBefore(seize, el.nextSibling);
-	el.removeAttribute('_v-for');
-
+	el.removeAttribute('_v-for');	
+	
 	Object.keys(getForVal).forEach((key,index) => {
 		let cloneNode = el.cloneNode(true);
 		cloneNode.__for__ = {
@@ -24,6 +24,7 @@ function setFor(el, propValue,propIndex) {
 		this.__ob__.for[filterForVal].push(cloneNode);
 		seize.parentNode.insertBefore(cloneNode, seize);
 		replateForKey.call(this,cloneNode,forKey,getForVal.__keyLine__+'.'+key);
+		cloneNode.__html__ = cloneNode.outerHTML;
 	});
 	let oldElSeize = document.createTextNode('');
 	el.parentNode.replaceChild(oldElSeize, el);

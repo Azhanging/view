@@ -113,12 +113,12 @@ class View {
 		});
 	}
 	update(keys) {
+		watchUpdate.call(this, keys);
 		attrUpdate.call(this, keys);
 		showUpdate.call(this, keys);
 		ifUpdate.call(this, keys);
-		domUpdate.call(this, keys);
-		watchUpdate.call(this, keys);
 		forUpdate.call(this, keys);
+		domUpdate.call(this, keys);
 	}
 	_get(keyLink) {
 		//存在实例屬性對象
