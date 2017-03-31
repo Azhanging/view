@@ -25,7 +25,8 @@ class Observer {
 				}
 
 				//闭包内值代理
-				var val = this.element[key];
+				let val = this.element[key];
+				let view = _this.view;
 
 				Object.defineProperty(this.element, key, {
 					enumerable: true,
@@ -39,11 +40,11 @@ class Observer {
 							return;
 						}
 						//设置对象或数组对象
-						_this.setVal(newVal, keyLine, _this.view);
+						_this.setVal(newVal, keyLine, view);
 						//设置新值
 						val = newVal;
-
-						_this.view.dep(keyLine);
+						//更新
+						view.dep(keyLine);
 					}
 				});
 			});
@@ -54,7 +55,7 @@ class Observer {
 	}
 	setVal(data, keyLine) {
 		if(this.isObject(data)) {
-			new Observer(data, keyLine);
+			new Observer(data, keyLine,this.view);
 		}
 	}
 }

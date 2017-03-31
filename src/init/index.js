@@ -93,7 +93,16 @@ class View {
 		}
 	}
 	dep(keys) {
-		let updates = [keys];
+		let updates = [];
+		//设置当前链上一级依赖
+		if(keys.indexOf('.') != -1){
+			let newKeys = keys.split('.');
+			newKeys.pop();
+			updates.push(newKeys.join('.'));
+		}
+		//当前的数据依赖
+		updates.push(keys);
+		//设置当前链下面的所有依赖数据
 		for(let key of this.__ob__.bind) {
 			if(key.indexOf(keys + '.') != -1) {
 				updates.push(key);
