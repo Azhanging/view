@@ -43,8 +43,6 @@ function setFor(el, propValue, propIndex) {
 
 	//如果为一个空数组数据
 	if(this.__ob__.for[filterForVal].length === 0) {
-		
-		
 		let cloneNode = el.cloneNode(true);	
 		cloneNode.__for__ = {
 			forKey: 0,
@@ -58,16 +56,20 @@ function setFor(el, propValue, propIndex) {
 		forSeize.__seize__ = cloneNode;
 		let parentNode = seize.parentNode;
 		this.__ob__.for[filterForVal].push(cloneNode);
-		
 		//替换空数据节点
 		parentNode.insertBefore(cloneNode, seize);
-		
-		replateForKey.call(this, cloneNode, forKey, getForVal.__keyLine__ + '.' + 0);
+		//初始是空数组还是字符串类型，创建数据链的字符串结构
+		if(getForVal.__keyLine__){
+			replateForKey.call(this, cloneNode, forKey, getForVal.__keyLine__ + '.' + 0);
+		}else{
+			replateForKey.call(this, cloneNode, forKey, filterForVal + '.' + 0);
+		}
 		cloneNode.__html__ = cloneNode.outerHTML;
 		
 		//如果当前的元素是第一个，存储下面的兄弟节点
 		cloneNode.__forElement__ = [cloneNode];
 	}
+	
 	el.parentNode.replaceChild(oldElSeize, el);
 };
 	
@@ -103,7 +105,7 @@ function replateForKey(element, forKey, keyLine) {
 	let attrList = element.attributes;
 	
 	Object.keys(attrList).forEach((index) => {
-		if(/^_v-|^@/.test(attrList[index].name)) {
+		if(/^_v-/.test(attrList[index].name)) {
 			let attrValue = attrList[index].value;
 			if(REGEXP_TYPE_1.test(attrValue)) {
 				element.setAttribute(attrList[index].name, attrValue.replace(REGEXP_TYPE_1, '{{' + keyLine + RegExp.$1 + '}}'));

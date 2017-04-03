@@ -69,7 +69,7 @@ function setAttr(element, vdom) {
 						let filterArgs = args.map((item, index) => {
 							//如果传入的对象是$index,获取当前父级中所在的索引
 							if(item === '$index') {
-								return getIndex.call(this, el);
+								return element.$index;
 							} else if(item === '$event') {
 								return event;
 							} else {

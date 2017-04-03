@@ -9,7 +9,7 @@
 			<div _v-for="i in {{arr}}" style="display:none" _v-show="{{isShow}}">
 				<h3>{{i.b}}</h3>
 				<ul>
-					<li _v-for="m in {{i.a}}" _v-show="{{i.isShow}}" :class="{{i.class}}">
+					<li _v-for="m in {{i.a}}" _v-show="{{i.isShow}}" :class="{{i.class}}"  @click="alert($event,$index)">
 						{{m}}-{{mid}}
 					</li>
 				</ul>
@@ -34,7 +34,7 @@
 							class:'class2'
 						}
 						,{
-							a:[7,8,9],
+							a:'',
 							b:'这是2',
 							isShow:true,
 							class:'class3'
@@ -45,6 +45,16 @@
 				},
 				ready:function(){
 					this.data.isShow = true;
+				},
+				watch:{
+					'arr.0.a':function(newVal){
+						this.alert(newVal,1);
+					}
+				},
+				methods:{
+					alert:function(event,index){
+						console.log(event,index);
+					}
 				}
 			})
 		</script>
