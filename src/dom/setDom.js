@@ -1,8 +1,11 @@
 import {disassembly,setBind} from './../tools';
 
 function setDom(element) {
-	let textNodes = disassembly(element.textContent);
-	this.__bind__.textNodeLists.push([textNodes, element]);
+	//非空的节点才进入过滤赛选
+	if(element.textContent !== ''){
+		let textNodes = disassembly(element.textContent);
+		this.__bind__.textNodeLists.push([textNodes, element]);
+	}
 }
 
 //创建文本节点单独循环执行
@@ -36,7 +39,7 @@ function createTextNodeElements(textNodes, el) {
 			//重写绑定链
 			textNodes[i] = textNodes[i].replace(templateFilters, '').replace(/ /g, '');
 		}
-		if(textNodes[i] !== "") {
+		if(textNodes[i].trim() !== "") {
 			//查看是否为数据绑定
 			let textNode = document.createTextNode(textNodes[i]);
 			if(/\{\{\S+\}\}/.test(textNodes[i]) == true) {

@@ -6,7 +6,7 @@ import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
 import { ifUpdate } from './../if';
-import { forUpdate } from './../for';
+import { forUpdate ,testForNullArray } from './../for';
 import { watchUpdate } from './../watch';
 import { setEvent, setChildTemplateEvent } from './../event';
 
@@ -70,6 +70,8 @@ class View {
 		createTextNodes.call(this);
 		//新建和替换绑定的文本节点信息
 		replaceTextNode.call(this);
+		//检查当前的for中空数组的节点是否显示的，显示的隐藏它
+		testForNullArray.call(this);
 		//创建钩子函数
 		this.created();
 		//初始化更新

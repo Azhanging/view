@@ -40,9 +40,12 @@
 			<input type="text" _v-model="{{input.val}}" :value="{{input.val}}" />
 			<div>{{arr.1.a}}</div>
 			<div _v-for="i in {{arr}}" _v-if="{{isShow}}">
-				<div _v-for="m in {{i.a}}" _v-if="{{i.a}}">
+				<div _v-for="m in {{i.a}}">
 					{{m}}
 				</div>
+			</div>
+			<div _v-for="i in {{arr1}}">
+				{{i}}-{{isShow}}
 			</div>
 		</div>
 
@@ -156,7 +159,8 @@
 						b: 2
 					}
 				},
-				arr: newArr
+				arr: newArr,
+				arr1:[]
 			}
 
 			let newDiv = document.createElement('div');
@@ -184,7 +188,11 @@
 					}
 				},
 				ready: function() {
-					this.data.arr[1].a = [123, 456, 789, 123123123, 123123, 123123123]
+					/*this.data.arr[1].a = [123, 456, 789, 123123123, 123123, 123123123]
+					this.data.arr[0].a = [4,7,8,9];*/
+					this.data.arr1 = [1,2,3,4,5,6,7,8,9,0];
+					this.data.arr1 = [1,2,3,4,5];
+					this.data.arr1 = [1,2,3,4,5,6,7,8];
 				}
 			});
 

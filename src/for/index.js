@@ -1,2 +1,2 @@
-export {setFor} from './setFor';
+export * from './setFor';
 export {forUpdate} from './update';

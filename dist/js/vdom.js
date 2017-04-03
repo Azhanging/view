@@ -85,21 +85,25 @@ function getEl(id) {
 
 //拆分数据
 function disassembly(text) {
-	var textNodes = [];
-	//把文本节点拆开,只存在文本
-	var textNode = text.replace(/\{\{.*?\}\}/g, '||data||');
-	//把文本data提取
-	var dataNodes = text.match(/(\{\{.*?\}\})/g);
-	//根据||去划分data的字节占位转化为数组
-	textNodes = textNode.split('||');
-	//把data节点位置推送到节点数组当中
-	for (var j = 0; j < textNodes.length; j++) {
-		var index = textNodes.indexOf('data');
-		if (index !== -1) {
-			textNodes[index] = dataNodes.shift();
+	if (text !== '') {
+		var textNodes = [];
+		//把文本节点拆开,只存在文本
+		var textNode = text.replace(/\{\{.*?\}\}/g, '||data||');
+		//把文本data提取
+		var dataNodes = text.match(/(\{\{.*?\}\})/g);
+		//根据||去划分data的字节占位转化为数组
+		textNodes = textNode.split('||');
+		//把data节点位置推送到节点数组当中
+		for (var j = 0; j < textNodes.length; j++) {
+			var index = textNodes.indexOf('data');
+			if (index !== -1) {
+				textNodes[index] = dataNodes.shift();
+			}
 		}
+		return textNodes;
+	} else {
+		return [];
 	}
-	return textNodes;
 }
 
 //获取key数据链
@@ -193,35 +197,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setAttr = __webpack_require__(9);
-
-Object.defineProperty(exports, 'setAttr', {
-  enumerable: true,
-  get: function get() {
-    return _setAttr.setAttr;
-  }
-});
-
-var _update = __webpack_require__(10);
-
-Object.defineProperty(exports, 'attrUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.attrUpdate;
-  }
-});
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
 var _update = __webpack_require__(13);
 
 Object.defineProperty(exports, 'domUpdate', {
@@ -241,6 +216,35 @@ Object.keys(_setDom).forEach(function (key) {
       return _setDom[key];
     }
   });
+});
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setAttr = __webpack_require__(9);
+
+Object.defineProperty(exports, 'setAttr', {
+  enumerable: true,
+  get: function get() {
+    return _setAttr.setAttr;
+  }
+});
+
+var _update = __webpack_require__(10);
+
+Object.defineProperty(exports, 'attrUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.attrUpdate;
+  }
 });
 
 /***/ }),
@@ -371,11 +375,14 @@ Object.defineProperty(exports, "__esModule", {
 
 var _setFor = __webpack_require__(14);
 
-Object.defineProperty(exports, 'setFor', {
-  enumerable: true,
-  get: function get() {
-    return _setFor.setFor;
-  }
+Object.keys(_setFor).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _setFor[key];
+    }
+  });
 });
 
 var _update = __webpack_require__(15);
@@ -466,13 +473,13 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _dom = __webpack_require__(2);
+var _dom = __webpack_require__(1);
 
 var _component = __webpack_require__(11);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _attr = __webpack_require__(1);
+var _attr = __webpack_require__(2);
 
 var _event = __webpack_require__(3);
 
@@ -779,9 +786,9 @@ var _vdom2 = _interopRequireDefault(_vdom);
 
 var _tools = __webpack_require__(0);
 
-var _dom = __webpack_require__(2);
+var _dom = __webpack_require__(1);
 
-var _attr = __webpack_require__(1);
+var _attr = __webpack_require__(2);
 
 var _show = __webpack_require__(6);
 
@@ -872,6 +879,8 @@ var View = function () {
 			_dom.createTextNodes.call(this);
 			//新建和替换绑定的文本节点信息
 			_dom.replaceTextNode.call(this);
+			//检查当前的for中空数组的节点是否显示的，显示的隐藏它
+			_for.testForNullArray.call(this);
 			//创建钩子函数
 			this.created();
 			//初始化更新
@@ -1361,8 +1370,11 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 var _tools = __webpack_require__(0);
 
 function setDom(element) {
-	var textNodes = (0, _tools.disassembly)(element.textContent);
-	this.__bind__.textNodeLists.push([textNodes, element]);
+	//非空的节点才进入过滤赛选
+	if (element.textContent !== '') {
+		var textNodes = (0, _tools.disassembly)(element.textContent);
+		this.__bind__.textNodeLists.push([textNodes, element]);
+	}
 }
 
 //创建文本节点单独循环执行
@@ -1401,7 +1413,7 @@ function createTextNodeElements(textNodes, el) {
 			//重写绑定链
 			textNodes[i] = textNodes[i].replace(templateFilters, '').replace(/ /g, '');
 		}
-		if (textNodes[i] !== "") {
+		if (textNodes[i].trim() !== "") {
 			//查看是否为数据绑定
 			var textNode = document.createTextNode(textNodes[i]);
 			if (/\{\{\S+\}\}/.test(textNodes[i]) == true) {
@@ -1534,7 +1546,7 @@ exports.domUpdate = domUpdate;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.setFor = undefined;
+exports.testForNullArray = exports.setFor = undefined;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -1554,7 +1566,7 @@ function setFor(el, propValue, propIndex) {
 
 	if (!this.__ob__.for[filterForVal]) {
 		this.__ob__.for[filterForVal] = [];
-		//setBind.call(this,filterForVal);
+		_tools.setBind.call(this, filterForVal);
 	}
 	el.parentNode.insertBefore(seize, el.nextSibling);
 	el.removeAttribute('_v-for');
@@ -1567,23 +1579,137 @@ function setFor(el, propValue, propIndex) {
 		};
 		//设置索引
 		cloneNode.$index = index;
+		var forSeize = document.createTextNode('');
+		cloneNode.__seize__ = forSeize;
+		cloneNode.isReplace = false;
+		forSeize.__seize__ = cloneNode;
+
 		_this.__ob__.for[filterForVal].push(cloneNode);
 		seize.parentNode.insertBefore(cloneNode, seize);
 		replateForKey.call(_this, cloneNode, forKey, getForVal.__keyLine__ + '.' + key);
 		cloneNode.__html__ = cloneNode.outerHTML;
+
+		//如果当前的元素是第一个，存储下面的兄弟节点
+		if (index === 0) {
+			cloneNode.__forElement__ = [cloneNode];
+		} else {
+			setForElement(cloneNode, cloneNode);
+		}
 	});
+
 	var oldElSeize = document.createTextNode('');
+
+	//如果为一个空数组数据
+	if (this.__ob__.for[filterForVal].length === 0) {
+
+		var cloneNode = el.cloneNode(true);
+		cloneNode.__for__ = {
+			forKey: 0,
+			forKeyLine: getForVal.__keyLine__ + '.' + 0
+		};
+		//设置索引
+		cloneNode.$index = 0;
+		var forSeize = document.createTextNode('');
+		cloneNode.__seize__ = forSeize;
+		cloneNode.isReplace = true;
+		forSeize.__seize__ = cloneNode;
+		var parentNode = seize.parentNode;
+		this.__ob__.for[filterForVal].push(cloneNode);
+
+		//替换空数据节点
+		parentNode.insertBefore(cloneNode, seize);
+
+		replateForKey.call(this, cloneNode, forKey, getForVal.__keyLine__ + '.' + 0);
+		cloneNode.__html__ = cloneNode.outerHTML;
+
+		//如果当前的元素是第一个，存储下面的兄弟节点
+		cloneNode.__forElement__ = [cloneNode];
+	}
 	el.parentNode.replaceChild(oldElSeize, el);
 };
 
+function setForElement(element, _pushElement) {
+	var prevElement = element.previousElementSibling;
+	if (prevElement.__forElement__) {
+		prevElement.__forElement__.push(_pushElement);
+	} else {
+		setForElement(prevElement, _pushElement);
+	}
+}
+
 //替换下面对应依赖中绑定的数据
 function replateForKey(element, forKey, keyLine) {
+	//匹配
+	var REGEXP_TYPE_1 = new RegExp('\\{\\{' + forKey + '( ?\\|.*)?\\}\\}', 'g');
+
+	var REGEXP_TYPE_2 = new RegExp('\\{\\{' + forKey + '\\.(.*?)', 'g');
+
 	var innerHTML = element.innerHTML;
-	var newHTML = innerHTML.replace(new RegExp('{{' + forKey, 'g'), '{{' + keyLine);
-	element.innerHTML = newHTML;
+
+	var newHTML = '';
+
+	if (REGEXP_TYPE_1.test(innerHTML)) {
+		newHTML = innerHTML.replace(REGEXP_TYPE_1, '{{' + keyLine + RegExp.$1 + '}}');
+	}
+	if (REGEXP_TYPE_2.test(innerHTML)) {
+		newHTML = innerHTML.replace(REGEXP_TYPE_2, '{{' + keyLine + '.' + RegExp.$1);
+	}
+
+	//获取当前的节点
+	var attrList = element.attributes;
+
+	Object.keys(attrList).forEach(function (index) {
+		if (/^_v-|^@/.test(attrList[index].name)) {
+			var attrValue = attrList[index].value;
+			if (REGEXP_TYPE_1.test(attrValue)) {
+				element.setAttribute(attrList[index].name, attrValue.replace(REGEXP_TYPE_1, '{{' + keyLine + RegExp.$1 + '}}'));
+			}
+			if (REGEXP_TYPE_2.test(attrValue)) {
+				element.setAttribute(attrList[index].name, attrValue.replace(REGEXP_TYPE_2, '{{' + keyLine + '.' + RegExp.$1));
+			}
+		}
+	});
+
+	element.innerHTML = newHTML !== '' ? newHTML : innerHTML;
+}
+
+function testForNullArray() {
+	var _this2 = this;
+
+	Object.keys(this.__ob__.for).forEach(function (index) {
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = _this2.__ob__.for[index][Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var element = _step.value;
+
+				if (element.isReplace === true && element.parentNode != null) {
+					var parentNode = element.parentNode;
+					element.isReplace = true;
+					parentNode.replaceChild(element.__seize__, element);
+				}
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+	});
 }
 
 exports.setFor = setFor;
+exports.testForNullArray = testForNullArray;
 
 /***/ }),
 /* 15 */
@@ -1601,7 +1727,7 @@ var _vdom = __webpack_require__(7);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
-var _dom = __webpack_require__(2);
+var _dom = __webpack_require__(1);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1610,35 +1736,123 @@ function forUpdate(keyLine) {
 
 	var getVal = this._get(keyLine);
 	if (getVal instanceof Array) {
+
+		//查找当前的数据链绑定的对象
 		var LineElement = this.__ob__.for[keyLine];
-		var diffLenth = getVal.length - LineElement.length;
-		if (getVal.length > LineElement.length) {
-			var diff = getVal.length - this.__ob__.for[keyLine].length;
-			var parentNode = LineElement[LineElement.length - 1].parentNode;
-			var fragment = document.createDocumentFragment();
-			var tempElement = document.createElement('div');
 
-			for (var i = 0; i < diff; i++) {
-				var replaceKeyLine = keyLine + '.' + diffLenth++;
-				var outerHTML = parentNode.lastElementChild.__html__;
-				outerHTML = outerHTML.replace(new RegExp(keyLine + '\\.\\d*', 'g'), replaceKeyLine);
-				tempElement.innerHTML = outerHTML;
-				this.__ob__.for[keyLine].push(tempElement.firstElementChild);
-				tempElement.firstElementChild.__html__ = tempElement.firstElementChild.outerHTML;
-				fragment.appendChild(tempElement.firstElementChild);
-			}
-
-			Object.keys(fragment.childNodes).forEach(function (index) {
-				new _vdom2.default().resolve(fragment.childNodes[index], _this);
-			});
-			parentNode.appendChild(fragment);
-			//创建存在绑定的文本节点
-			_dom.createTextNodes.call(this);
-			//新建和替换绑定的文本节点信息
-			_dom.replaceTextNode.call(this);
-			//更新一次
-			this.update();
+		//如果当前的数据不是for循环中的数据，跳出
+		if (LineElement == undefined) {
+			return;
 		}
+
+		var diffLenth = getVal.length - LineElement.length;
+
+		LineElement.forEach(function (element) {
+			if (element.__forElement__) {
+				//初始化空数组的节点
+				if (element.isReplace == true && getVal.length > 0) {
+					var _element = LineElement[0];
+					var seize = _element.__seize__;
+					var parentNode = seize.parentNode;
+					_element.isReplace = false;
+					parentNode.replaceChild(LineElement[0], seize);
+				}
+
+				var forLineElement = element.__forElement__;
+				//新增数组数据
+				if (getVal.length > forLineElement.length) {
+					var diff = getVal.length - _this.__ob__.for[keyLine].length;
+					var _parentNode = forLineElement[0].parentNode;
+					var fragment = document.createDocumentFragment();
+					var tempElement = document.createElement('div');
+					var lastIndex = forLineElement[forLineElement.length - 1].$index;
+
+					//如果数据长于现有的节点数，添加新的节点
+					for (var i = 0; i < diff; i++) {
+						var replaceKeyLine = keyLine + '.' + ++lastIndex;
+						var outerHTML = forLineElement[forLineElement.length - 1].__html__;
+						var _seize = document.createTextNode('');
+						outerHTML = outerHTML.replace(new RegExp(keyLine + '\\.\\d*', 'g'), replaceKeyLine);
+						tempElement.innerHTML = outerHTML;
+						var _element2 = tempElement.firstElementChild;
+						_this.__ob__.for[keyLine].push(_element2);
+						_element2.__html__ = _element2.outerHTML;
+						_seize.__seize__ = _element2;
+						_element2.isReplace = false;
+						_element2.__seize__ = _seize;
+						_element2.$index = lastIndex;
+						fragment.appendChild(_element2);
+					}
+
+					Object.keys(fragment.childNodes).forEach(function (index) {
+						forLineElement.push(fragment.childNodes[index]);
+						new _vdom2.default().resolve(fragment.childNodes[index], _this);
+					});
+
+					//更新旧数据
+					for (var index = 0; index < getVal.length; index++) {
+						console.log(getVal.length);
+						var _element3 = forLineElement[index];
+						//当前的节点是显示的，则隐藏
+						if (_element3.isReplace === true) {
+							var _parentNode2 = _element3.__seize__.parentNode;
+							var _seize2 = _element3.__seize__;
+							_element3.isReplace = false;
+							_seize2.__seize__ = _element3;
+							_parentNode2.replaceChild(_element3, _seize2);
+						}
+					}
+
+					_parentNode.appendChild(fragment);
+					//创建存在绑定的文本节点
+					_dom.createTextNodes.call(_this);
+					//新建和替换绑定的文本节点信息
+					_dom.replaceTextNode.call(_this);
+					//更新一次
+					_this.update();
+				}
+				//如果当前的数据小于节点循环节点的长度,考虑到如果默认为空数组，赋值的时候节点长度大于0了，不存在parentNode，报错
+				else if (getVal.length < forLineElement.length && forLineElement[0].isReplace == false) {
+						//更新节点的替换
+						for (var _index = 0; _index < getVal.length; _index++) {
+							console.log(getVal.length);
+							var _element4 = forLineElement[_index];
+							//当前的节点是显示的，则隐藏
+							if (_element4.isReplace === true) {
+								var _parentNode3 = _element4.__seize__.parentNode;
+								var _seize3 = _element4.__seize__;
+								_element4.isReplace = false;
+								_seize3.__seize__ = _element4;
+								_parentNode3.replaceChild(_element4, _seize3);
+							}
+						}
+						//替换没有数据的节点
+						for (var _index2 = getVal.length; _index2 < forLineElement.length; _index2++) {
+							var _element5 = forLineElement[_index2];
+							//当前的节点是显示的，则隐藏
+							if (_element5.isReplace === false) {
+								var _parentNode4 = _element5.parentNode;
+								var _seize4 = _element5.__seize__;
+								_element5.isReplace = true;
+								_seize4.__seize__ = _element5;
+								_parentNode4.replaceChild(_seize4, _element5);
+							}
+						}
+					} else if (getVal.length == forLineElement.length) {
+						for (var _index3 = 0; _index3 < forLineElement.length; _index3++) {
+							var _element6 = _this.__ob__.for[keyLine][_index3];
+							if (_element6.isReplace === true) {
+								var _seize5 = _element6.__seize__;
+								var _parentNode5 = _seize5.parentNode;
+								_element6.isReplace = false;
+								_parentNode5.replaceChild(_element6, _seize5);
+							}
+						}
+						//更新一次
+						_this.update();
+					}
+			}
+		});
 	}
 }
 

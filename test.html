@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		<div id="vdom">
+			<div _v-for="i in {{arr}}" style="display:none" _v-show="{{isShow}}">
+				<h3>{{i.b}}</h3>
+				<ul>
+					<li _v-for="m in {{i.a}}" _v-show="{{i.isShow}}" :class="{{i.class}}">
+						{{m}}-{{mid}}
+					</li>
+				</ul>
+			</div>
+		</div>
+		<script src="dist/js/vdom.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			var v = new View({
+				el:"vdom",
+				data:{
+					arr:[
+						{
+							a:[1,2,3],
+							b:'这是0',
+							isShow:false,
+							class:'class1'
+						},
+						{
+							a:[4,5,6],
+							b:'这是1',
+							isShow:true,
+							class:'class2'
+						}
+						,{
+							a:[7,8,9],
+							b:'这是2',
+							isShow:true,
+							class:'class3'
+						}
+					],
+					isShow:false,
+					mid:'一些测试的内容'
+				},
+				ready:function(){
+					this.data.isShow = true;
+				}
+			})
+		</script>
+	</body>
+</html>
