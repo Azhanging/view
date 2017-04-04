@@ -1,5 +1,5 @@
 /*拆解绑定的信息*/
-import { disassembly, getDisassemblyKey,setBind } from './../tools';
+import { disassembly, getDisassemblyKey,setBind ,getIndex } from './../tools';
 import { setShow } from './../show';
 import { setIf } from './../if';
 import { setFor } from './../for';
@@ -13,6 +13,8 @@ function setAttr(element, vdom) {
 
 		if(/:.?/.test(propName)) {
 			//删除当前绑定到真实attr上的属性
+			element.removeAttribute(propName);
+			_index -= 1;
 			//清除:号
 			propName = propName.replace(':', '');
 			//给vdom加上属性
@@ -35,12 +37,14 @@ function setAttr(element, vdom) {
 		}
 
 		if(/_v-.?/.test(propName)) {
+			//删除当前绑定到真实attr上的属性
+			element.removeAttribute(propName);
+			_index -= 1;
 			//删除绑定属性
 			propName = propName.replace('_v-', '');
 			//获取到主Key的数组
 			switch(propName) {
 				case 'for':
-					_index-=1;
 					setFor.call(this, element, propValue,_index);
 					break;
 				case 'show':
@@ -57,6 +61,12 @@ function setAttr(element, vdom) {
 		}
 		if(/@.?/.test(propName)) {
 			let filterpropValue = propValue.replace(/\(+\S+\)+/g, '');
+			if(!(this.isTemplate)){
+				//删除当前绑定到真实attr上的属性
+				element.removeAttribute(propName);
+				_index -= 1;
+			}
+			
 			propName = propName.replace('@', '');
 			//存在这个方法
 			if(this[filterpropValue]) {
@@ -69,7 +79,7 @@ function setAttr(element, vdom) {
 						let filterArgs = args.map((item, index) => {
 							//如果传入的对象是$index,获取当前父级中所在的索引
 							if(item === '$index') {
-								return element.$index;
+								return getIndex.call(this,element);
 							} else if(item === '$event') {
 								return event;
 							} else {

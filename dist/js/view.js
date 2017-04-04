@@ -265,49 +265,48 @@ var _tools = __webpack_require__(0);
 function setEvent(el) {
 	var _this = this;
 
-	var elAttrs = el.attributes,
-	    attrName = void 0,
-	    attrVal = void 0;
+	var prop = el.attributes;
+	for (var index = 0; index < Object.keys(el.attributes).length; index++) {
+		var propName = prop[index].name,
+		    propValue = prop[index].value;
 
-	Object.keys(el.attributes).forEach(function (key, index) {
-		var attributes = el.attributes;
-		attrName = attributes[key].name;
-		attrVal = attributes[key].textContent;
-		if (/@.?/.test(attrName)) {
-			var filterAttrVal = attrVal.replace(/\(+\S+\)+/g, '');
-			attrName = attrName.replace('@', '');
-			//存在这个方法
-			if (_this[filterAttrVal]) {
-				//存在参数值
-				if (attrVal.match(/\(\S+\)/) instanceof Array) {
-					var args = attrVal.match(/\(\S+\)/)[0].replace(/\(?\)?/g, '').split(',');
-					//绑定事件
-					el.addEventListener(attrName, function (event) {
-						//对数组内的数据查看是否存在的数据流进行过滤
-						var filterArgs = args.map(function (item, index) {
-							//如果传入的对象是$index,获取当前父级中所在的索引
-							if (item === '$index') {
-								return _tools.getIndex.call(_this, el);
-							} else if (item === '$event') {
-								return event;
-							} else {
-								//解析data中的值
-								return _this.expr(item).toString();
-							}
-						});
+		if (/@.?/.test(propName)) {
+			(function () {
+				var filterAttrVal = propValue.replace(/\(+\S+\)+/g, '');
+				propName = propName.replace('@', '');
+				//存在这个方法
+				if (_this[filterAttrVal]) {
+					//存在参数值
+					if (propValue.match(/\(\S+\)/) instanceof Array) {
+						var args = propValue.match(/\(\S+\)/)[0].replace(/\(?\)?/g, '').split(',');
+						//绑定事件
+						el.addEventListener(propName, function (event) {
+							//对数组内的数据查看是否存在的数据流进行过滤
+							var filterArgs = args.map(function (item, index) {
+								//如果传入的对象是$index,获取当前父级中所在的索引
+								if (item === '$index') {
+									return _tools.getIndex.call(_this, el);
+								} else if (item === '$event') {
+									return event;
+								} else {
+									//解析data中的值
+									return _this.expr(item).toString();
+								}
+							});
 
-						//运行绑定的event
-						_this[filterAttrVal].apply(_this, filterArgs);
-					}, false);
-				} else {
-					//不存在参数值过滤掉空的括号
-					el.addEventListener(attrName, function (event) {
-						_this[filterAttrVal].call(_this, event);
-					}, false);
+							//运行绑定的event
+							_this[filterAttrVal].apply(_this, filterArgs);
+						}, false);
+					} else {
+						//不存在参数值过滤掉空的括号
+						el.addEventListener(propName, function (event) {
+							_this[filterAttrVal].call(_this, event);
+						}, false);
+					}
 				}
-			}
+			})();
 		}
-	});
+	}
 }
 
 /*_v-for对象循环添加事件*/
@@ -320,7 +319,7 @@ function setForEvent(el, index) {
 		//这里为查看是否通过数组循环出来的，添加index到当前循环对象
 		if (!isNaN(index)) {
 			//如果使用的是模板，cloneNode中无法赋值私有的属性，通过data-index设置所有值
-			if (this.template) {
+			if (this.isTemplate) {
 				el.dataset['index'] = index;
 			} else {
 				el.$index = index;
@@ -833,10 +832,15 @@ var View = function () {
 		this.data = data;
 		//解析对象
 		if (el && typeof (0, _tools.getEl)(el) !== 'null') {
+			//获取当前的元素
 			this.el = (0, _tools.getEl)(el);
+			//提前判断是否为模板
+			this.isTemplate = false;
+			//判断是否为模板
 			if (this.el.tagName == 'TEMPLATE') {
 				this.el = this.el.content.firstElementChild;
 				this.data['templateData'] = {};
+				this.isTemplate = true;
 			}
 		} else {
 			this.el = '';
@@ -845,8 +849,6 @@ var View = function () {
 		this.methods = methods;
 		//组件
 		this.components = components;
-		//模板
-		//		this.isTemplate ? (this.data['templateData'] = {}) : '';
 		//data监听
 		this.watch = watch;
 		//钩子函数
@@ -902,7 +904,8 @@ var View = function () {
 
 			this.__bind__ = {
 				textNodeLists: [],
-				tempFragmentElements: []
+				tempFragmentElements: [],
+				templateIndex: 0
 			};
 		}
 	}, {
@@ -972,7 +975,7 @@ var View = function () {
 				if (this['data'][obj[0]]) {
 					for (var i = 0; i < obj.length; i++) {
 						var key = obj[i];
-						getVal = getVal[key] !== undefined ? getVal[key] : null;
+						getVal = getVal !== null && getVal[key] !== undefined ? getVal[key] : null;
 					}
 					return getVal;
 				} else {
@@ -1080,6 +1083,8 @@ var View = function () {
 				_this2.data.templateData = item;
 				//复制临时节点
 				var tempNode = _this2.el.cloneNode(true);
+				//设置模板中的index属性
+				tempNode.dataset['index'] = _this2.__bind__.templateIndex++;
 				//添加到对应节点上
 				document.getElementById(appendEl).appendChild(tempNode);
 				//绑定当前节点事件
@@ -1170,6 +1175,8 @@ function setAttr(element, vdom) {
 
 		if (/:.?/.test(propName)) {
 			//删除当前绑定到真实attr上的属性
+			element.removeAttribute(propName);
+			_index2 -= 1;
 			//清除:号
 			propName = propName.replace(':', '');
 			//给vdom加上属性
@@ -1192,12 +1199,14 @@ function setAttr(element, vdom) {
 		}
 
 		if (/_v-.?/.test(propName)) {
+			//删除当前绑定到真实attr上的属性
+			element.removeAttribute(propName);
+			_index2 -= 1;
 			//删除绑定属性
 			propName = propName.replace('_v-', '');
 			//获取到主Key的数组
 			switch (propName) {
 				case 'for':
-					_index2 -= 1;
 					_for.setFor.call(_this, element, propValue, _index2);
 					break;
 				case 'show':
@@ -1214,6 +1223,12 @@ function setAttr(element, vdom) {
 		}
 		if (/@.?/.test(propName)) {
 			var filterpropValue = propValue.replace(/\(+\S+\)+/g, '');
+			if (!_this.isTemplate) {
+				//删除当前绑定到真实attr上的属性
+				element.removeAttribute(propName);
+				_index2 -= 1;
+			}
+
 			propName = propName.replace('@', '');
 			//存在这个方法
 			if (_this[filterpropValue]) {
@@ -1226,7 +1241,7 @@ function setAttr(element, vdom) {
 						var filterArgs = args.map(function (item, index) {
 							//如果传入的对象是$index,获取当前父级中所在的索引
 							if (item === '$index') {
-								return element.$index;
+								return _tools.getIndex.call(_this, element);
 							} else if (item === '$event') {
 								return event;
 							} else {
@@ -1561,8 +1576,12 @@ function setFor(el, propValue, propIndex) {
 	    forVal = _propValue$split2[1];
 
 	var filterForVal = forVal.replace(/(\{)?(\})?/g, '');
-	var getForVal = this.expr(forVal, 'for');
+	var getForVal = this._get(filterForVal);
 	var seize = document.createTextNode('');
+	//现在循环列表中最后的占位节点
+	var presentSeize = document.createTextNode('');
+	//插入列表占位
+	el.parentNode.insertBefore(presentSeize, el.nextSibling);
 
 	if (!this.__ob__.for[filterForVal]) {
 		this.__ob__.for[filterForVal] = [];
@@ -1571,12 +1590,13 @@ function setFor(el, propValue, propIndex) {
 	el.parentNode.insertBefore(seize, el.nextSibling);
 	el.removeAttribute('_v-for');
 
+	//这里是为了支持template的用法才这么使用的,默认循环中template是不存在值的
+	if (getForVal == undefined || getForVal == null) {
+		getForVal = [];
+	}
+
 	Object.keys(getForVal).forEach(function (key, index) {
 		var cloneNode = el.cloneNode(true);
-		cloneNode.__for__ = {
-			forKey: key,
-			forKeyLine: getForVal.__keyLine__ + '.' + key
-		};
 		//设置索引
 		cloneNode.$index = index;
 		var forSeize = document.createTextNode('');
@@ -1592,6 +1612,8 @@ function setFor(el, propValue, propIndex) {
 		//如果当前的元素是第一个，存储下面的兄弟节点
 		if (index === 0) {
 			cloneNode.__forElement__ = [cloneNode];
+			//存储当前列表的占位
+			cloneNode.__presentSeize__ = presentSeize;
 		} else {
 			setForElement(cloneNode, cloneNode);
 		}
@@ -1600,14 +1622,25 @@ function setFor(el, propValue, propIndex) {
 	var oldElSeize = document.createTextNode('');
 
 	//如果为一个空数组数据
-	if (this.__ob__.for[filterForVal].length === 0) {
+	if (Object.keys(getForVal).length === 0) {
 		var cloneNode = el.cloneNode(true);
-		cloneNode.__for__ = {
-			forKey: 0,
-			forKeyLine: getForVal.__keyLine__ + '.' + 0
-		};
-		//设置索引
-		cloneNode.$index = 0;
+		//设置索引,空对象中的索引从-1开始
+		if (getForVal instanceof Object && !(getForVal instanceof Array)) {
+			cloneNode.$index = -1;
+			//当前对象是否从空值开始
+			cloneNode.isNullStart = true;
+			//当前是否模板中的循环，设置dataset
+			if (this.isTemplate) {
+				cloneNode.dataset['index'] = -1;
+			}
+		} else {
+			cloneNode.$index = 0;
+			//当前是否模板中的循环，设置dataset
+			if (this.isTemplate) {
+				cloneNode.dataset['index'] = 0;
+			}
+		}
+
 		var forSeize = document.createTextNode('');
 		cloneNode.__seize__ = forSeize;
 		cloneNode.isReplace = true;
@@ -1626,6 +1659,8 @@ function setFor(el, propValue, propIndex) {
 
 		//如果当前的元素是第一个，存储下面的兄弟节点
 		cloneNode.__forElement__ = [cloneNode];
+		//存储当前列表的占位
+		cloneNode.__presentSeize__ = presentSeize;
 	}
 
 	el.parentNode.replaceChild(oldElSeize, el);
@@ -1655,14 +1690,14 @@ function replateForKey(element, forKey, keyLine) {
 		newHTML = innerHTML.replace(REGEXP_TYPE_1, '{{' + keyLine + RegExp.$1 + '}}');
 	}
 	if (REGEXP_TYPE_2.test(innerHTML)) {
-		newHTML = innerHTML.replace(REGEXP_TYPE_2, '{{' + keyLine + '.' + RegExp.$1);
+		newHTML = newHTML.replace(REGEXP_TYPE_2, '{{' + keyLine + '.' + RegExp.$1);
 	}
 
 	//获取当前的节点
 	var attrList = element.attributes;
 
 	Object.keys(attrList).forEach(function (index) {
-		if (/^_v-/.test(attrList[index].name)) {
+		if (/^_v-|^:/.test(attrList[index].name)) {
 			var attrValue = attrList[index].value;
 			if (REGEXP_TYPE_1.test(attrValue)) {
 				element.setAttribute(attrList[index].name, attrValue.replace(REGEXP_TYPE_1, '{{' + keyLine + RegExp.$1 + '}}'));
@@ -1676,6 +1711,7 @@ function replateForKey(element, forKey, keyLine) {
 	element.innerHTML = newHTML !== '' ? newHTML : innerHTML;
 }
 
+//初始化数据是否为空值绑定，则隐藏对于的列表
 function testForNullArray() {
 	var _this2 = this;
 
@@ -1753,26 +1789,24 @@ function forUpdate(keyLine) {
 		//获取当前值得数组化对象
 		var valLength = Object.keys(getVal);
 
-		var diffLenth = valLength.length - LineElement.length;
-
-		LineElement.forEach(function (element) {
+		LineElement.forEach(function (element, index) {
 			if (element.__forElement__) {
 				//初始化空数组的节点
 				if (element.isReplace == true && valLength.length > 0) {
-					var _element = LineElement[0];
-					var seize = _element.__seize__;
+					var _element2 = LineElement[index];
+					var seize = _element2.__seize__;
 					var parentNode = seize.parentNode;
-					_element.isReplace = false;
+					_element2.isReplace = false;
 					if (!(getVal instanceof Array) && getVal instanceof Object) {
-						_element.innerHTML = '';
+						_element2.innerHTML = '';
 					}
-					parentNode.replaceChild(LineElement[0], seize);
+					parentNode.replaceChild(LineElement[index], seize);
 				}
 
 				var forLineElement = element.__forElement__;
 				//新增数组数据
 				if (valLength.length > forLineElement.length) {
-					var diff = valLength.length - _this.__ob__.for[keyLine].length;
+					var diff = valLength.length - forLineElement.length;
 					var _parentNode = forLineElement[0].parentNode;
 					var fragment = document.createDocumentFragment();
 					var tempElement = document.createElement('div');
@@ -1781,10 +1815,11 @@ function forUpdate(keyLine) {
 					//如果数据长于现有的节点数，添加新的节点
 					for (var i = 0; i < diff; i++) {
 						var replaceKeyLine = void 0;
+
 						if (getVal instanceof Array) {
 							replaceKeyLine = keyLine + '.' + ++lastIndex;
 						} else if (getVal instanceof Object) {
-							replaceKeyLine = keyLine + '.' + valLength[lastIndex];
+							replaceKeyLine = keyLine + '.' + valLength[lastIndex + 1];
 							++lastIndex;
 						}
 
@@ -1792,24 +1827,40 @@ function forUpdate(keyLine) {
 						var _seize = document.createTextNode('');
 						outerHTML = outerHTML.replace(new RegExp(keyLine + '\\.\\d* |' + keyLine + '\\.[0-9 A-z]*', 'g'), replaceKeyLine);
 						tempElement.innerHTML = outerHTML;
-						var _element2 = tempElement.firstElementChild;
-						_this.__ob__.for[keyLine].push(_element2);
-						_element2.__html__ = _element2.outerHTML;
-						_seize.__seize__ = _element2;
-						_element2.isReplace = false;
-						_element2.__seize__ = _seize;
-						_element2.$index = lastIndex;
-						fragment.appendChild(_element2);
+						var _element = tempElement.firstElementChild;
+						_this.__ob__.for[keyLine].push(_element);
+						_element.__html__ = _element.outerHTML;
+						_seize.__seize__ = _element;
+						_element.isReplace = false;
+						_element.__seize__ = _seize;
+						_element.$index = lastIndex;
+						//当前是否模板中的循环，设置dataset中的index
+						if (_this.isTemplate) {
+							_element.dataset['index'] = lastIndex;
+						}
+						//是否初始化的Object循环
+						if (forLineElement[0].isNullStart) {
+							forLineElement.splice(0, 1);
+							_element.__forElement__ = forLineElement;
+							_element.__forElement__.push(_element);
+							_element.__presentSeize__ = element.__presentSeize__;
+							diff++;
+							lastIndex = 0;
+							element.remove();
+						}
+						fragment.appendChild(_element);
 					}
 
 					Object.keys(fragment.childNodes).forEach(function (index) {
-						forLineElement.push(fragment.childNodes[index]);
+						if (forLineElement.indexOf(fragment.childNodes[index]) === -1) {
+							forLineElement.push(fragment.childNodes[index]);
+						}
 						new _vdom2.default().resolve(fragment.childNodes[index], _this);
 					});
 
 					//更新旧数据
-					for (var index = 0; index < valLength.length; index++) {
-						var _element3 = forLineElement[index];
+					for (var _index = 0; _index < forLineElement.length; _index++) {
+						var _element3 = forLineElement[_index];
 						//当前的节点是显示的，则隐藏
 						if (_element3.isReplace === true) {
 							var _parentNode2 = _element3.__seize__.parentNode;
@@ -1820,7 +1871,8 @@ function forUpdate(keyLine) {
 						}
 					}
 
-					_parentNode.appendChild(fragment);
+					//					parentNode.appendChild(fragment);
+					_parentNode.insertBefore(fragment, forLineElement[0].__presentSeize__);
 					//创建存在绑定的文本节点
 					_dom.createTextNodes.call(_this);
 					//新建和替换绑定的文本节点信息
@@ -1831,8 +1883,8 @@ function forUpdate(keyLine) {
 				//如果当前的数据小于节点循环节点的长度,考虑到如果默认为空数组，赋值的时候节点长度大于0了，不存在parentNode，报错
 				else if (valLength.length < forLineElement.length && forLineElement[0].isReplace == false) {
 						//更新节点的替换
-						for (var _index = 0; _index < valLength.length; _index++) {
-							var _element4 = forLineElement[_index];
+						for (var _index2 = 0; _index2 < valLength.length; _index2++) {
+							var _element4 = forLineElement[_index2];
 							//当前的节点是显示的，则隐藏
 							if (_element4.isReplace === true) {
 								var _parentNode3 = _element4.__seize__.parentNode;
@@ -1843,8 +1895,8 @@ function forUpdate(keyLine) {
 							}
 						}
 						//替换没有数据的节点
-						for (var _index2 = valLength.length; _index2 < forLineElement.length; _index2++) {
-							var _element5 = forLineElement[_index2];
+						for (var _index3 = valLength.length; _index3 < forLineElement.length; _index3++) {
+							var _element5 = forLineElement[_index3];
 							//当前的节点是显示的，则隐藏
 							if (_element5.isReplace === false) {
 								var _parentNode4 = _element5.parentNode;
@@ -1855,8 +1907,8 @@ function forUpdate(keyLine) {
 							}
 						}
 					} else if (valLength.length == forLineElement.length) {
-						for (var _index3 = 0; _index3 < forLineElement.length; _index3++) {
-							var _element6 = _this.__ob__.for[keyLine][_index3];
+						for (var _index4 = 0; _index4 < forLineElement.length; _index4++) {
+							var _element6 = forLineElement[_index4];
 							if (_element6.isReplace === true) {
 								var _seize5 = _element6.__seize__;
 								var _parentNode5 = _seize5.parentNode;

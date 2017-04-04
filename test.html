@@ -6,13 +6,19 @@
 	</head>
 	<body>
 		<div id="vdom">
-			<div _v-for="i in {{arr}}" style="display:none" _v-show="{{isShow}}">
+			<div _v-for="i in {{arr}}">
 				<h3>{{i.b}}</h3>
+				<ul _v-show="{{isShow}}">
+					<li _v-for="m in {{i.a}}" _v-show="{{i.isShow}}" :class="{{i.class}}"  @click="alert($event,$index)">
+						{{m}}-{{mid}}
+					</li>
+				</ul>
 				<ul>
 					<li _v-for="m in {{i.a}}" _v-show="{{i.isShow}}" :class="{{i.class}}"  @click="alert($event,$index)">
 						{{m}}-{{mid}}
 					</li>
 				</ul>
+				<span @click="alert($index)">{{i}}</span>
 			</div>
 		</div>
 		<script src="dist/js/vdom.js" type="text/javascript" charset="utf-8"></script>
@@ -22,29 +28,49 @@
 				data:{
 					arr:[
 						{
-							a:[1,2,3],
+							a:{a:1,b:2,c:3},
 							b:'这是0',
 							isShow:false,
 							class:'class1'
 						},
 						{
-							a:[4,5,6],
+							a:[],
 							b:'这是1',
 							isShow:true,
 							class:'class2'
 						}
 						,{
-							a:'',
+							a:{},
 							b:'这是2',
 							isShow:true,
 							class:'class3'
+						},
+						{
+							a:[],
+							b:'这是3',
+							isShow:true,
+							class:'class4'
 						}
+						
 					],
 					isShow:false,
 					mid:'一些测试的内容'
 				},
 				ready:function(){
-					this.data.isShow = true;
+					this.data.isShow = true;	
+					setTimeout(function(){
+						
+					},500);
+					this.data.arr[2].a = {a:1,b:2,c:3,d:4,e:5,r:6};
+					this.data.arr[2].a = {a:1,b:2,c:3};
+					this.data.arr[2].a = {a:1,b:2,c:3,d:4};
+					this.data.arr[2].a = {};
+					this.data.arr[1].a = [];
+					this.data.arr[1].a = [4,5,6];
+					this.data.arr[0].isShow = true;
+					this.data.arr[0].a = {a:1};
+					this.data.arr[3].a = [1,2,3,4];
+					this.data.arr[3].a = [1,2,3,4,5,6,7,7,8,9,10,12];
 				},
 				watch:{
 					'arr.0.a':function(newVal){

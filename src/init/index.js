@@ -27,10 +27,15 @@ class View {
 		this.data = data;
 		//解析对象
 		if(el && typeof getEl(el) !== 'null') {
+			//获取当前的元素
 			this.el = getEl(el);
+			//提前判断是否为模板
+			this.isTemplate = false;
+			//判断是否为模板
 			if(this.el.tagName == 'TEMPLATE') {
 				this.el = this.el.content.firstElementChild;
 				this.data['templateData'] = {};
+				this.isTemplate = true;
 			}
 		} else {
 			this.el = '';
@@ -39,8 +44,6 @@ class View {
 		this.methods = methods;
 		//组件
 		this.components = components;
-		//模板
-		//		this.isTemplate ? (this.data['templateData'] = {}) : '';
 		//data监听
 		this.watch = watch;
 		//钩子函数
@@ -91,7 +94,8 @@ class View {
 
 		this.__bind__ = {
 			textNodeLists: [],
-			tempFragmentElements: []
+			tempFragmentElements: [],
+			templateIndex:0
 		}
 	}
 	dep(keys) {
@@ -131,7 +135,7 @@ class View {
 			if(this['data'][obj[0]]) {
 				for(let i = 0; i < obj.length; i++) {
 					let key = obj[i];
-					getVal = getVal[key] !== undefined ? getVal[key] : null;
+					getVal = getVal !== null && getVal[key] !== undefined? getVal[key] : null;
 				}
 				return getVal;
 			} else {
@@ -230,6 +234,8 @@ class View {
 			this.data.templateData = item;
 			//复制临时节点
 			let tempNode = this.el.cloneNode(true);
+			//设置模板中的index属性
+			tempNode.dataset['index'] = this.__bind__.templateIndex++;
 			//添加到对应节点上
 			document.getElementById(appendEl).appendChild(tempNode);
 			//绑定当前节点事件

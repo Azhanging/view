@@ -11,7 +11,7 @@ module.exports = {
 	/*context: path.resolve(__dirname, 'src'),*/
 	//入口
 	entry: {
-		'vdom': './src/index.js'
+		'view': './src/index.js'
 	},
 	//出口
 	output: {
