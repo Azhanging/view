@@ -8,27 +8,30 @@
 		<div id="vdom">
 			<div _v-for="i in {{arr}}">
 				<h3>{{i.b}}</h3>
-				<ul _v-show="{{isShow}}">
-					<li _v-for="m in {{i.a}}" _v-show="{{i.isShow}}" :class="{{i.class}}"  @click="alert($event,$index)">
-						{{m}}-{{mid}}
-					</li>
-				</ul>
 				<ul>
 					<li _v-for="m in {{i.a}}" _v-show="{{i.isShow}}" :class="{{i.class}}"  @click="alert($event,$index)">
 						{{m}}-{{mid}}
+						<div _v-for="n in {{i.a}}" _v-show="{{i.isShow}}" :class="{{i.class}}"  @click="alert($event,$index)">
+							{{n}}-{{mid}}
+						</div>
 					</li>
 				</ul>
 				<span @click="alert($index)">{{i}}</span>
 			</div>
 		</div>
-		<script src="dist/js/vdom.js" type="text/javascript" charset="utf-8"></script>
+		<button id="test1">空数据</button>
+		<button id="test2">加数据</button>
+		<button id="test3">减数据</button>
+		<button id="test4">再加数据数据</button>
+		<button id="test5">显示</button>
+		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
 			var v = new View({
 				el:"vdom",
 				data:{
 					arr:[
 						{
-							a:{a:1,b:2,c:3},
+							a:[1,2,3],
 							b:'这是0',
 							isShow:false,
 							class:'class1'
@@ -57,11 +60,7 @@
 					mid:'一些测试的内容'
 				},
 				ready:function(){
-					this.data.isShow = true;	
-					setTimeout(function(){
-						
-					},500);
-					this.data.arr[2].a = {a:1,b:2,c:3,d:4,e:5,r:6};
+					/*this.data.isShow = true;
 					this.data.arr[2].a = {a:1,b:2,c:3};
 					this.data.arr[2].a = {a:1,b:2,c:3,d:4};
 					this.data.arr[2].a = {};
@@ -70,7 +69,7 @@
 					this.data.arr[0].isShow = true;
 					this.data.arr[0].a = {a:1};
 					this.data.arr[3].a = [1,2,3,4];
-					this.data.arr[3].a = [1,2,3,4,5,6,7,7,8,9,10,12];
+					this.data.arr[3].a = [1,2,3,4,5,6,7,7,8,9,10,12];*/
 				},
 				watch:{
 					'arr.0.a':function(newVal){
@@ -82,7 +81,27 @@
 						console.log(event,index);
 					}
 				}
-			})
+			});
+			
+			function $(id){
+				return document.getElementById(id);
+			}
+			
+			$('test1').onclick = function (){
+				v.data.arr[0].a = [];
+			}
+			$('test2').onclick = function (){
+				v.data.arr[0].a = [1,2,3,4,5,6,7,8,9,10,11];
+			}
+			$('test3').onclick = function (){
+				v.data.arr[0].a = [1,2,3,4];
+			}
+			$('test4').onclick = function (){
+				v.data.arr[0].a = [1,2,3,4,5,6,7];
+			}
+			$('test5').onclick = function(){
+				v.data.arr[0].isShow = true;
+			}
 		</script>
 	</body>
 </html>

@@ -1606,7 +1606,13 @@ function setFor(el, propValue, propIndex) {
 
 		_this.__ob__.for[filterForVal].push(cloneNode);
 		seize.parentNode.insertBefore(cloneNode, seize);
-		replateForKey.call(_this, cloneNode, forKey, getForVal.__keyLine__ + '.' + key);
+		//初始是空数组还是字符串类型，创建数据链的字符串结构
+		if (getForVal.__keyLine__) {
+			replateForKey.call(_this, cloneNode, forKey, getForVal.__keyLine__ + '.' + key);
+		} else {
+			replateForKey.call(_this, cloneNode, forKey, filterForVal + '.' + key);
+		}
+
 		cloneNode.__html__ = cloneNode.outerHTML;
 
 		//如果当前的元素是第一个，存储下面的兄弟节点
@@ -1617,6 +1623,7 @@ function setFor(el, propValue, propIndex) {
 		} else {
 			setForElement(cloneNode, cloneNode);
 		}
+		console.log(cloneNode);
 	});
 
 	var oldElSeize = document.createTextNode('');
@@ -1707,6 +1714,8 @@ function replateForKey(element, forKey, keyLine) {
 			}
 		}
 	});
+
+	//	newHTML = replateForChildKey(newHTML);
 
 	element.innerHTML = newHTML !== '' ? newHTML : innerHTML;
 }
