@@ -63,13 +63,6 @@ class _ELement {
 				this.id++;
 				vdom.childrens.push(this.resolve(el, _this));				
 			}
-			
-			/*[...element.childNodes].forEach((el) => {
-				//设置索引
-				this.id++;
-				vdom.childrens.push(this.resolve(el, _this));
-			});*/
-
 		} else {
 			//设置文本节点绑定的更新
 			setDom.call(_this, element);

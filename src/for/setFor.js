@@ -50,7 +50,6 @@ function setFor(el, propValue, propIndex) {
 		} else {
 			setForElement(cloneNode, cloneNode);
 		}
-		console.log(cloneNode);
 	});
 
 	let oldElSeize = document.createTextNode('');
@@ -59,7 +58,7 @@ function setFor(el, propValue, propIndex) {
 	if(Object.keys(getForVal).length === 0) {
 		let cloneNode = el.cloneNode(true);
 		//设置索引,空对象中的索引从-1开始
-		if(getForVal instanceof Object && !(getForVal instanceof Array)) {
+		if(getForVal instanceof Object && !(getForVal instanceof Array) || typeof getForVal === 'string' ||  typeof getForVal === 'boolean' ||  typeof getForVal === 'number' || getForVal === null || getForVal === undefined) {
 			cloneNode.$index = -1;
 			//当前对象是否从空值开始
 			cloneNode.isNullStart = true;
@@ -99,7 +98,6 @@ function setFor(el, propValue, propIndex) {
 	}
 
 	el.parentNode.replaceChild(oldElSeize, el);
-
 };
 
 function setForElement(element, _pushElement) {
@@ -120,10 +118,10 @@ function replateForKey(element, forKey, keyLine) {
 
 	let innerHTML = element.innerHTML;
 
-	let newHTML = '';
+	let newHTML = innerHTML;
 
 	if(REGEXP_TYPE_1.test(innerHTML)) {
-		newHTML = innerHTML.replace(REGEXP_TYPE_1, '{{' + keyLine + RegExp.$1 + '}}');
+		newHTML = newHTML.replace(REGEXP_TYPE_1, '{{' + keyLine + RegExp.$1 + '}}');
 	}
 	if(REGEXP_TYPE_2.test(innerHTML)) {
 		newHTML = newHTML.replace(REGEXP_TYPE_2, '{{' + keyLine + '.' + RegExp.$1);

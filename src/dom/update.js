@@ -30,7 +30,9 @@ function domUpdate(key) {
 				//检查是否存在过滤器或者数组插入的dom节点
 				isTextNodePrevSibline(element);
 				//直接为数据节点
-				element.textContent = val;
+				if(element.textContent !== val){
+					element.textContent = val;
+				}
 			}
 		});
 	}
