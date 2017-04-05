@@ -10,12 +10,14 @@
 			<div>
 				<div @click="click(1,$index,$event)">{{templateData.title}}</div>
 				<div>{{templateData.content}}</div>
-				<div _v-for="i in {{templateData.for}}" :class="{{i}}">{{i}}</div>
-				<div _v-for="i in {{templateData.for}}" :class="2">{{i}}</div>
+				<div _v-for="i in {{templateData.for}}" :class="{{i}}">
+					{{i}}
+					<div _v-for="n in {{templateData.for}}" :class="2">{{n}}</div>
+				</div>
 				<my-tem></my-tem>
 			</div>
 		</template>
-		<script src="dist/js/vdom.js" type="text/javascript" charset="utf-8"></script>
+		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
 			var v = new View({
 				el:"temp",

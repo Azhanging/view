@@ -11,8 +11,11 @@
 				<ul>
 					<li _v-for="m in {{i.a}}" _v-show="{{i.isShow}}" :class="{{i.class}}"  @click="alert($event,$index)">
 						{{m}}-{{mid}}
-						<div _v-for="n in {{i.a}}" _v-show="{{i.isShow}}" :class="{{i.class}}"  @click="alert($event,$index)">
+						<div _v-for="n in {{i.a}}" @click="alert($event,$index)">
 							{{n}}-{{mid}}
+							<div _v-for="o in {{i.a}}" @click="alert($event,$index)" _v-show="{{isShow}}">
+								{{o}}-{{mid}}
+							</div>
 						</div>
 					</li>
 				</ul>

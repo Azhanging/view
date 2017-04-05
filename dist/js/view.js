@@ -468,8 +468,6 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _dom = __webpack_require__(1);
@@ -515,12 +513,11 @@ var _ELement = function () {
 				var _iteratorError = undefined;
 
 				try {
-					for (var _iterator = Object.entries(options.props)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-						var _step$value = _slicedToArray(_step.value, 2),
-						    prop = _step$value[0],
-						    value = _step$value[1];
+					for (var _iterator = Object.keys(options.props)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+						var key = _step.value;
 
-						el.setAttribute(prop, value);
+						var value = options.props[key];
+						el.setAttribute(key, value);
 					}
 					//设置子节点
 				} catch (err) {
@@ -690,11 +687,10 @@ var _ELement = function () {
 			var _iteratorError4 = undefined;
 
 			try {
-				for (var _iterator4 = Object.entries(newTree.props)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-					var _step4$value = _slicedToArray(_step4.value, 2),
-					    key = _step4$value[0],
-					    value = _step4$value[1];
+				for (var _iterator4 = Object.keys(newTree.props)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+					var key = _step4.value;
 
+					var value = newTree.props[key];
 					//如果当前的属性存在，值不相同，存值
 					if (Reflect.has(oldTree.props, key) && !(oldTree.props[key] === value)) {
 						props[key] = value;
@@ -1279,9 +1275,6 @@ exports.setAttr = setAttr;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 //属性更新
 function attrUpdate(key) {
 	var _this = this;
@@ -1310,11 +1303,10 @@ function attrUpdate(key) {
 			var _iteratorError = undefined;
 
 			try {
-				for (var _iterator = Object.entries(attrs)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var _step$value = _slicedToArray(_step.value, 2),
-					    propName = _step$value[0],
-					    propValue = _step$value[1];
+				for (var _iterator = Object.keys(attrs)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var propName = _step.value;
 
+					var propValue = attrs[propName];
 					element.setAttribute(propName, _this2.expr(propValue));
 				}
 			} catch (err) {

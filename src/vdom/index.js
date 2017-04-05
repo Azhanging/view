@@ -21,8 +21,9 @@ class _ELement {
 		if(options.tagName) {
 			el = document.createElement(options.tagName);
 			//设置属性
-			for(let [prop, value] of Object.entries(options.props)) {
-				el.setAttribute(prop, value);
+			for(let key of Object.keys(options.props)) {
+				let value = options.props[key];
+				el.setAttribute(key, value);
 			}
 			//设置子节点
 			for(let children of options.childrens) {
@@ -121,7 +122,8 @@ class _ELement {
 	/*判断属性是否有增加或者属性时候是否进行过修改*/
 	diffProps(oldTree, newTree) {
 		let props = {};
-		for(let [key, value] of Object.entries(newTree.props)) {
+		for(let key of Object.keys(newTree.props)) {
+			let value = newTree.props[key];
 			//如果当前的属性存在，值不相同，存值
 			if(Reflect.has(oldTree.props, key) && !(oldTree.props[key] === value)) {
 				props[key] = value;
