@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		<div id="app">
+			<div _v-for="i in {{arr}}">
+				<div _v-for="n in {{i}}">
+					{{n}}
+				</div>
+			</div>
+		</div>
+		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			var arr = [];
+			
+			for(var i = 0; i<2000;i++){
+				arr.push([
+					Math.random(),
+					Math.random(),
+					Math.random(),
+					Math.random(),
+					Math.random()
+				])
+			}
+			
+			var v = new View({
+				el:"app",
+				data:{
+					arr:arr
+				}
+			})
+		</script>
+	</body>
+</html>

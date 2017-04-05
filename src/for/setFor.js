@@ -47,9 +47,10 @@ function setFor(el, propValue, propIndex) {
 			cloneNode.__forElement__ = [cloneNode];
 			//存储当前列表的占位
 			cloneNode.__presentSeize__ = presentSeize;
-		} else {
-			setForElement(cloneNode, cloneNode);
 		}
+//		else {
+//			setForElement(cloneNode, cloneNode);
+//		}
 	});
 
 	let oldElSeize = document.createTextNode('');
