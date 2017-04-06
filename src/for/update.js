@@ -111,6 +111,7 @@ function forUpdate(keyLine) {
 						}
 					}
 					
+					
 					//添加到当前循环组的占位节点中
 					parentNode.insertBefore(fragment, forLineElement[0].__presentSeize__);
 					//创建存在绑定的文本节点

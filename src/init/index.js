@@ -59,6 +59,8 @@ class View {
 		this._init();
 	}
 	_init() {
+		this.vdomFn = vdom;
+		
 		//构建前钩子函数
 		this.init();
 		//配置对象

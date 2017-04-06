@@ -857,6 +857,8 @@ var View = function () {
 	_createClass(View, [{
 		key: '_init',
 		value: function _init() {
+			this.vdomFn = _vdom2.default;
+
 			//构建前钩子函数
 			this.init();
 			//配置对象
