@@ -14,6 +14,7 @@
 		</div>
 		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
+			var start = new Date();
 			var arr = [];
 			
 			for(var i = 0; i<2000;i++){
@@ -32,6 +33,7 @@
 					arr:arr
 				}
 			})
+			console.log(new Date() - start);
 		</script>
 	</body>
 </html>

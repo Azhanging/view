@@ -28,7 +28,7 @@ function forUpdate(keyLine) {
 					let seize = element.__seize__;
 					let parentNode = seize.parentNode;
 					element.isReplace = false;
-					if(!(getVal instanceof Array) && getVal instanceof Object || typeof getVal === 'string' ||  typeof getVal === 'boolean' ||  typeof getVal === 'number' || getVal === null || getVal === undefined) {
+					if(!(getVal instanceof Array) && getVal instanceof Object) {
 						element.innerHTML = '';
 					}
 
