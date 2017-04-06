@@ -142,9 +142,6 @@ function replateForKey(element, forKey, keyLine) {
 			}
 		}
 	});
-
-//	newHTML = replateForChildKey(newHTML);
-
 	element.innerHTML = newHTML !== '' ? newHTML : innerHTML;
 }
 
