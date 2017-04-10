@@ -873,8 +873,6 @@ var View = function () {
 			_dom.createTextNodes.call(this);
 			//新建和替换绑定的文本节点信息
 			_dom.replaceTextNode.call(this);
-			//检查当前的for中空数组的节点是否显示的，显示的隐藏它
-			_for.testForNullArray.call(this);
 			//创建钩子函数
 			this.created();
 			//初始化更新
@@ -1553,15 +1551,13 @@ exports.domUpdate = domUpdate;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.testForNullArray = exports.setFor = undefined;
+exports.setFor = undefined;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _tools = __webpack_require__(0);
 
 function setFor(el, propValue, propIndex) {
-	var _this = this;
-
 	var _propValue$split = propValue.split(' in '),
 	    _propValue$split2 = _slicedToArray(_propValue$split, 2),
 	    forKey = _propValue$split2[0],
@@ -1587,165 +1583,10 @@ function setFor(el, propValue, propIndex) {
 		getForVal = [];
 	}
 
-	Object.keys(getForVal).forEach(function (key, index) {
-		var cloneNode = el.cloneNode(true);
-		//设置索引
-		cloneNode.$index = index;
-		var forSeize = document.createTextNode('');
-		cloneNode.__seize__ = forSeize;
-		cloneNode.isReplace = false;
-		forSeize.__seize__ = cloneNode;
-
-		_this.__ob__.for[filterForVal].push(cloneNode);
-		seize.parentNode.insertBefore(cloneNode, seize);
-		//初始是空数组还是字符串类型，创建数据链的字符串结构
-		if (getForVal.__keyLine__) {
-			replateForKey.call(_this, cloneNode, forKey, getForVal.__keyLine__ + '.' + key);
-		} else {
-			replateForKey.call(_this, cloneNode, forKey, filterForVal + '.' + key);
-		}
-
-		cloneNode.__html__ = cloneNode.outerHTML;
-
-		//如果当前的元素是第一个，存储下面的兄弟节点
-		if (index === 0) {
-			cloneNode.__forElement__ = [cloneNode];
-			//存储当前列表的占位
-			cloneNode.__presentSeize__ = presentSeize;
-		} else {
-			setForElement(cloneNode, cloneNode);
-		}
-	});
-
-	var oldElSeize = document.createTextNode('');
-
-	//如果为一个空数组数据
-	if (Object.keys(getForVal).length === 0) {
-		var cloneNode = el.cloneNode(true);
-		//设置索引,空对象中的索引从-1开始
-		if (getForVal instanceof Object && !(getForVal instanceof Array) || typeof getForVal === 'string' || typeof getForVal === 'boolean' || typeof getForVal === 'number' || getForVal === null || getForVal === undefined) {
-			cloneNode.$index = -1;
-			//当前对象是否从空值开始
-			cloneNode.isNullStart = true;
-			//当前是否模板中的循环，设置dataset
-			if (this.isTemplate) {
-				cloneNode.dataset['index'] = -1;
-			}
-		} else {
-			cloneNode.$index = 0;
-			//当前是否模板中的循环，设置dataset
-			if (this.isTemplate) {
-				cloneNode.dataset['index'] = 0;
-			}
-		}
-
-		var forSeize = document.createTextNode('');
-		cloneNode.__seize__ = forSeize;
-		cloneNode.isReplace = true;
-		forSeize.__seize__ = cloneNode;
-		var parentNode = seize.parentNode;
-		this.__ob__.for[filterForVal].push(cloneNode);
-		//替换空数据节点
-		parentNode.insertBefore(cloneNode, seize);
-		//初始是空数组还是字符串类型，创建数据链的字符串结构
-		if (getForVal.__keyLine__) {
-			replateForKey.call(this, cloneNode, forKey, getForVal.__keyLine__ + '.' + 0);
-		} else {
-			replateForKey.call(this, cloneNode, forKey, filterForVal + '.' + 0);
-		}
-		cloneNode.__html__ = cloneNode.outerHTML;
-
-		//如果当前的元素是第一个，存储下面的兄弟节点
-		cloneNode.__forElement__ = [cloneNode];
-		//存储当前列表的占位
-		cloneNode.__presentSeize__ = presentSeize;
-	}
-
-	el.parentNode.replaceChild(oldElSeize, el);
+	console.log(getForVal);
 };
 
-function setForElement(element, _pushElement) {
-	var prevElement = element.previousElementSibling;
-	if (prevElement.__forElement__) {
-		prevElement.__forElement__.push(_pushElement);
-	} else {
-		setForElement(prevElement, _pushElement);
-	}
-}
-
-//替换下面对应依赖中绑定的数据
-function replateForKey(element, forKey, keyLine) {
-	//匹配
-	var REGEXP_TYPE_1 = new RegExp('\\{\\{' + forKey + '( ?\\|.*)?\\}\\}', 'g');
-
-	var REGEXP_TYPE_2 = new RegExp('\\{\\{' + forKey + '\\.(.*?)', 'g');
-
-	var innerHTML = element.innerHTML;
-
-	var newHTML = innerHTML;
-
-	if (REGEXP_TYPE_1.test(innerHTML)) {
-		newHTML = newHTML.replace(REGEXP_TYPE_1, '{{' + keyLine + RegExp.$1 + '}}');
-	}
-	if (REGEXP_TYPE_2.test(innerHTML)) {
-		newHTML = newHTML.replace(REGEXP_TYPE_2, '{{' + keyLine + '.' + RegExp.$1);
-	}
-
-	//获取当前的节点
-	var attrList = element.attributes;
-
-	Object.keys(attrList).forEach(function (index) {
-		if (/^_v-|^:/.test(attrList[index].name)) {
-			var attrValue = attrList[index].value;
-			if (REGEXP_TYPE_1.test(attrValue)) {
-				element.setAttribute(attrList[index].name, attrValue.replace(REGEXP_TYPE_1, '{{' + keyLine + RegExp.$1 + '}}'));
-			}
-			if (REGEXP_TYPE_2.test(attrValue)) {
-				element.setAttribute(attrList[index].name, attrValue.replace(REGEXP_TYPE_2, '{{' + keyLine + '.' + RegExp.$1));
-			}
-		}
-	});
-	element.innerHTML = newHTML !== '' ? newHTML : innerHTML;
-}
-
-//初始化数据是否为空值绑定，则隐藏对于的列表
-function testForNullArray() {
-	var _this2 = this;
-
-	Object.keys(this.__ob__.for).forEach(function (index) {
-		var _iteratorNormalCompletion = true;
-		var _didIteratorError = false;
-		var _iteratorError = undefined;
-
-		try {
-			for (var _iterator = _this2.__ob__.for[index][Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-				var element = _step.value;
-
-				if (element.isReplace === true && element.parentNode != null) {
-					var parentNode = element.parentNode;
-					element.isReplace = true;
-					parentNode.replaceChild(element.__seize__, element);
-				}
-			}
-		} catch (err) {
-			_didIteratorError = true;
-			_iteratorError = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion && _iterator.return) {
-					_iterator.return();
-				}
-			} finally {
-				if (_didIteratorError) {
-					throw _iteratorError;
-				}
-			}
-		}
-	});
-}
-
 exports.setFor = setFor;
-exports.testForNullArray = testForNullArray;
 
 /***/ }),
 /* 15 */

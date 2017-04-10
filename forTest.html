@@ -7,12 +7,7 @@
 	<body>
 		<div id="app">
 			<div _v-for="i in {{arr}}">
-				<div _v-for="n in {{i}}">
-					{{n.a}} - {{n.b}}
-					<div _v-for="m in {{arr1}}">
-						{{m}}
-					</div>
-				</div>
+				{{i}}
 			</div>
 		</div>
 		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
@@ -20,23 +15,19 @@
 			var v = new View({
 				el:"app",
 				data:{
-					arr:[
-						[
-							{a:1,b:2},
-							{a:3,b:4}
-						],
-						[
-							{a:3,b:4},
-							{a:5,b:6}
-						],
-						[
-							{a:7,b:8},
-							{a:9,b:10}
-						]
-					],
-					arr1:[1,2,3,4]
+					arr:[1,2,3,4],
+					i:1
 				}
-			})
+			});
+			
+			var obj = Object.create(v.data);
+			Object.defineProperty(obj,'getI',{
+				get(){
+					return v.data.i;
+				}
+			});
+			
+			
 		</script>
 	</body>
 </html>
