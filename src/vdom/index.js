@@ -2,7 +2,7 @@ import { setDom } from './../dom';
 import component from './../component';
 import { setAttr } from './../attr';
 import { setEvent } from './../event';
-import { getIndex } from './../tools';
+import { getIndex ,setScope} from './../tools';
 
 //状态
 const REPLACE = 0;
@@ -56,9 +56,12 @@ class _ELement {
 				index: this.id,
 				el: element
 			};
+			//设置作用域
+			setScope.call(_this,element);
+			
 			//设置属性的绑定
 			setAttr.call(_this, element, vdom);
-
+			
 			for(let el of element.childNodes){
 				this.id++;
 				vdom.childrens.push(this.resolve(el, _this));				

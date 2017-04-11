@@ -1,7 +1,7 @@
 import Observer from './../observer';
 import method from './../method';
 import vdom from './../vdom';
-import { getEl, getKeyLink, deepCopy } from './../tools';
+import { getEl, getKeyLink, deepCopy ,getScope} from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
@@ -126,71 +126,72 @@ class View {
 		forUpdate.call(this, keys);
 		domUpdate.call(this, keys);
 	}
-	_get(keyLink) {
+	_get(keyLink,element) {
+		//获取作用域内的值
+		let getVal = getScope.call(this,element);
 		//存在实例屬性對象
 		if(/\./g.test(keyLink)) {
-			let obj = keyLink.split('.');
-			let getVal = this['data'];
+			let keys = keyLink.split('.');
 			//存在值
-			if(this['data'][obj[0]]) {
-				for(let i = 0; i < obj.length; i++) {
-					let key = obj[i];
+			if(getVal[keys[0]]) {
+				for(let i = 0; i < keys.length; i++) {
+					let key = keys[i];
 					getVal = getVal !== null && getVal[key] !== undefined? getVal[key] : null;
 				}
 				return getVal;
 			} else {
 				return null;
 			}
-		} else if(this['data'][keyLink] != undefined) {
-			return this['data'][keyLink];
+		} else if(getVal[keyLink] != undefined) {
+			return getVal[keyLink];
 		} else {
 			return null;
 		}
 	}
-	_set(obj, val, key) {
-		let data = this['data'],
-			objs = obj.split('.'),
-			keyLen = objs.length,
-			parentObj = objs[0], //对象中顶级key
-			i = 0,
-			tempObject = data,
-			tempVal;
-		//如果存在多层值
-		if(keyLen != 1) {
-			//最后一个key
-			let lastIndex = objs[objs.length - 1];
-			//移除最后一个值
-			objs.pop();
-			//把key链重组
-			obj = objs.join('.');
-			if(this._get(obj) !== null) {
-				//设置新的值
-				if(key != undefined) {
-					this._get(obj)[lastIndex][key] = val;
-				} else {
-					this._get(obj)[lastIndex] = val;
-				}
-				//设置新的值
-				if(!(typeof val === 'string')) {
-					this._get(obj)[lastIndex] = deepCopy(this._get(obj)[lastIndex]);
-				}
-			}
-		} else {
-			/*只有一个key值*/
-			if(this._get(obj) !== null) {
-				if(key != undefined) {
-					this._get(obj)[key] = val;
-					var getData = this._get(obj);
-					getData = deepCopy(this._get(obj));
-				} else {
-					//2017年03月06日20:32:59 优化两次更新  //this.data[obj] = val;
-					//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : this.data[obj]);
-					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : val);
-				}
-			}
-		}
-	}
-	expr(expr) {
+//	_set(obj, val, key) {
+//		let data = this['data'],
+//			objs = obj.split('.'),
+//			keyLen = objs.length,
+//			parentObj = objs[0], //对象中顶级key
+//			i = 0,
+//			tempObject = data,
+//			tempVal;
+//		//如果存在多层值
+//		if(keyLen != 1) {
+//			//最后一个key
+//			let lastIndex = objs[objs.length - 1];
+//			//移除最后一个值
+//			objs.pop();
+//			//把key链重组
+//			obj = objs.join('.');
+//			if(this._get(obj) !== null) {
+//				//设置新的值
+//				if(key != undefined) {
+//					this._get(obj)[lastIndex][key] = val;
+//				} else {
+//					this._get(obj)[lastIndex] = val;
+//				}
+//				//设置新的值
+//				if(!(typeof val === 'string')) {
+//					this._get(obj)[lastIndex] = deepCopy(this._get(obj)[lastIndex]);
+//				}
+//			}
+//		} else {
+//			/*只有一个key值*/
+//			if(this._get(obj) !== null) {
+//				if(key != undefined) {
+//					this._get(obj)[key] = val;
+//					var getData = this._get(obj);
+//					getData = deepCopy(this._get(obj));
+//				} else {
+//					//2017年03月06日20:32:59 优化两次更新  //this.data[obj] = val;
+//					//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : this.data[obj]);
+//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : val);
+//				}
+//			}
+//		}
+//	}
+	expr(expr,element) {
 		let dataValues = getKeyLink.call(this, expr);
 		let dataValueLen = dataValues.length;
 		let newExpr = expr;
@@ -206,11 +207,12 @@ class View {
 		}
 
 		for(let i = 0; i < dataValueLen; i++) {
-			if(this._get(dataValues[i]) !== null) {
-				let data = this._get(dataValues[i]);
+			let getVal = this._get(dataValues[i],element); 
+			if(getVal !== null) {
+				let data = getVal;
 				//处理for绑定,for只允许绑定一个data,不支持表达式
 				if(arguments[1] === 'for') {
-					return this._get(dataValues[i]);
+					return getVal;
 				}
 				//更新为绑定表达式
 				newExpr = newExpr.replace(new RegExp('\{\{' + dataValues[i] + '\}\}', 'g'), (data === false || data === true) ? data : "'" + data + "'");

@@ -1,15 +1,19 @@
 import { setBind } from './../tools';
 
 function setFor(el, propValue, propIndex) {
+	//拆解数据
 	let [forKey, forVal] = propValue.split(' in ');
+	//移除花括号数据
 	let filterForVal = forVal.replace(/(\{)?(\})?/g, '');
+	//获取当前的作用域链数据
 	let getForVal = this._get(filterForVal);
 	let seize = document.createTextNode('');
-	//现在循环列表中最后的占位节点
+
+	//插入当前的列表占位
 	let presentSeize = document.createTextNode('');
-	//插入列表占位
 	el.parentNode.insertBefore(presentSeize, el.nextSibling);
-	
+
+	//设置键值 
 	if(!this.__ob__.for[filterForVal]) {
 		this.__ob__.for[filterForVal] = [];
 		setBind.call(this, filterForVal);
@@ -22,8 +26,8 @@ function setFor(el, propValue, propIndex) {
 		getForVal = [];
 	}
 	
-	console.log(getForVal);
-	
+
+
 };
 
 

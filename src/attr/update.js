@@ -19,9 +19,7 @@ function attrUpdate(key) {
 			let attrs = element.__attrs__;
 			for(let propName of Object.keys(attrs)){
 				let propValue = attrs[propName];
-				if(element.getAttribute(propName) !== this.expr(propValue)){
-					element.setAttribute(propName,this.expr(propValue));
-				}
+				element.setAttribute(propName,this.expr(propValue,element));
 			}
 		});
 	}

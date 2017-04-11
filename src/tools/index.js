@@ -94,6 +94,30 @@ function setBind(keyLine){
 	}
 }
 
+//设置作用域
+function setScope(el){
+	//查看当前是否存在作用域
+	if(!el.$scope){
+		//设置作用域
+		el.$scope = Object.create(getScope.call(this,el));
+	}
+}
+
+//获取作用域
+function getScope(el){
+	if(this.el === el){
+		return this.data;
+	}
+	let parentNode = el.parentNode;
+	if(parentNode !== null){
+		if(parentNode.$scope){
+			return parentNode.$scope; 
+		}else{
+			return getScope.call(this,parentNode);	
+		}
+	}
+}
+
 export {
 	getEl,
 	disassembly,
@@ -102,5 +126,7 @@ export {
 	getKey,
 	deepCopy,
 	getIndex,
-	setBind
+	setBind,
+	setScope,
+	getScope
 }

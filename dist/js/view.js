@@ -177,6 +177,30 @@ function setBind(keyLine) {
 	}
 }
 
+//设置作用域
+function setScope(el) {
+	//查看当前是否存在作用域
+	if (!el.$scope) {
+		//设置作用域
+		el.$scope = Object.create(getScope.call(this, el));
+	}
+}
+
+//获取作用域
+function getScope(el) {
+	if (this.el === el) {
+		return this.data;
+	}
+	var parentNode = el.parentNode;
+	if (parentNode !== null) {
+		if (parentNode.$scope) {
+			return parentNode.$scope;
+		} else {
+			return getScope.call(this, parentNode);
+		}
+	}
+}
+
 exports.getEl = getEl;
 exports.disassembly = disassembly;
 exports.getDisassemblyKey = getDisassemblyKey;
@@ -185,6 +209,8 @@ exports.getKey = getKey;
 exports.deepCopy = deepCopy;
 exports.getIndex = getIndex;
 exports.setBind = setBind;
+exports.setScope = setScope;
+exports.getScope = getScope;
 
 /***/ }),
 /* 1 */
@@ -588,6 +614,9 @@ var _ELement = function () {
 					index: this.id,
 					el: element
 				};
+				//设置作用域
+				_tools.setScope.call(_this, element);
+
 				//设置属性的绑定
 				_attr.setAttr.call(_this, element, vdom);
 
@@ -756,8 +785,6 @@ exports.default = _ELement;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -956,76 +983,75 @@ var View = function () {
 		}
 	}, {
 		key: '_get',
-		value: function _get(keyLink) {
+		value: function _get(keyLink, element) {
+			//获取作用域内的值
+			var getVal = _tools.getScope.call(this, element);
 			//存在实例屬性對象
 			if (/\./g.test(keyLink)) {
-				var obj = keyLink.split('.');
-				var getVal = this['data'];
+				var keys = keyLink.split('.');
 				//存在值
-				if (this['data'][obj[0]]) {
-					for (var i = 0; i < obj.length; i++) {
-						var key = obj[i];
+				if (getVal[keys[0]]) {
+					for (var i = 0; i < keys.length; i++) {
+						var key = keys[i];
 						getVal = getVal !== null && getVal[key] !== undefined ? getVal[key] : null;
 					}
 					return getVal;
 				} else {
 					return null;
 				}
-			} else if (this['data'][keyLink] != undefined) {
-				return this['data'][keyLink];
+			} else if (getVal[keyLink] != undefined) {
+				return getVal[keyLink];
 			} else {
 				return null;
 			}
 		}
-	}, {
-		key: '_set',
-		value: function _set(obj, val, key) {
-			var data = this['data'],
-			    objs = obj.split('.'),
-			    keyLen = objs.length,
-			    parentObj = objs[0],
-			    //对象中顶级key
-			i = 0,
-			    tempObject = data,
-			    tempVal = void 0;
-			//如果存在多层值
-			if (keyLen != 1) {
-				//最后一个key
-				var lastIndex = objs[objs.length - 1];
-				//移除最后一个值
-				objs.pop();
-				//把key链重组
-				obj = objs.join('.');
-				if (this._get(obj) !== null) {
-					//设置新的值
-					if (key != undefined) {
-						this._get(obj)[lastIndex][key] = val;
-					} else {
-						this._get(obj)[lastIndex] = val;
-					}
-					//设置新的值
-					if (!(typeof val === 'string')) {
-						this._get(obj)[lastIndex] = (0, _tools.deepCopy)(this._get(obj)[lastIndex]);
-					}
-				}
-			} else {
-				/*只有一个key值*/
-				if (this._get(obj) !== null) {
-					if (key != undefined) {
-						this._get(obj)[key] = val;
-						var getData = this._get(obj);
-						getData = (0, _tools.deepCopy)(this._get(obj));
-					} else {
-						//2017年03月06日20:32:59 优化两次更新  //this.data[obj] = val;
-						//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : this.data[obj]);
-						this.data[obj] = (typeof val === 'undefined' ? 'undefined' : _typeof(val)) == 'object' ? (0, _tools.deepCopy)(val) : val;
-					}
-				}
-			}
-		}
+		//	_set(obj, val, key) {
+		//		let data = this['data'],
+		//			objs = obj.split('.'),
+		//			keyLen = objs.length,
+		//			parentObj = objs[0], //对象中顶级key
+		//			i = 0,
+		//			tempObject = data,
+		//			tempVal;
+		//		//如果存在多层值
+		//		if(keyLen != 1) {
+		//			//最后一个key
+		//			let lastIndex = objs[objs.length - 1];
+		//			//移除最后一个值
+		//			objs.pop();
+		//			//把key链重组
+		//			obj = objs.join('.');
+		//			if(this._get(obj) !== null) {
+		//				//设置新的值
+		//				if(key != undefined) {
+		//					this._get(obj)[lastIndex][key] = val;
+		//				} else {
+		//					this._get(obj)[lastIndex] = val;
+		//				}
+		//				//设置新的值
+		//				if(!(typeof val === 'string')) {
+		//					this._get(obj)[lastIndex] = deepCopy(this._get(obj)[lastIndex]);
+		//				}
+		//			}
+		//		} else {
+		//			/*只有一个key值*/
+		//			if(this._get(obj) !== null) {
+		//				if(key != undefined) {
+		//					this._get(obj)[key] = val;
+		//					var getData = this._get(obj);
+		//					getData = deepCopy(this._get(obj));
+		//				} else {
+		//					//2017年03月06日20:32:59 优化两次更新  //this.data[obj] = val;
+		//					//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : this.data[obj]);
+		//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : val);
+		//				}
+		//			}
+		//		}
+		//	}
+
 	}, {
 		key: 'expr',
-		value: function expr(_expr) {
+		value: function expr(_expr, element) {
 			var dataValues = _tools.getKeyLink.call(this, _expr);
 			var dataValueLen = dataValues.length;
 			var newExpr = _expr;
@@ -1041,11 +1067,12 @@ var View = function () {
 			}
 
 			for (var i = 0; i < dataValueLen; i++) {
-				if (this._get(dataValues[i]) !== null) {
-					var data = this._get(dataValues[i]);
+				var getVal = this._get(dataValues[i], element);
+				if (getVal !== null) {
+					var data = getVal;
 					//处理for绑定,for只允许绑定一个data,不支持表达式
 					if (arguments[1] === 'for') {
-						return this._get(dataValues[i]);
+						return getVal;
 					}
 					//更新为绑定表达式
 					newExpr = newExpr.replace(new RegExp('\{\{' + dataValues[i] + '\}\}', 'g'), data === false || data === true ? data : "'" + data + "'");
@@ -1301,9 +1328,7 @@ function attrUpdate(key) {
 					var propName = _step.value;
 
 					var propValue = attrs[propName];
-					if (element.getAttribute(propName) !== _this2.expr(propValue)) {
-						element.setAttribute(propName, _this2.expr(propValue));
-					}
+					element.setAttribute(propName, _this2.expr(propValue, element));
 				}
 			} catch (err) {
 				_didIteratorError = true;
@@ -1480,11 +1505,13 @@ function domUpdate(key) {
 	}
 
 	function updateFn(keyLine) {
-		var val = this._get(keyLine);
-		//如果当前的对象获取到的为null，返回一个空的字符串
-		val = val == null ? '' : val;
+		var _this2 = this;
+
 		var textNodes = this.__ob__.dom[keyLine];
 		textNodes.forEach(function (element) {
+			var val = _this2._get(keyLine, element);
+			//如果当前的对象获取到的为null，返回一个空的字符串
+			val = val == null ? '' : val;
 			//是否存在过滤器
 			if (element['filters'].length > 0) {
 				val = filter(val, element['filters']);
@@ -1558,19 +1585,24 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 var _tools = __webpack_require__(0);
 
 function setFor(el, propValue, propIndex) {
+	//拆解数据
 	var _propValue$split = propValue.split(' in '),
 	    _propValue$split2 = _slicedToArray(_propValue$split, 2),
 	    forKey = _propValue$split2[0],
 	    forVal = _propValue$split2[1];
+	//移除花括号数据
+
 
 	var filterForVal = forVal.replace(/(\{)?(\})?/g, '');
+	//获取当前的作用域链数据
 	var getForVal = this._get(filterForVal);
 	var seize = document.createTextNode('');
-	//现在循环列表中最后的占位节点
+
+	//插入当前的列表占位
 	var presentSeize = document.createTextNode('');
-	//插入列表占位
 	el.parentNode.insertBefore(presentSeize, el.nextSibling);
 
+	//设置键值 
 	if (!this.__ob__.for[filterForVal]) {
 		this.__ob__.for[filterForVal] = [];
 		_tools.setBind.call(this, filterForVal);
@@ -1582,8 +1614,6 @@ function setFor(el, propValue, propIndex) {
 	if (getForVal == undefined || getForVal == null) {
 		getForVal = [];
 	}
-
-	console.log(getForVal);
 };
 
 exports.setFor = setFor;
@@ -1924,19 +1954,23 @@ function ifUpdate(key) {
 
 		var ifNodes = this.__ob__.if[keyLine];
 		//if集合中的if和else/elseif
-		ifNodes.forEach(function (keyLineItem, index) {
-			for (var j = 0; j < keyLineItem.length; j++) {
-				var obj = _this2.expr(keyLineItem[j].__if__);
+		ifNodes.forEach(function (elements, index) {
+			for (var j = 0; j < elements.length; j++) {
+				var obj = _this2.expr(elements[j].__if__, elements[j]);
 				if (obj) {
-					keyLineItem.forEach(function (el, _index) {
+					elements.forEach(function (el, _index) {
 						el.style.display = 'none';
 					});
 					//初始化所有的对象隐藏,当前的对象显示
-					keyLineItem[j].style.display = 'block';
+					if (obj == 'inlineBlock') {
+						elements[j].style.display = 'inlineBlock';
+					} else {
+						elements[j].style.display = 'block';
+					}
 					break;
 				}
-				if (j == keyLineItem.length - 1) {
-					keyLineItem.forEach(function (el, _index) {
+				if (j == elements.length - 1) {
+					elements.forEach(function (el, _index) {
 						el.style.display = 'none';
 					});
 				}
@@ -2188,8 +2222,7 @@ function showUpdate(key) {
 
 		var showElements = this.__ob__.show[keyLine];
 		showElements.forEach(function (element, index) {
-			var showValue = _this2.expr(element.__show__);
-
+			var showValue = _this2.expr(element.__show__, element);
 			if (showValue == true || showValue == 'block' || showValue.toString().toLocaleLowerCase() === 'ok') {
 				showValue = 'block';
 			} else if (showValue == false || showValue == 'none' || showValue.toString().toLocaleLowerCase() === 'no') {
