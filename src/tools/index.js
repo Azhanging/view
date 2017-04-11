@@ -105,13 +105,19 @@ function setScope(el){
 
 //获取作用域
 function getScope(el){
+	//查看当前是否顶层的节点信息
 	if(this.el === el){
 		return this.data;
 	}
+	//如果当前的节点是存在作用域的
+	if(el.$scope){
+		return el.$scope; 
+	}
+	//以上都没有作用域,向父级查找作用域
 	let parentNode = el.parentNode;
 	if(parentNode !== null){
 		if(parentNode.$scope){
-			return parentNode.$scope; 
+			return parentNode.$scope;
 		}else{
 			return getScope.call(this,parentNode);	
 		}

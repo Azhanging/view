@@ -15,29 +15,40 @@
 			<a href="" _v-if="{{ifStatus.0}}">1</a>
 			<a href="" _v-elseif="{{ifStatus.1}}">2</a>
 			<a href="" _v-else="{{ifStatus.2}}">3</a>
+			<div _v-for="i in {{ifStatus}}">
+				<div _v-for="n in {{i}}">
+					{{n}}
+				</div>
+			</div>
+			<div _v-for="i in {{testFor}}">
+				{{i}}
+			</div>
 		</div>
 		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
+			var time = new Date();
+			var arr = [];
+			for(var i = 0;i<2000;i++){
+				arr.push([
+					Math.random(),
+					Math.random(),
+					Math.random(),
+					Math.random(),
+					Math.random()
+				])
+			}
+			
 			var v = new View({
 				el:"app",
 				data:{
 					i:1,
 					isShow:true,
-					ifStatus:[false,true,false]
+					ifStatus:arr,
+					testFor:''
 				}
 			});
 			
-			var obj = Object.create(v.data);
-			var	val = 456;
-			
-			Object.defineProperty(obj,'i',{
-				get(){
-					return val;
-				},
-				set(newVal){
-					val = newVal;
-				}
-			});
+			console.log(new Date()-time);
 		</script>
 	</body>
 </html>
