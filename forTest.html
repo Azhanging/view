@@ -15,10 +15,7 @@
 			<a href="" _v-if="{{ifStatus.0}}">1</a>
 			<a href="" _v-elseif="{{ifStatus.1}}">2</a>
 			<a href="" _v-else="{{ifStatus.2}}">3</a>
-			<div _v-for="i in {{ifStatus}}">
-				{{i}} --- {{$index}}
-			</div>
-			<div _v-for="i in {{testFor}}">
+			<div _v-for="i in {{ifStatus}}" :class="{{$index}}">
 				{{i}} --- {{$index}}
 			</div>
 		</div>

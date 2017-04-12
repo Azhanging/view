@@ -10,7 +10,7 @@ const REORDER = 1;
 const PROPS = 2;
 const TEXT = 3;
 
-class _ELement {
+class _Element {
 	constructor(context) {
 		this.id = 0;
 		this.elementList = {};
@@ -154,4 +154,4 @@ class _ELement {
 	}
 }
 
-export default _ELement;
+export default _Element;

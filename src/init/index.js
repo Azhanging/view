@@ -67,6 +67,7 @@ class View {
 		this.config();
 		//设置方法
 		method.call(this);
+		console.log(vdom);
 		//设置observe
 		new Observer(this.data, undefined, this);
 		//创建vdom内容
@@ -191,7 +192,7 @@ class View {
 //			}
 //		}
 //	}
-	expr(expr,element) {
+	expr(expr,element) {		
 		let dataValues = getKeyLink.call(this, expr);
 		let dataValueLen = dataValues.length;
 		let newExpr = expr;
@@ -207,23 +208,29 @@ class View {
 		}
 
 		for(let i = 0; i < dataValueLen; i++) {
-			let getVal = this._get(dataValues[i],element); 
+			let getVal = this._get(dataValues[i],element);
+			//这里处理一种带$的key数据
+			if(dataValues[i].indexOf('$') !== -1){
+				dataValues[i] = dataValues[i].replace(/\$/g,'\\$');
+			}
+			
 			if(getVal !== null) {
 				let data = getVal;
 				//处理for绑定,for只允许绑定一个data,不支持表达式
 				if(arguments[1] === 'for') {
 					return getVal;
 				}
+				
 				//更新为绑定表达式
-				newExpr = newExpr.replace(new RegExp('\{\{' + dataValues[i] + '\}\}', 'g'), (data === false || data === true) ? data : "'" + data + "'");
+				newExpr = newExpr.replace(new RegExp('\\{\\{' + dataValues[i] + '\\}\\}', 'g'), (data === false || data === true) ? data : "'" + data + "'");
 			} else {
 				//处理不存在数据流空值替换对象内容
-				newExpr = newExpr.replace(new RegExp('\{\{' + dataValues[i] + '\}\}', 'g'), "''");
+				newExpr = newExpr.replace(new RegExp('\\{\\{' + dataValues[i] + '\\}\\}', 'g'), "''");
 			}
 		}
 		try {
 			//解析表达式
-			return eval(newExpr);
+			return new Function('return '+ newExpr)();
 		} catch(e) {
 			//报错返回空值
 			return '';

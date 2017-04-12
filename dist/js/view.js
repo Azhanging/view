@@ -524,16 +524,16 @@ var REORDER = 1;
 var PROPS = 2;
 var TEXT = 3;
 
-var _ELement = function () {
-	function _ELement(context) {
-		_classCallCheck(this, _ELement);
+var _Element = function () {
+	function _Element(context) {
+		_classCallCheck(this, _Element);
 
 		this.id = 0;
 		this.elementList = {};
 		this.context = context;
 	}
 
-	_createClass(_ELement, [{
+	_createClass(_Element, [{
 		key: 'render',
 		value: function render(options) {
 			var el = void 0;
@@ -776,10 +776,10 @@ var _ELement = function () {
 		}
 	}]);
 
-	return _ELement;
+	return _Element;
 }();
 
-exports.default = _ELement;
+exports.default = _Element;
 
 /***/ }),
 /* 8 */
@@ -898,6 +898,7 @@ var View = function () {
 			this.config();
 			//设置方法
 			_method2.default.call(this);
+			console.log(_vdom2.default);
 			//设置observe
 			new _observer2.default(this.data, undefined, this);
 			//创建vdom内容
@@ -1074,22 +1075,28 @@ var View = function () {
 
 			for (var i = 0; i < dataValueLen; i++) {
 				var getVal = this._get(dataValues[i], element);
+				//这里处理一种带$的key数据
+				if (dataValues[i].indexOf('$') !== -1) {
+					dataValues[i] = dataValues[i].replace(/\$/g, '\\$');
+				}
+
 				if (getVal !== null) {
 					var data = getVal;
 					//处理for绑定,for只允许绑定一个data,不支持表达式
 					if (arguments[1] === 'for') {
 						return getVal;
 					}
+
 					//更新为绑定表达式
-					newExpr = newExpr.replace(new RegExp('\{\{' + dataValues[i] + '\}\}', 'g'), data === false || data === true ? data : "'" + data + "'");
+					newExpr = newExpr.replace(new RegExp('\\{\\{' + dataValues[i] + '\\}\\}', 'g'), data === false || data === true ? data : "'" + data + "'");
 				} else {
 					//处理不存在数据流空值替换对象内容
-					newExpr = newExpr.replace(new RegExp('\{\{' + dataValues[i] + '\}\}', 'g'), "''");
+					newExpr = newExpr.replace(new RegExp('\\{\\{' + dataValues[i] + '\\}\\}', 'g'), "''");
 				}
 			}
 			try {
 				//解析表达式
-				return eval(newExpr);
+				return new Function('return ' + newExpr)();
 			} catch (e) {
 				//报错返回空值
 				return '';
@@ -1625,9 +1632,13 @@ function setFor(element, propValue, propIndex) {
 	//存储循环组节点成员
 	element.__forElementGroup__ = [];
 	//存储父级的节点
-	element.__parentNode__ = element.parenNode;
+	element.__parentNode__ = parentNode;
 	//存储循环组的占位节点
 	element.__presentSeize__ = presentSeize;
+	//储存当前for中的循环键
+	element.__forKey__ = forKey;
+	//存储自己节点
+	element.__self__ = element.cloneNode(true);
 	presentSeize.__element__ = element;
 
 	//创建一个文档片段
@@ -1645,7 +1656,6 @@ function setFor(element, propValue, propIndex) {
 		};
 		cloneNode.$index = index;
 		element.__forElementGroup__.push(cloneNode);
-
 		fragment.appendChild(cloneNode);
 	});
 	//使用占位节点替换掉原本的dom节点信息
@@ -1684,21 +1694,22 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.forUpdate = undefined;
 
+var _dom = __webpack_require__(1);
+
 var _vdom = __webpack_require__(7);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
-var _dom = __webpack_require__(1);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function forUpdate(key) {
-	var _this = this;
+	var _this2 = this;
 
+	var vdom = new _vdom2.default();
 	//初始化
 	if (key === undefined || key === '') {
 		Object.keys(this.__ob__.for).forEach(function (keyLine, index) {
-			updateFn.call(_this, keyLine);
+			updateFn.call(_this2, keyLine);
 		});
 	} else {
 		//如果不存在键值，不执行更新
@@ -1709,35 +1720,105 @@ function forUpdate(key) {
 	}
 
 	function updateFn(key) {
-		var _this2 = this;
+		var _this3 = this;
 
+		var _this = this;
 		//获取element节点
 		var elements = this.__ob__.for[key];
 		elements.forEach(function (element) {
 			//获取当前的作用域链数据
-			var getData = _this2._get(key, element);
+			var getData = _this3._get(key, element);
 			var dataLength = getData.length;
 			//当前循环组内的append的循环节点
 			var forElementGroup = element.__forElementGroup__;
 			var forElementGroupLength = forElementGroup.length;
-
 			//存储移除数据的节点文档片段
 			var fragment = document.createDocumentFragment();
-
 			//相同数据数量更新数据流
 			if (dataLength == forElementGroupLength) {
-				_this2.update(forElementGroup[0].__for__.forKey);
-			} else if (dataLength <= forElementGroupLength) {
-				//减少数据数量更新数据流
-				var diff = forElementGroupLength - dataLength;
-				//移除已添加的节点
-				for (var index = diff; index < forElementGroupLength; index++) {
-					if (forElementGroup[index].__for__.isAppend == true) {
-						forElementGroup[index].__for__.isAppend = false;
+				for (var index = 0; index < forElementGroupLength; index++) {
+					if (forElementGroup[index].__for__.isAppend == false) {
+						forElementGroup[index].__for__.isAppend = true;
 						fragment.appendChild(forElementGroup[index]);
-						_this2.update(forElementGroup[index].__for__.forKey);
 					}
 				}
+				//添加到实际的dom中
+				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
+				//更新数据
+				_this3.update(element.__forKey__);
+			} else if (dataLength < forElementGroupLength) {
+				var _fragment = document.createDocumentFragment();
+				//移除已添加的节点
+				for (var _index = 0; _index < forElementGroupLength; _index++) {
+					if (_index >= dataLength && forElementGroup[_index].__for__.isAppend == true) {
+						forElementGroup[_index].__for__.isAppend = false;
+						fragment.appendChild(forElementGroup[_index]);
+					}
+				}
+
+				for (var _index2 = 0; _index2 < dataLength; _index2++) {
+					if (forElementGroup[_index2].__for__.isAppend == false) {
+						forElementGroup[_index2].__for__.isAppend = true;
+						_fragment.appendChild(forElementGroup[_index2]);
+					}
+				}
+				//添加到实际的dom中
+				element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
+
+				_this3.update(element.__forKey__);
+			} else if (dataLength > forElementGroupLength) {
+				var cloneNodeElements = [];
+				var getDataKeys = Object.keys(getData);
+				//先把原来隐藏的节点打开
+				for (var _index3 = 0; _index3 < forElementGroupLength; _index3++) {
+					if (forElementGroup[_index3].__for__.isAppend == false) {
+						forElementGroup[_index3].__for__.isAppend = true;
+						fragment.appendChild(forElementGroup[_index3]);
+					}
+				}
+				//增加数据数量更新数据流
+				getDataKeys.forEach(function (_key, index) {
+					if (index >= forElementGroupLength) {
+						var cloneNode = element.__self__.cloneNode(true);
+						cloneNode.__for__ = {
+							forKey: element.__forKey__,
+							index: index,
+							keyLine: key + '.' + getDataKeys[index],
+							isAppend: true
+						};
+						cloneNode.$index = index;
+						element.__forElementGroup__.push(cloneNode);
+						fragment.appendChild(cloneNode);
+						cloneNodeElements.push(cloneNode);
+					}
+				});
+
+				//添加到实际的dom中
+				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
+
+				//解析新添加的节点
+				cloneNodeElements.forEach(function (element) {
+					//解析节点
+					vdom.resolve(element, _this3);
+					//设置键值的作用域
+					Object.defineProperty(element.$scope, element.__for__.forKey, {
+						get: function get() {
+							return _this._get(element.__for__.keyLine, element);
+						}
+					});
+					//设置索引的作用域
+					Object.defineProperty(element.$scope, '$index', {
+						get: function get() {
+							return element.__for__.index;
+						}
+					});
+				});
+				//创建存在绑定的文本节点
+				_dom.createTextNodes.call(_this3);
+				//新建和替换绑定的文本节点信息
+				_dom.replaceTextNode.call(_this3);
+				//更新当前键值链数据
+				_this3.update();
 			}
 		});
 	}
