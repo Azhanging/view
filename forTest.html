@@ -16,35 +16,23 @@
 			<a href="" _v-elseif="{{ifStatus.1}}">2</a>
 			<a href="" _v-else="{{ifStatus.2}}">3</a>
 			<div _v-for="i in {{ifStatus}}">
-				<div _v-for="n in {{i}}">
-					{{n}}
-				</div>
+				{{i}} --- {{$index}}
 			</div>
 			<div _v-for="i in {{testFor}}">
-				{{i}}
+				{{i}} --- {{$index}}
 			</div>
 		</div>
 		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
 			var time = new Date();
-			var arr = [];
-			for(var i = 0;i<2000;i++){
-				arr.push([
-					Math.random(),
-					Math.random(),
-					Math.random(),
-					Math.random(),
-					Math.random()
-				])
-			}
 			
 			var v = new View({
 				el:"app",
 				data:{
 					i:1,
 					isShow:true,
-					ifStatus:arr,
-					testFor:''
+					ifStatus:[1,2,3,4,5],
+					testFor:5
 				}
 			});
 			

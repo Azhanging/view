@@ -1655,9 +1655,16 @@ function setFor(element, propValue, propIndex) {
 	//设置一下键值作用域
 	element.__forElementGroup__.forEach(function (element) {
 		_tools.setScope.call(_this2, element);
+		//设置键值的作用域
 		Object.defineProperty(element.$scope, element.__for__.forKey, {
 			get: function get() {
 				return _this._get(element.__for__.keyLine, element);
+			}
+		});
+		//设置索引的作用域
+		Object.defineProperty(element.$scope, '$index', {
+			get: function get() {
+				return element.__for__.index;
 			}
 		});
 	});
@@ -1695,7 +1702,7 @@ function forUpdate(key) {
 		});
 	} else {
 		//如果不存在键值，不执行更新
-		if (!this.__ob__.attr[key]) {
+		if (!this.__ob__.for[key]) {
 			return;
 		}
 		updateFn.call(this, key);
@@ -1706,10 +1713,32 @@ function forUpdate(key) {
 
 		//获取element节点
 		var elements = this.__ob__.for[key];
-
 		elements.forEach(function (element) {
 			//获取当前的作用域链数据
 			var getData = _this2._get(key, element);
+			var dataLength = getData.length;
+			//当前循环组内的append的循环节点
+			var forElementGroup = element.__forElementGroup__;
+			var forElementGroupLength = forElementGroup.length;
+
+			//存储移除数据的节点文档片段
+			var fragment = document.createDocumentFragment();
+
+			//相同数据数量更新数据流
+			if (dataLength == forElementGroupLength) {
+				_this2.update(forElementGroup[0].__for__.forKey);
+			} else if (dataLength <= forElementGroupLength) {
+				//减少数据数量更新数据流
+				var diff = forElementGroupLength - dataLength;
+				//移除已添加的节点
+				for (var index = diff; index < forElementGroupLength; index++) {
+					if (forElementGroup[index].__for__.isAppend == true) {
+						forElementGroup[index].__for__.isAppend = false;
+						fragment.appendChild(forElementGroup[index]);
+						_this2.update(forElementGroup[index].__for__.forKey);
+					}
+				}
+			}
 		});
 	}
 }

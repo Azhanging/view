@@ -57,14 +57,19 @@ function setFor(element, propValue, propIndex) {
 	//设置一下键值作用域
 	element.__forElementGroup__.forEach((element)=>{
 		setScope.call(this,element);
+		//设置键值的作用域
 		Object.defineProperty(element.$scope,element.__for__.forKey,{
 			get(){
 				return _this._get(element.__for__.keyLine,element);
 			}
 		});
+		//设置索引的作用域
+		Object.defineProperty(element.$scope,'$index',{
+			get(){
+				return element.__for__.index;
+			}
+		});
 	});
-	
 };
 
-
-export { setFor};
+export { setFor };
