@@ -792,6 +792,8 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _observer = __webpack_require__(21);
@@ -992,7 +994,12 @@ var View = function () {
 		key: '_get',
 		value: function _get(keyLink, element) {
 			//获取作用域内的值
-			var getVal = _tools.getScope.call(this, element);
+			var getVal = void 0;
+			if (element) {
+				getVal = _tools.getScope.call(this, element);
+			} else {
+				getVal = this.data;
+			}
 			//存在实例屬性對象
 			if (/\./g.test(keyLink)) {
 				var keys = keyLink.split('.');
@@ -1012,50 +1019,55 @@ var View = function () {
 				return null;
 			}
 		}
-		//	_set(obj, val, key) {
-		//		let data = this['data'],
-		//			objs = obj.split('.'),
-		//			keyLen = objs.length,
-		//			parentObj = objs[0], //对象中顶级key
-		//			i = 0,
-		//			tempObject = data,
-		//			tempVal;
-		//		//如果存在多层值
-		//		if(keyLen != 1) {
-		//			//最后一个key
-		//			let lastIndex = objs[objs.length - 1];
-		//			//移除最后一个值
-		//			objs.pop();
-		//			//把key链重组
-		//			obj = objs.join('.');
-		//			if(this._get(obj) !== null) {
-		//				//设置新的值
-		//				if(key != undefined) {
-		//					this._get(obj)[lastIndex][key] = val;
-		//				} else {
-		//					this._get(obj)[lastIndex] = val;
-		//				}
-		//				//设置新的值
-		//				if(!(typeof val === 'string')) {
-		//					this._get(obj)[lastIndex] = deepCopy(this._get(obj)[lastIndex]);
-		//				}
-		//			}
-		//		} else {
-		//			/*只有一个key值*/
-		//			if(this._get(obj) !== null) {
-		//				if(key != undefined) {
-		//					this._get(obj)[key] = val;
-		//					var getData = this._get(obj);
-		//					getData = deepCopy(this._get(obj));
-		//				} else {
-		//					//2017年03月06日20:32:59 优化两次更新  //this.data[obj] = val;
-		//					//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : this.data[obj]);
-		//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : val);
-		//				}
-		//			}
-		//		}
-		//	}
-
+	}, {
+		key: '_set',
+		value: function _set(element, obj, val, key) {
+			var data = this['data'],
+			    objs = obj.split('.'),
+			    keyLen = objs.length,
+			    parentObj = objs[0],
+			    //对象中顶级key
+			i = 0,
+			    tempObject = data,
+			    tempVal = void 0;
+			//如果存在多层值
+			if (keyLen != 1) {
+				//最后一个key
+				var lastIndex = objs[objs.length - 1];
+				//移除最后一个值
+				objs.pop();
+				//把key链重组
+				obj = objs.join('.');
+				var getData = void 0;
+				if (element) {
+					getData = this._get(obj, element);
+				} else {
+					getData = this._get(obj);
+				}
+				if (getData !== null) {
+					//设置新的值
+					if (key != undefined) {
+						getData[lastIndex][key] = val;
+					} else {
+						getData[lastIndex] = val;
+					}
+					//设置新的值
+					if (!(typeof val === 'string')) {
+						getData[lastIndex] = (0, _tools.deepCopy)(getData[lastIndex]);
+					}
+				}
+			} else {
+				var _getData = this._get(obj, element);
+				/*只有一个key值*/
+				if (_getData !== null) {
+					if (key != undefined) {
+						_getData[key] = val;
+					} else {
+						this.data[obj] = (typeof val === 'undefined' ? 'undefined' : _typeof(val)) == 'object' ? (0, _tools.deepCopy)(val) : val;
+					}
+				}
+			}
+		}
 	}, {
 		key: 'expr',
 		value: function expr(_expr, element) {
@@ -1127,6 +1139,99 @@ var View = function () {
 		}
 		/*设置过滤器*/
 
+	}, {
+		key: 'push',
+
+		/*----------------------数组操作---------------------------*/
+		/*
+   * push方法
+   * */
+		value: function push(data, pushData) {
+			//深拷贝数据
+			var getData = (0, _tools.deepCopy)(this._get(data));
+			//必须为数组
+			if (Array.isArray(getData)) {
+				if (Array.isArray(pushData)) {
+					pushData.forEach(function (item, index) {
+						getData.push(item);
+					});
+				} else {
+					getData.push(pushData);
+				}
+				this._set(undefined, data, getData);
+			}
+		}
+		/* 
+   * pop方法 
+   * */
+
+	}, {
+		key: 'pop',
+		value: function pop(data) {
+			//深拷贝数据
+			var getData = (0, _tools.deepCopy)(this._get(data)),
+			    popData = "";
+			//必须为数组
+			if (Array.isArray(getData)) {
+				popData = getData.pop();
+				this._set(undefined, data, getData);
+			}
+			return popData;
+		}
+		/*
+   * unshift方法 
+   * 
+   * */
+
+	}, {
+		key: 'unshift',
+		value: function unshift(data, unshiftData) {
+			//深拷贝数据
+			var getData = (0, _tools.deepCopy)(this._get(data));
+			//必须为数组
+			if (Array.isArray(getData)) {
+				if (Array.isArray(unshiftData)) {
+					unshiftData.forEach(function (item, index) {
+						getData.unshift(item);
+					});
+				} else {
+					getData.unshift(unshiftData);
+				}
+				this._set(undefined, data, getData);
+			}
+		}
+		/*
+   * shift方法 
+   * */
+
+	}, {
+		key: 'shift',
+		value: function shift(data) {
+			//深拷贝数据
+			var getData = (0, _tools.deepCopy)(this._get(data)),
+			    shiftData = "";
+			//必须为数组
+			if (Array.isArray(getData)) {
+				shiftData = getData.shift();
+				this._set(undefined, data, getData);
+			}
+			return shiftData;
+		}
+		/* 
+   * splice 方法
+   * */
+
+	}, {
+		key: 'splice',
+		value: function splice(data, index, length) {
+			//深拷贝数据
+			var getData = (0, _tools.deepCopy)(this._get(data));
+			//必须为数组
+			if (Array.isArray(getData)) {
+				getData.splice(index, length);
+				this._set(undefined, data, getData);
+			}
+		}
 	}], [{
 		key: 'setFilter',
 		value: function setFilter(filterName, handler) {
@@ -1645,7 +1750,12 @@ function setFor(element, propValue, propIndex) {
 	var fragment = document.createDocumentFragment();
 
 	//设置节点
-	var getKeys = Object.keys(getForVal);
+	var getKeys = void 0;
+	if (getKeys === null || getKeys === undefined) {
+		getKeys = [];
+	} else {
+		getKeys = Object.keys(getForVal);
+	}
 	getKeys.forEach(function (key, index) {
 		var cloneNode = element.cloneNode(true);
 		cloneNode.__for__ = {
@@ -1728,7 +1838,11 @@ function forUpdate(key) {
 		elements.forEach(function (element) {
 			//获取当前的作用域链数据
 			var getData = _this3._get(key, element);
-			var dataLength = getData.length;
+			//如果当前值是null，返回空数组循环
+			if (getData === null) {
+				getData = [];
+			}
+			var dataLength = Object.keys(getData).length;
 			//当前循环组内的append的循环节点
 			var forElementGroup = element.__forElementGroup__;
 			var forElementGroupLength = forElementGroup.length;
@@ -1749,8 +1863,8 @@ function forUpdate(key) {
 			} else if (dataLength < forElementGroupLength) {
 				var _fragment = document.createDocumentFragment();
 				//移除已添加的节点
-				for (var _index = 0; _index < forElementGroupLength; _index++) {
-					if (_index >= dataLength && forElementGroup[_index].__for__.isAppend == true) {
+				for (var _index = dataLength; _index < forElementGroupLength; _index++) {
+					if (forElementGroup[_index].__for__.isAppend == true) {
 						forElementGroup[_index].__for__.isAppend = false;
 						fragment.appendChild(forElementGroup[_index]);
 					}
@@ -1795,7 +1909,6 @@ function forUpdate(key) {
 
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
-
 				//解析新添加的节点
 				cloneNodeElements.forEach(function (element) {
 					//解析节点
@@ -2052,13 +2165,13 @@ function setModel(element, propValue) {
 	var resolveVal = propValue.replace(/\{?\}?/g, '');
 	var elTagName = element.tagName.toLocaleLowerCase();
 	//初始化值
-	element.value = this._get(resolveVal);
+	element.value = this._get(resolveVal, element);
 	//绑定按键事件
 	if (elTagName === 'input' || elTagName === 'textarea') {
 		element.addEventListener('keyup', function (event) {
 			if (event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || event.keyCode >= 65 && event.keyCode <= 90 || event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode >= 96 && event.keyCode <= 99 || event.keyCode >= 101 && event.keyCode <= 103 || event.keyCode >= 186 && event.keyCode <= 222) {
 				var value = this.value;
-				_this._set(resolveVal, value);
+				_this._set(element, resolveVal, value);
 			}
 		});
 	}

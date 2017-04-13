@@ -23,7 +23,11 @@ function forUpdate(key) {
 		elements.forEach((element) => {
 			//获取当前的作用域链数据
 			let getData = this._get(key, element);
-			let dataLength = getData.length;
+			//如果当前值是null，返回空数组循环
+			if(getData === null){
+				getData = [];
+			}
+			let dataLength = Object.keys(getData).length;
 			//当前循环组内的append的循环节点
 			let forElementGroup = element.__forElementGroup__;
 			let forElementGroupLength = forElementGroup.length;
@@ -44,8 +48,8 @@ function forUpdate(key) {
 			} else if(dataLength < forElementGroupLength) {
 				let _fragment = document.createDocumentFragment();
 				//移除已添加的节点
-				for(let index = 0; index < forElementGroupLength; index++) {
-					if(index >= dataLength && forElementGroup[index].__for__.isAppend == true) {
+				for(let index = dataLength; index < forElementGroupLength; index++) {
+					if(forElementGroup[index].__for__.isAppend == true) {
 						forElementGroup[index].__for__.isAppend = false;
 						fragment.appendChild(forElementGroup[index]);
 					}
@@ -90,7 +94,6 @@ function forUpdate(key) {
 				
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
-				
 				//解析新添加的节点
 				cloneNodeElements.forEach((element) => {
 					//解析节点

@@ -18,6 +18,8 @@
 			<div _v-for="i in {{ifStatus}}" :class="{{$index}}">
 				{{i}} --- {{$index}}
 			</div>
+			<div>{{input.val}}</div>
+			<input type="text" _v-model="{{input.val}}"/>
 		</div>
 		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
@@ -28,10 +30,33 @@
 				data:{
 					i:1,
 					isShow:true,
-					ifStatus:[1,2,3,4,5],
-					testFor:5
+					ifStatus:[1,2,3,4,5,6,7,8],
+					testFor:5,
+					input:{
+						val:''
+					}
 				}
 			});
+			
+			function deepCopy(p, c) {
+				//如果拷贝的对象是dom节点
+				var c = c || (p instanceof Array ? [] : {});
+				for(var i in p) {　　　　　　
+					if(typeof p[i] === 'object' && !(p[i].nodeType)) {　　　　　　
+						c[i] = (p[i].constructor === Array) ? [] : {};　　　　　　　　
+						deepCopy(p[i], c[i]);　　　　　　
+					} else {
+						c[i] = p[i];
+					}　　　　
+				}　　　
+				return c;
+			}
+			
+//			setInterval(()=>{
+//				var arr = deepCopy(v.data.ifStatus);
+//				arr.push(1);
+//				v.data.ifStatus = arr;
+//			},10);
 			
 			console.log(new Date()-time);
 		</script>

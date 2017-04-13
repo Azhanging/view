@@ -129,7 +129,12 @@ class View {
 	}
 	_get(keyLink,element) {
 		//获取作用域内的值
-		let getVal = getScope.call(this,element);
+		let getVal;
+		if(element){
+			getVal = getScope.call(this,element);			
+		}else{
+			getVal = this.data;
+		}
 		//存在实例屬性對象
 		if(/\./g.test(keyLink)) {
 			let keys = keyLink.split('.');
@@ -149,49 +154,52 @@ class View {
 			return null;
 		}
 	}
-//	_set(obj, val, key) {
-//		let data = this['data'],
-//			objs = obj.split('.'),
-//			keyLen = objs.length,
-//			parentObj = objs[0], //对象中顶级key
-//			i = 0,
-//			tempObject = data,
-//			tempVal;
-//		//如果存在多层值
-//		if(keyLen != 1) {
-//			//最后一个key
-//			let lastIndex = objs[objs.length - 1];
-//			//移除最后一个值
-//			objs.pop();
-//			//把key链重组
-//			obj = objs.join('.');
-//			if(this._get(obj) !== null) {
-//				//设置新的值
-//				if(key != undefined) {
-//					this._get(obj)[lastIndex][key] = val;
-//				} else {
-//					this._get(obj)[lastIndex] = val;
-//				}
-//				//设置新的值
-//				if(!(typeof val === 'string')) {
-//					this._get(obj)[lastIndex] = deepCopy(this._get(obj)[lastIndex]);
-//				}
-//			}
-//		} else {
-//			/*只有一个key值*/
-//			if(this._get(obj) !== null) {
-//				if(key != undefined) {
-//					this._get(obj)[key] = val;
-//					var getData = this._get(obj);
-//					getData = deepCopy(this._get(obj));
-//				} else {
-//					//2017年03月06日20:32:59 优化两次更新  //this.data[obj] = val;
-//					//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : this.data[obj]);
-//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : val);
-//				}
-//			}
-//		}
-//	}
+	_set(element,obj, val, key) {
+		let data = this['data'],
+			objs = obj.split('.'),
+			keyLen = objs.length,
+			parentObj = objs[0], //对象中顶级key
+			i = 0,
+			tempObject = data,
+			tempVal;
+		//如果存在多层值
+		if(keyLen != 1) {
+			//最后一个key
+			let lastIndex = objs[objs.length - 1];
+			//移除最后一个值
+			objs.pop();
+			//把key链重组
+			obj = objs.join('.');
+			let getData;
+			if(element){
+				getData = this._get(obj,element);
+			}else{
+				getData = this._get(obj);
+			}
+			if(getData !== null) {
+				//设置新的值
+				if(key != undefined) {
+					getData[lastIndex][key] = val;
+				} else {
+					getData[lastIndex] = val;
+				}
+				//设置新的值
+				if(!(typeof val === 'string')) {
+					getData[lastIndex] = deepCopy(getData[lastIndex]);
+				}
+			}
+		} else {
+			let getData = this._get(obj,element); 
+			/*只有一个key值*/
+			if(getData !== null) {
+				if(key != undefined) {
+					getData[key] = val;
+				} else {
+					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : val);
+				}
+			}
+		}
+	}
 	expr(expr,element) {		
 		let dataValues = getKeyLink.call(this, expr);
 		let dataValueLen = dataValues.length;
@@ -258,6 +266,84 @@ class View {
 	/*设置过滤器*/
 	static setFilter(filterName, handler) {
 		this.filterHandlers[filterName] = handler;
+	}
+	/*----------------------数组操作---------------------------*/
+	/*
+	 * push方法
+	 * */
+	push(data, pushData) {
+		//深拷贝数据
+		let getData = deepCopy(this._get(data));
+		//必须为数组
+		if(Array.isArray(getData)) {
+			if(Array.isArray(pushData)) {
+				pushData.forEach(function(item, index) {
+					getData.push(item);
+				});
+			} else {
+				getData.push(pushData);
+			}
+			this._set(undefined,data, getData);
+		}
+	}
+	/* 
+	 * pop方法 
+	 * */
+	pop(data) {
+		//深拷贝数据
+		let getData = deepCopy(this._get(data)),
+			popData = "";
+		//必须为数组
+		if(Array.isArray(getData)) {
+			popData = getData.pop();
+			this._set(undefined, data, getData);
+		}
+		return popData;
+	}
+	/*
+	 * unshift方法 
+	 * 
+	 * */
+	unshift(data, unshiftData) {
+		//深拷贝数据
+		let getData = deepCopy(this._get(data));
+		//必须为数组
+		if(Array.isArray(getData)) {
+			if(Array.isArray(unshiftData)) {
+				unshiftData.forEach(function(item, index) {
+					getData.unshift(item);
+				});
+			} else {
+				getData.unshift(unshiftData);
+			}
+			this._set(undefined,data, getData);
+		}
+	}
+	/*
+	 * shift方法 
+	 * */
+	shift(data) {
+		//深拷贝数据
+		let getData = deepCopy(this._get(data)),
+			shiftData = "";
+		//必须为数组
+		if(Array.isArray(getData)) {
+			shiftData = getData.shift();
+			this._set(undefined,data, getData);
+		}
+		return shiftData;
+	}
+	/* 
+	 * splice 方法
+	 * */
+	splice(data, index, length) {
+		//深拷贝数据
+		let getData = deepCopy(this._get(data));
+		//必须为数组
+		if(Array.isArray(getData)) {
+			getData.splice(index, length);
+			this._set(undefined,data, getData);
+		}
 	}
 }
 

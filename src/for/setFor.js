@@ -40,7 +40,12 @@ function setFor(element, propValue, propIndex) {
 	let fragment = document.createDocumentFragment();
 
 	//设置节点
-	let getKeys = Object.keys(getForVal);
+	let getKeys; 
+	if(getKeys === null ||　getKeys === undefined){
+		getKeys = [];
+	}else{
+		getKeys = Object.keys(getForVal);
+	}
 	getKeys.forEach((key, index) => {
 		let cloneNode = element.cloneNode(true);
 		cloneNode.__for__ = {
