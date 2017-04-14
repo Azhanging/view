@@ -67,7 +67,6 @@ class View {
 		this.config();
 		//设置方法
 		method.call(this);
-		console.log(vdom);
 		//设置observe
 		new Observer(this.data, undefined, this);
 		//创建vdom内容
@@ -105,7 +104,8 @@ class View {
 		if(keys.indexOf('.') != -1){
 			let newKeys = keys.split('.');
 			newKeys.pop();
-			updates.push(newKeys.join('.'));
+//			updates.push(newKeys.join('.'));
+			updates.push(newKeys[0]);
 		}
 		//当前的数据依赖
 		updates.push(keys);
@@ -120,6 +120,7 @@ class View {
 		});
 	}
 	update(keys) {
+		console.log(keys);
 		watchUpdate.call(this, keys);
 		attrUpdate.call(this, keys);
 		showUpdate.call(this, keys);
@@ -184,12 +185,17 @@ class View {
 					getData[lastIndex] = val;
 				}
 				//设置新的值
-				if(!(typeof val === 'string')) {
-					getData[lastIndex] = deepCopy(getData[lastIndex]);
-				}
+				getData[lastIndex] = deepCopy(getData[lastIndex]);
 			}
 		} else {
-			let getData = this._get(obj,element); 
+			let getData; 
+			
+			if(element){
+				getData = this._get(obj,element);
+			}else{
+				getData = this._get(obj);
+			}
+			
 			/*只有一个key值*/
 			if(getData !== null) {
 				if(key != undefined) {

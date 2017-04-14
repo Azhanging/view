@@ -900,7 +900,6 @@ var View = function () {
 			this.config();
 			//设置方法
 			_method2.default.call(this);
-			console.log(_vdom2.default);
 			//设置observe
 			new _observer2.default(this.data, undefined, this);
 			//创建vdom内容
@@ -944,7 +943,8 @@ var View = function () {
 			if (keys.indexOf('.') != -1) {
 				var newKeys = keys.split('.');
 				newKeys.pop();
-				updates.push(newKeys.join('.'));
+				//			updates.push(newKeys.join('.'));
+				updates.push(newKeys[0]);
 			}
 			//当前的数据依赖
 			updates.push(keys);
@@ -983,6 +983,7 @@ var View = function () {
 	}, {
 		key: 'update',
 		value: function update(keys) {
+			console.log(keys);
 			_watch.watchUpdate.call(this, keys);
 			_attr.attrUpdate.call(this, keys);
 			_show.showUpdate.call(this, keys);
@@ -1052,12 +1053,17 @@ var View = function () {
 						getData[lastIndex] = val;
 					}
 					//设置新的值
-					if (!(typeof val === 'string')) {
-						getData[lastIndex] = (0, _tools.deepCopy)(getData[lastIndex]);
-					}
+					getData[lastIndex] = (0, _tools.deepCopy)(getData[lastIndex]);
 				}
 			} else {
-				var _getData = this._get(obj, element);
+				var _getData = void 0;
+
+				if (element) {
+					_getData = this._get(obj, element);
+				} else {
+					_getData = this._get(obj);
+				}
+
 				/*只有一个key值*/
 				if (_getData !== null) {
 					if (key != undefined) {
@@ -1716,10 +1722,22 @@ function setFor(element, propValue, propIndex) {
 
 
 	var filterForVal = forVal.replace(/(\{)?(\})?/g, '');
-
-	//获取当前的作用域链数据
-	var getForVal = this._get(filterForVal, element);
-
+	var getForVal = void 0;
+	//查看是否为数字的循环
+	if (!isNaN(filterForVal)) {
+		var num = parseInt(filterForVal);
+		var newData = [];
+		for (var index = 0; index < num; index++) {
+			newData.push(index);
+		}
+		filterForVal = '_array';
+		getForVal = newData;
+		element.isNumFor = true;
+		element.__forValue__ = getForVal;
+	} else {
+		//非数组循环
+		getForVal = this._get(filterForVal, element);
+	}
 	//插入当前的列表占位
 	var presentSeize = document.createTextNode('');
 	var oldElementReplace = document.createTextNode('');
@@ -1751,11 +1769,12 @@ function setFor(element, propValue, propIndex) {
 
 	//设置节点
 	var getKeys = void 0;
-	if (getKeys === null || getKeys === undefined) {
+	if (getForVal === null || getForVal === undefined) {
 		getKeys = [];
 	} else {
 		getKeys = Object.keys(getForVal);
 	}
+
 	getKeys.forEach(function (key, index) {
 		var cloneNode = element.cloneNode(true);
 		cloneNode.__for__ = {
@@ -1778,7 +1797,9 @@ function setFor(element, propValue, propIndex) {
 		//设置键值的作用域
 		Object.defineProperty(element.$scope, element.__for__.forKey, {
 			get: function get() {
-				return _this._get(element.__for__.keyLine, element);
+				var getData = _this._get(element.__for__.keyLine, element);
+				//这里是为了处理值对象为数字而建立
+				return getData !== null ? getData : element.__for__.index + 1;
 			}
 		});
 		//设置索引的作用域
@@ -1841,6 +1862,10 @@ function forUpdate(key) {
 			//如果当前值是null，返回空数组循环
 			if (getData === null) {
 				getData = [];
+				//判断是否通过数字来循环的
+				if (element.isNumFor) {
+					getData = element.__forValue__;
+				}
 			}
 			var dataLength = Object.keys(getData).length;
 			//当前循环组内的append的循环节点
@@ -1859,7 +1884,7 @@ function forUpdate(key) {
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
 				//更新数据
-				_this3.update(element.__forKey__);
+				_this3.dep(element.__forKey__);
 			} else if (dataLength < forElementGroupLength) {
 				var _fragment = document.createDocumentFragment();
 				//移除已添加的节点
@@ -1879,7 +1904,7 @@ function forUpdate(key) {
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
 
-				_this3.update(element.__forKey__);
+				_this3.dep(element.__forKey__);
 			} else if (dataLength > forElementGroupLength) {
 				var cloneNodeElements = [];
 				var getDataKeys = Object.keys(getData);
@@ -2017,17 +2042,23 @@ function setIf(element, propName, propValue) {
 	var ifKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
 	ifKeys.forEach(function (key, index) {
 		if (key) {
+			//创建绑定的ob对象
 			if (!(_this2.__ob__.if[key] instanceof Array)) {
 				_this2.__ob__.if[key] = [];
 				_tools.setBind.call(_this2, key);
 			}
-			if (propName === 'if') {
-				ifCount = [];
-				element.__if__ = propValue;
-				ifCount.push(element);
-				if (element.nextSibling) {
-					nextSibling.call(_this2, element.nextSibling, ifCount);
-				}
+			//存储当前的if组
+			ifCount = [];
+			element.__if__ = propValue;
+
+			var seize = document.createTextNode('');
+			var parentNode = element.parentNode ? element.parentNode : element.__parentNode__;
+			parentNode.insertBefore(seize, element.nextSibling);
+			ifCount.__seize__ = seize;
+
+			ifCount.push(element);
+			if (element.nextSibling) {
+				nextSibling.call(_this2, element.nextSibling, ifCount);
 			}
 			_this2.__ob__.if[key].push(ifCount);
 		}
@@ -2067,25 +2098,26 @@ function ifUpdate(key) {
 		var _this2 = this;
 
 		var ifNodes = this.__ob__.if[keyLine];
+		var fragment = document.createDocumentFragment();
 		//if集合中的if和else/elseif
 		ifNodes.forEach(function (elements, index) {
+			var seize = elements.__seize__;
+			var parentNode = seize.parentNode;
 			for (var j = 0; j < elements.length; j++) {
 				var obj = _this2.expr(elements[j].__if__, elements[j]);
 				if (obj) {
 					elements.forEach(function (el, _index) {
-						el.style.display = 'none';
+						if (_index != j) {
+							fragment.appendChild(el);
+						}
 					});
 					//初始化所有的对象隐藏,当前的对象显示
-					if (obj == 'inlineBlock') {
-						elements[j].style.display = 'inlineBlock';
-					} else {
-						elements[j].style.display = 'block';
-					}
+					parentNode.insertBefore(elements[j], seize);
 					break;
 				}
 				if (j == elements.length - 1) {
 					elements.forEach(function (el, _index) {
-						el.style.display = 'none';
+						fragment.appendChild(el);
 					});
 				}
 			}
@@ -2113,9 +2145,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 	typeof _require === 'function' ? _require.define('View', factory) : global.View = factory();
 })(typeof window !== 'undefined' ? window : undefined, function () {
 
-	_init2.default.version = "v0.0.1";
+	_init2.default.version = "v1.0.0";
 
-	_init2.default.versionDescription = "vdom";
+	_init2.default.versionDescription = "移植旧版功能，细化更新，优化了for的算法";
 
 	//AMD module
 	if (true) {
@@ -2337,9 +2369,9 @@ function showUpdate(key) {
 		var showElements = this.__ob__.show[keyLine];
 		showElements.forEach(function (element, index) {
 			var showValue = _this2.expr(element.__show__, element);
-			if (showValue == true || showValue == 'block' || showValue.toString().toLocaleLowerCase() === 'ok') {
-				showValue = 'block';
-			} else if (showValue == false || showValue == 'none' || showValue.toString().toLocaleLowerCase() === 'no') {
+			if (showValue == true || showValue.toString().toLocaleLowerCase() === 'ok') {
+				showValue = 'initial';
+			} else if (showValue == false || showValue.toString().toLocaleLowerCase() === 'no') {
 				showValue = 'none';
 			}
 			element.style.display = showValue;

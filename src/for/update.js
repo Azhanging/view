@@ -26,6 +26,10 @@ function forUpdate(key) {
 			//如果当前值是null，返回空数组循环
 			if(getData === null){
 				getData = [];
+				//判断是否通过数字来循环的
+				if(element.isNumFor){
+					getData = element.__forValue__;
+				}
 			}
 			let dataLength = Object.keys(getData).length;
 			//当前循环组内的append的循环节点
@@ -44,7 +48,7 @@ function forUpdate(key) {
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
 				//更新数据
-				this.update(element.__forKey__);
+				this.dep(element.__forKey__);
 			} else if(dataLength < forElementGroupLength) {
 				let _fragment = document.createDocumentFragment();
 				//移除已添加的节点
@@ -64,7 +68,7 @@ function forUpdate(key) {
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
 
-				this.update(element.__forKey__);
+				this.dep(element.__forKey__);
 			} else if(dataLength > forElementGroupLength) {
 				let cloneNodeElements = [];
 				let getDataKeys = Object.keys(getData);

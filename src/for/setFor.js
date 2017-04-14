@@ -6,10 +6,22 @@ function setFor(element, propValue, propIndex) {
 	let [forKey, forVal] = propValue.split(' in ');
 	//移除花括号数据
 	let filterForVal = forVal.replace(/(\{)?(\})?/g, '');
-
-	//获取当前的作用域链数据
-	let getForVal = this._get(filterForVal, element);
-
+	let getForVal;
+	//查看是否为数字的循环
+	if(!isNaN(filterForVal)){
+		let num = parseInt(filterForVal);
+		let newData = [];
+		for(let index = 0;index<num;index++){
+			newData.push(index);
+		}
+		filterForVal = '_array';
+		getForVal = newData;
+		element.isNumFor = true;
+		element.__forValue__ = getForVal;
+	}else{
+	//非数组循环
+		getForVal = this._get(filterForVal, element);
+	}
 	//插入当前的列表占位
 	let presentSeize = document.createTextNode('');
 	let oldElementReplace = document.createTextNode('');
@@ -41,11 +53,12 @@ function setFor(element, propValue, propIndex) {
 
 	//设置节点
 	let getKeys; 
-	if(getKeys === null ||　getKeys === undefined){
+	if(getForVal === null ||　getForVal === undefined){
 		getKeys = [];
 	}else{
 		getKeys = Object.keys(getForVal);
 	}
+	
 	getKeys.forEach((key, index) => {
 		let cloneNode = element.cloneNode(true);
 		cloneNode.__for__ = {
@@ -68,7 +81,9 @@ function setFor(element, propValue, propIndex) {
 		//设置键值的作用域
 		Object.defineProperty(element.$scope, element.__for__.forKey, {
 			get() {
-				return _this._get(element.__for__.keyLine, element);
+				let getData = _this._get(element.__for__.keyLine, element);
+				//这里是为了处理值对象为数字而建立
+				return getData !== null?getData:element.__for__.index + 1;
 			}
 		});
 		//设置索引的作用域
