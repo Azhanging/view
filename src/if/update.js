@@ -15,22 +15,27 @@ function ifUpdate(key) {
 
 	function updateFn(keyLine) {
 		let ifNodes =  this.__ob__.if[keyLine];
+		let fragment= document.createDocumentFragment();
 		//if集合中的if和else/elseif
-		ifNodes.forEach((keyLineItem, index)=>{
-			for(var j = 0; j < keyLineItem.length; j++) {
-				var obj = this.expr(keyLineItem[j].__if__);
+		ifNodes.forEach((elements, index)=>{
+			let seize = elements.__seize__;
+			let parentNode = seize.parentNode;
+			for(var j = 0; j < elements.length; j++) {
+				var obj = this.expr(elements[j].__if__,elements[j]);
 				if(obj) {
-					keyLineItem.forEach((el,_index)=>{
-						el.style.display = 'none';
-					})
+					elements.forEach((el,_index)=>{
+						if(_index != j){							
+							fragment.appendChild(el);
+						}
+					});
 					//初始化所有的对象隐藏,当前的对象显示
-					keyLineItem[j].style.display = 'block';
+					parentNode.insertBefore(elements[j],seize);
 					break;
 				}
-				if(j == keyLineItem.length - 1) {
-					keyLineItem.forEach((el,_index)=>{
-						el.style.display = 'none';
-					})
+				if(j == elements.length - 1) {
+					elements.forEach((el,_index)=>{
+						fragment.appendChild(el);
+					});
 				}
 			}
 		});

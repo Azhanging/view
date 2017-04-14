@@ -5,9 +5,9 @@ import View from './init';
 	(typeof _require === 'function' ? _require.define('View', factory) : (global.View = factory()));
 })(typeof window !== 'undefined' ? window : this, function() {
 	
-	View.version = "v0.0.1";
+	View.version = "v1.0.0";
 	
-	View.versionDescription = "vdom";
+	View.versionDescription = "移植旧版功能，细化更新，优化了for的算法";
 	
 	//AMD module
 	if(typeof define === "function" && define.amd) {

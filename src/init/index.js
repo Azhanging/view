@@ -1,12 +1,12 @@
 import Observer from './../observer';
 import method from './../method';
 import vdom from './../vdom';
-import { getEl, getKeyLink, deepCopy } from './../tools';
+import { getEl, getKeyLink, deepCopy ,getScope} from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
 import { ifUpdate } from './../if';
-import { forUpdate ,testForNullArray } from './../for';
+import { forUpdate} from './../for';
 import { watchUpdate } from './../watch';
 import { setEvent, setChildTemplateEvent } from './../event';
 
@@ -75,8 +75,6 @@ class View {
 		createTextNodes.call(this);
 		//新建和替换绑定的文本节点信息
 		replaceTextNode.call(this);
-		//检查当前的for中空数组的节点是否显示的，显示的隐藏它
-		testForNullArray.call(this);
 		//创建钩子函数
 		this.created();
 		//初始化更新
@@ -106,7 +104,8 @@ class View {
 		if(keys.indexOf('.') != -1){
 			let newKeys = keys.split('.');
 			newKeys.pop();
-			updates.push(newKeys.join('.'));
+//			updates.push(newKeys.join('.'));
+			updates.push(newKeys[0]);
 		}
 		//当前的数据依赖
 		updates.push(keys);
@@ -121,6 +120,7 @@ class View {
 		});
 	}
 	update(keys) {
+		console.log(keys);
 		watchUpdate.call(this, keys);
 		attrUpdate.call(this, keys);
 		showUpdate.call(this, keys);
@@ -128,28 +128,34 @@ class View {
 		forUpdate.call(this, keys);
 		domUpdate.call(this, keys);
 	}
-	_get(keyLink) {
+	_get(keyLink,element) {
+		//获取作用域内的值
+		let getVal;
+		if(element){
+			getVal = getScope.call(this,element);			
+		}else{
+			getVal = this.data;
+		}
 		//存在实例屬性對象
 		if(/\./g.test(keyLink)) {
-			let obj = keyLink.split('.');
-			let getVal = this['data'];
+			let keys = keyLink.split('.');
 			//存在值
-			if(this['data'][obj[0]]) {
-				for(let i = 0; i < obj.length; i++) {
-					let key = obj[i];
+			if(getVal[keys[0]]) {
+				for(let i = 0; i < keys.length; i++) {
+					let key = keys[i];
 					getVal = getVal !== null && getVal[key] !== undefined? getVal[key] : null;
 				}
 				return getVal;
 			} else {
 				return null;
 			}
-		} else if(this['data'][keyLink] != undefined) {
-			return this['data'][keyLink];
+		} else if(getVal[keyLink] != undefined) {
+			return getVal[keyLink];
 		} else {
 			return null;
 		}
 	}
-	_set(obj, val, key) {
+	_set(element,obj, val, key) {
 		let data = this['data'],
 			objs = obj.split('.'),
 			keyLen = objs.length,
@@ -165,34 +171,42 @@ class View {
 			objs.pop();
 			//把key链重组
 			obj = objs.join('.');
-			if(this._get(obj) !== null) {
+			let getData;
+			if(element){
+				getData = this._get(obj,element);
+			}else{
+				getData = this._get(obj);
+			}
+			if(getData !== null) {
 				//设置新的值
 				if(key != undefined) {
-					this._get(obj)[lastIndex][key] = val;
+					getData[lastIndex][key] = val;
 				} else {
-					this._get(obj)[lastIndex] = val;
+					getData[lastIndex] = val;
 				}
 				//设置新的值
-				if(!(typeof val === 'string')) {
-					this._get(obj)[lastIndex] = deepCopy(this._get(obj)[lastIndex]);
-				}
+				getData[lastIndex] = deepCopy(getData[lastIndex]);
 			}
 		} else {
+			let getData; 
+			
+			if(element){
+				getData = this._get(obj,element);
+			}else{
+				getData = this._get(obj);
+			}
+			
 			/*只有一个key值*/
-			if(this._get(obj) !== null) {
+			if(getData !== null) {
 				if(key != undefined) {
-					this._get(obj)[key] = val;
-					var getData = this._get(obj);
-					getData = deepCopy(this._get(obj));
+					getData[key] = val;
 				} else {
-					//2017年03月06日20:32:59 优化两次更新  //this.data[obj] = val;
-					//					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : this.data[obj]);
 					this.data[obj] = (typeof val == 'object' ? deepCopy(val) : val);
 				}
 			}
 		}
 	}
-	expr(expr) {
+	expr(expr,element) {		
 		let dataValues = getKeyLink.call(this, expr);
 		let dataValueLen = dataValues.length;
 		let newExpr = expr;
@@ -208,22 +222,29 @@ class View {
 		}
 
 		for(let i = 0; i < dataValueLen; i++) {
-			if(this._get(dataValues[i]) !== null) {
-				let data = this._get(dataValues[i]);
+			let getVal = this._get(dataValues[i],element);
+			//这里处理一种带$的key数据
+			if(dataValues[i].indexOf('$') !== -1){
+				dataValues[i] = dataValues[i].replace(/\$/g,'\\$');
+			}
+			
+			if(getVal !== null) {
+				let data = getVal;
 				//处理for绑定,for只允许绑定一个data,不支持表达式
 				if(arguments[1] === 'for') {
-					return this._get(dataValues[i]);
+					return getVal;
 				}
+				
 				//更新为绑定表达式
-				newExpr = newExpr.replace(new RegExp('\{\{' + dataValues[i] + '\}\}', 'g'), (data === false || data === true) ? data : "'" + data + "'");
+				newExpr = newExpr.replace(new RegExp('\\{\\{' + dataValues[i] + '\\}\\}', 'g'), (data === false || data === true) ? data : "'" + data + "'");
 			} else {
 				//处理不存在数据流空值替换对象内容
-				newExpr = newExpr.replace(new RegExp('\{\{' + dataValues[i] + '\}\}', 'g'), "''");
+				newExpr = newExpr.replace(new RegExp('\\{\\{' + dataValues[i] + '\\}\\}', 'g'), "''");
 			}
 		}
 		try {
 			//解析表达式
-			return eval(newExpr);
+			return new Function('return '+ newExpr)();
 		} catch(e) {
 			//报错返回空值
 			return '';
@@ -251,6 +272,84 @@ class View {
 	/*设置过滤器*/
 	static setFilter(filterName, handler) {
 		this.filterHandlers[filterName] = handler;
+	}
+	/*----------------------数组操作---------------------------*/
+	/*
+	 * push方法
+	 * */
+	push(data, pushData) {
+		//深拷贝数据
+		let getData = deepCopy(this._get(data));
+		//必须为数组
+		if(Array.isArray(getData)) {
+			if(Array.isArray(pushData)) {
+				pushData.forEach(function(item, index) {
+					getData.push(item);
+				});
+			} else {
+				getData.push(pushData);
+			}
+			this._set(undefined,data, getData);
+		}
+	}
+	/* 
+	 * pop方法 
+	 * */
+	pop(data) {
+		//深拷贝数据
+		let getData = deepCopy(this._get(data)),
+			popData = "";
+		//必须为数组
+		if(Array.isArray(getData)) {
+			popData = getData.pop();
+			this._set(undefined, data, getData);
+		}
+		return popData;
+	}
+	/*
+	 * unshift方法 
+	 * 
+	 * */
+	unshift(data, unshiftData) {
+		//深拷贝数据
+		let getData = deepCopy(this._get(data));
+		//必须为数组
+		if(Array.isArray(getData)) {
+			if(Array.isArray(unshiftData)) {
+				unshiftData.forEach(function(item, index) {
+					getData.unshift(item);
+				});
+			} else {
+				getData.unshift(unshiftData);
+			}
+			this._set(undefined,data, getData);
+		}
+	}
+	/*
+	 * shift方法 
+	 * */
+	shift(data) {
+		//深拷贝数据
+		let getData = deepCopy(this._get(data)),
+			shiftData = "";
+		//必须为数组
+		if(Array.isArray(getData)) {
+			shiftData = getData.shift();
+			this._set(undefined,data, getData);
+		}
+		return shiftData;
+	}
+	/* 
+	 * splice 方法
+	 * */
+	splice(data, index, length) {
+		//深拷贝数据
+		let getData = deepCopy(this._get(data));
+		//必须为数组
+		if(Array.isArray(getData)) {
+			getData.splice(index, length);
+			this._set(undefined,data, getData);
+		}
 	}
 }
 

@@ -60,17 +60,23 @@ function setIf(element, propName, propValue) {
 	let ifKeys = getDisassemblyKey(disassembly(propValue));
 	ifKeys.forEach((key, index) => {
 		if(key) {
+			//创建绑定的ob对象
 			if(!(this.__ob__.if[key] instanceof Array)) {
 				this.__ob__.if[key] = [];
 				setBind.call(this, key);
 			}
-			if(propName === 'if') {
-				ifCount = [];
-				element.__if__ = propValue;
-				ifCount.push(element);
-				if(element.nextSibling) {
-					nextSibling.call(this, element.nextSibling, ifCount);
-				}
+			//存储当前的if组
+			ifCount = [];
+			element.__if__ = propValue;
+			
+			let seize = document.createTextNode('');
+			let parentNode = element.parentNode?element.parentNode:element.__parentNode__;
+			parentNode.insertBefore(seize,element.nextSibling);
+			ifCount.__seize__ = seize;
+			
+			ifCount.push(element);
+			if(element.nextSibling) {
+				nextSibling.call(this, element.nextSibling, ifCount);
 			}
 			this.__ob__.if[key].push(ifCount);
 		}

@@ -11,7 +11,8 @@ module.exports = {
 	/*context: path.resolve(__dirname, 'src'),*/
 	//入口
 	entry: {
-		'view': './src/index.js'
+		'view': './src/index.js',
+		'view.min':'./src/index.js'
 	},
 	//出口
 	output: {
@@ -46,6 +47,10 @@ module.exports = {
 		new ExtractTextPlugin({
 			filename:'./css/[name].css',
 			publicPath:'./dist/'
+		}),
+		new uglifyjs({
+			mangle: true,
+			include: /\.min\.js$/
 		})
 	],
 	//配置服务器

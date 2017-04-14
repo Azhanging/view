@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		<div id="app">
+			<div _v-show="{{isShow}}" style="display: none;">
+				<div :class="{{i}}" _v-show="{{isShow}}">
+					{{i}}
+					<span>
+						{{i}}
+					</span>
+				</div>
+				<a href="" _v-if="{{ifStatus.0}}">1</a>
+				<a href="" _v-elseif="{{ifStatus.1}}">2</a>
+				<a href="" _v-else="{{ifStatus.2}}">3</a>
+				
+				<div _v-for="m in {{ifStatus}}" :class="{{$index}}" _v-if="{{m.isShow}}">
+					{{m.value}} --- {{$index}}
+				</div>
+				<div>{{input.val}}</div>
+				<input type="text" _v-model="{{input.val}}"/>
+			</div>
+		</div>
+		<div _v-for="i in 5" :class="{{$index}}">
+			{{i}} --- {{$index}}
+			<div _v-for="n in 2" :class="{{$index}}">
+				{{n}} --- {{$index}}
+			</div>
+		</div>
+		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			var time = new Date();
+			
+			var v = new View({
+				el:"app",
+				data:{
+					isShow:false,
+					i:1,
+					isShow:true,
+					ifStatus:[
+						{isShow:false,value:1},
+						{isShow:true,value:2},
+						{isShow:false,value:3}
+					],
+					testFor:5,
+					input:{
+						val:''
+					}
+				},
+				ready:function(){
+					this.data.isShow = true;
+				}
+			});
+			
+			function deepCopy(p, c) {
+				//如果拷贝的对象是dom节点
+				var c = c || (p instanceof Array ? [] : {});
+				for(var i in p) {　　　　　　
+					if(typeof p[i] === 'object' && !(p[i].nodeType)) {　　　　　　
+						c[i] = (p[i].constructor === Array) ? [] : {};　　　　　　　　
+						deepCopy(p[i], c[i]);　　　　　　
+					} else {
+						c[i] = p[i];
+					}　　　　
+				}　　　
+				return c;
+			}
+			
+			var arr = [
+						{isShow:false,value:1},
+						{isShow:true,value:2},
+						{isShow:false,value:3},
+						{isShow:true,value:4},
+						{isShow:false,value:5},
+						{isShow:true,value:6},
+					]
+			
+//			setInterval(()=>{
+//				var arr = deepCopy(v.data.ifStatus);
+//				arr.push(1);
+//				v.data.ifStatus = arr;
+//			},10);
+			
+			console.log(new Date()-time);
+		</script>
+	</body>
+</html>
