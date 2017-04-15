@@ -63,10 +63,12 @@ class _Element {
 			setAttr.call(_this, element, vdom);
 			
 			for(let el of element.childNodes){
-				this.id++;
-				vdom.childrens.push(this.resolve(el, _this));				
+				if(el.nodeType === 1 || el.nodeType === 3){
+					this.id++;
+					vdom.childrens.push(this.resolve(el, _this));		
+				}
 			}
-		} else {
+		} else if(element.nodeType === 3){
 			//设置文本节点绑定的更新
 			setDom.call(_this, element);
 			//文本节点

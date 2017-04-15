@@ -634,8 +634,10 @@ var _Element = function () {
 					for (var _iterator3 = element.childNodes[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
 						var el = _step3.value;
 
-						this.id++;
-						vdom.childrens.push(this.resolve(el, _this));
+						if (el.nodeType === 1 || el.nodeType === 3) {
+							this.id++;
+							vdom.childrens.push(this.resolve(el, _this));
+						}
 					}
 				} catch (err) {
 					_didIteratorError3 = true;
@@ -651,7 +653,7 @@ var _Element = function () {
 						}
 					}
 				}
-			} else {
+			} else if (element.nodeType === 3) {
 				//设置文本节点绑定的更新
 				_dom.setDom.call(_this, element);
 				//文本节点
