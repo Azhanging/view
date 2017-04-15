@@ -184,8 +184,10 @@ class View {
 				} else {
 					getData[lastIndex] = val;
 				}
-				//设置新的值
-				getData[lastIndex] = deepCopy(getData[lastIndex]);
+				//处理字符串数据流更新
+				if(!(typeof val === 'string')) {					
+					getData[lastIndex] = deepCopy(getData[lastIndex]);
+				}
 			}
 		} else {
 			let getData; 

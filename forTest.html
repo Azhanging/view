@@ -17,17 +17,18 @@
 				<a href="" _v-elseif="{{ifStatus.1}}">2</a>
 				<a href="" _v-else="{{ifStatus.2}}">3</a>
 				
-				<div _v-for="m in {{ifStatus}}" :class="{{$index}}" _v-if="{{m.isShow}}">
-					{{m.value}} --- {{$index}}
+				<div _v-for="m in {{input.val}}" :class="{{$index}}">
+					{{m}} --- {{$index}}
 				</div>
 				<div>{{input.val}}</div>
 				<input type="text" _v-model="{{input.val}}"/>
-			</div>
-		</div>
-		<div _v-for="i in 5" :class="{{$index}}">
-			{{i}} --- {{$index}}
-			<div _v-for="n in 2" :class="{{$index}}">
-				{{n}} --- {{$index}}
+				<div _v-for="i in 5" :class="{{$index}}">
+					{{i}} --- {{$index}}
+					<div _v-for="n in 2" :class="{{$index}}">
+						{{n}} --- {{$index}}
+					</div>
+				</div>
+				{{element | html}}
 			</div>
 		</div>
 		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
@@ -48,7 +49,8 @@
 					testFor:5,
 					input:{
 						val:''
-					}
+					},
+					element:"<div>123123456465798798</div>"
 				},
 				ready:function(){
 					this.data.isShow = true;

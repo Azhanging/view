@@ -1052,8 +1052,10 @@ var View = function () {
 					} else {
 						getData[lastIndex] = val;
 					}
-					//设置新的值
-					getData[lastIndex] = (0, _tools.deepCopy)(getData[lastIndex]);
+					//处理字符串数据流更新
+					if (!(typeof val === 'string')) {
+						getData[lastIndex] = (0, _tools.deepCopy)(getData[lastIndex]);
+					}
 				}
 			} else {
 				var _getData = void 0;
