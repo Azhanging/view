@@ -1,5 +1,5 @@
 /*拆解绑定的信息*/
-import { disassembly, getDisassemblyKey,setBind ,getIndex } from './../tools';
+import { disassembly, getDisassemblyKey,setBind ,getIndex ,trim } from './../tools';
 import { setShow } from './../show';
 import { setIf } from './../if';
 import { setFor } from './../for';
@@ -12,6 +12,7 @@ function setAttr(element, vdom) {
 			propValue = prop[_index].value;
 
 		if(/:.?/.test(propName)) {
+			propValue = trim(propValue);
 			//删除当前绑定到真实attr上的属性
 			element.removeAttribute(propName);
 			_index -= 1;
@@ -34,9 +35,7 @@ function setAttr(element, vdom) {
 				//在__ob__设置attr的依赖
 				this.__ob__.attr[val].push(element);
 			});
-		}
-
-		if(/_v-.?/.test(propName)) {
+		}else if(/_v-.?/.test(propName)) {
 			//删除当前绑定到真实attr上的属性
 			element.removeAttribute(propName);
 			_index -= 1;
@@ -48,18 +47,20 @@ function setAttr(element, vdom) {
 					setFor.call(this, element, propValue,_index);
 					break;
 				case 'show':
+					propValue = trim(propValue);
 					setShow.call(this, element, propValue);
 					break;
 				case 'if':
+					propValue = trim(propValue);
 					setIf.call(this, element, propName, propValue);
 					break;
 				case 'model':
+					propValue = trim(propValue);
 					setModel.call(this, element, propValue);
 				default:
 					;
 			}
-		}
-		if(/@.?/.test(propName)) {
+		}else if(/@.?/.test(propName)) {
 			let filterpropValue = propValue.replace(/\(+\S+\)+/g, '');
 			if(!(this.isTemplate)){
 				//删除当前绑定到真实attr上的属性

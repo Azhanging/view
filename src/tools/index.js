@@ -36,6 +36,15 @@ function getDisassemblyKey(keys){
 	return newKeys.filter((value)=>value!=undefined);
 }
 
+//用来清除绑定数据中的空字符串
+function trim(value){
+	if(value.indexOf(' ') !== -1){		
+		return value.replace(/\{\{ */,'{{').replace(/ *\}\}/,'}}');
+	}else{
+		return value;
+	}
+}
+
 /*获取表达式中data绑定的值*/
 function getKeyLink(expr) {
 	var tempExpr = expr.match(/\{\{.*?\}\}/g);
@@ -134,5 +143,6 @@ export {
 	getIndex,
 	setBind,
 	setScope,
-	getScope
+	getScope,
+	trim
 }

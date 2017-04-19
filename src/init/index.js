@@ -104,7 +104,6 @@ class View {
 		if(keys.indexOf('.') != -1){
 			let newKeys = keys.split('.');
 			newKeys.pop();
-//			updates.push(newKeys.join('.'));
 			updates.push(newKeys[0]);
 		}
 		//当前的数据依赖
@@ -120,7 +119,6 @@ class View {
 		});
 	}
 	update(keys) {
-		console.log(keys);
 		watchUpdate.call(this, keys);
 		attrUpdate.call(this, keys);
 		showUpdate.call(this, keys);
@@ -143,7 +141,11 @@ class View {
 			if(getVal[keys[0]]) {
 				for(let i = 0; i < keys.length; i++) {
 					let key = keys[i];
-					getVal = getVal !== null && getVal[key] !== undefined? getVal[key] : null;
+					try{						
+						getVal = getVal !== null && getVal[key] !== undefined? getVal[key] : null;
+					}catch(error){
+						return null;
+					}
 				}
 				return getVal;
 			} else {
@@ -368,6 +370,9 @@ View.filterHandlers = {
 	},
 	'length': function(data) {
 		return data.length;
+	},
+	'sequence':function(sequence){
+		return parseFloat(sequence) + 1;
 	},
 	'html': function(data) {
 		let fragment = document.createDocumentFragment(),

@@ -119,6 +119,15 @@ function getDisassemblyKey(keys) {
 	});
 }
 
+//用来清除绑定数据中的空字符串
+function trim(value) {
+	if (value.indexOf(' ') !== -1) {
+		return value.replace(/\{\{ */, '{{').replace(/ *\}\}/, '}}');
+	} else {
+		return value;
+	}
+}
+
 /*获取表达式中data绑定的值*/
 function getKeyLink(expr) {
 	var tempExpr = expr.match(/\{\{.*?\}\}/g);
@@ -217,6 +226,7 @@ exports.getIndex = getIndex;
 exports.setBind = setBind;
 exports.setScope = setScope;
 exports.getScope = getScope;
+exports.trim = trim;
 
 /***/ }),
 /* 1 */
@@ -945,7 +955,6 @@ var View = function () {
 			if (keys.indexOf('.') != -1) {
 				var newKeys = keys.split('.');
 				newKeys.pop();
-				//			updates.push(newKeys.join('.'));
 				updates.push(newKeys[0]);
 			}
 			//当前的数据依赖
@@ -985,7 +994,6 @@ var View = function () {
 	}, {
 		key: 'update',
 		value: function update(keys) {
-			console.log(keys);
 			_watch.watchUpdate.call(this, keys);
 			_attr.attrUpdate.call(this, keys);
 			_show.showUpdate.call(this, keys);
@@ -1010,7 +1018,11 @@ var View = function () {
 				if (getVal[keys[0]]) {
 					for (var i = 0; i < keys.length; i++) {
 						var key = keys[i];
-						getVal = getVal !== null && getVal[key] !== undefined ? getVal[key] : null;
+						try {
+							getVal = getVal !== null && getVal[key] !== undefined ? getVal[key] : null;
+						} catch (error) {
+							return null;
+						}
 					}
 					return getVal;
 				} else {
@@ -1268,6 +1280,9 @@ View.filterHandlers = {
 	'length': function length(data) {
 		return data.length;
 	},
+	'sequence': function sequence(_sequence) {
+		return parseFloat(_sequence) + 1;
+	},
 	'html': function html(data) {
 		var fragment = document.createDocumentFragment(),
 		    tempDom = document.createElement('div'),
@@ -1319,6 +1334,7 @@ function setAttr(element, vdom) {
 		    propValue = prop[_index2].value;
 
 		if (/:.?/.test(propName)) {
+			propValue = (0, _tools.trim)(propValue);
 			//删除当前绑定到真实attr上的属性
 			element.removeAttribute(propName);
 			_index2 -= 1;
@@ -1341,9 +1357,7 @@ function setAttr(element, vdom) {
 				//在__ob__设置attr的依赖
 				_this.__ob__.attr[val].push(element);
 			});
-		}
-
-		if (/_v-.?/.test(propName)) {
+		} else if (/_v-.?/.test(propName)) {
 			//删除当前绑定到真实attr上的属性
 			element.removeAttribute(propName);
 			_index2 -= 1;
@@ -1355,18 +1369,20 @@ function setAttr(element, vdom) {
 					_for.setFor.call(_this, element, propValue, _index2);
 					break;
 				case 'show':
+					propValue = (0, _tools.trim)(propValue);
 					_show.setShow.call(_this, element, propValue);
 					break;
 				case 'if':
+					propValue = (0, _tools.trim)(propValue);
 					_if.setIf.call(_this, element, propName, propValue);
 					break;
 				case 'model':
+					propValue = (0, _tools.trim)(propValue);
 					_model.setModel.call(_this, element, propValue);
 				default:
 					;
 			}
-		}
-		if (/@.?/.test(propName)) {
+		} else if (/@.?/.test(propName)) {
 			var filterpropValue = propValue.replace(/\(+\S+\)+/g, '');
 			if (!_this.isTemplate) {
 				//删除当前绑定到真实attr上的属性
@@ -1567,8 +1583,12 @@ function createTextNodeElements(textNodes, el) {
 				}
 			});
 			//重写绑定链
-			textNodes[i] = textNodes[i].replace(templateFilters, '').replace(/ /g, '');
+			textNodes[i] = (0, _tools.trim)(textNodes[i].replace(templateFilters, ''));
 		}
+
+		//中间在过滤一次空格层
+		textNodes[i] = textNodes[i].replace(/ /g, '');
+
 		if (textNodes[i].trim() !== "") {
 			//查看是否为数据绑定
 			var textNode = document.createTextNode(textNodes[i]);
@@ -1722,9 +1742,11 @@ function setFor(element, propValue, propIndex) {
 	    _propValue$split2 = _slicedToArray(_propValue$split, 2),
 	    forKey = _propValue$split2[0],
 	    forVal = _propValue$split2[1];
+	//整理空字符
+
+
+	forVal = (0, _tools.trim)(forVal);
 	//移除花括号数据
-
-
 	var filterForVal = forVal.replace(/(\{)?(\})?/g, '');
 	var getForVal = void 0;
 	//查看是否为数字的循环

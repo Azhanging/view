@@ -6,16 +6,17 @@
 	</head>
 	<body>
 		<div id="app">
-			<div _v-show="{{isShow}}" style="display: none;">
-				<div :class="{{i}}" _v-show="{{isShow}}">
+			<div _v-show="{{              isShow               }}" style="display: none;">
+				<div :class="{{i}}" _v-show="{{        isShow               }}">
 					{{i}}
 					<span>
 						{{i}}
 					</span>
 				</div>
-				<a href="" _v-if="{{ifStatus.0}}">1</a>
-				<a href="" _v-elseif="{{ifStatus.1}}">2</a>
+				<a href="" _v-if="{{           ifStatus.0            }}">1</a>
+				<a href="" _v-elseif="{{             ifStatus.1}}">2</a>
 				<a href="" _v-else="{{ifStatus.2}}">3</a>
+				<div>{{val}}</div>
 				
 				<div _v-for="m in {{input.val}}" :class="{{$index}}">
 					{{m}} --- {{$index}}
@@ -51,6 +52,7 @@
 					input:{
 						val:''
 					},
+					val:'测试过滤器',
 					element:"<div>123123456465798798</div>"
 				},
 				ready:function(){

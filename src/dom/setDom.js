@@ -1,4 +1,4 @@
-import {disassembly,setBind} from './../tools';
+import {disassembly,setBind,trim} from './../tools';
 
 function setDom(element) {
 	//非空的节点才进入过滤赛选
@@ -37,8 +37,12 @@ function createTextNodeElements(textNodes, el) {
 				}
 			});
 			//重写绑定链
-			textNodes[i] = textNodes[i].replace(templateFilters, '').replace(/ /g, '');
+			textNodes[i] = trim(textNodes[i].replace(templateFilters, ''));
 		}
+		
+		//中间在过滤一次空格层
+		textNodes[i] = textNodes[i].replace(/ /g, '');
+		
 		if(textNodes[i].trim() !== "") {
 			//查看是否为数据绑定
 			let textNode = document.createTextNode(textNodes[i]);

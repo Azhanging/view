@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		<div id="app">
+			<div>{{ val | length }}</div>
+			<div>{{num}}</div>
+			<div>{{num2}}</div>
+		</div>
+		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			var app = new View({
+				el:'app',
+				data:{
+					val:"测试filter",
+					num:8,
+					num2:''
+				},
+				watch:{
+					'num':function(newVal){
+						this.data.num2 = newVal - 1;
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

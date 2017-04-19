@@ -1,9 +1,11 @@
-import { setBind, setScope } from './../tools';
+import { setBind, setScope, trim} from './../tools';
 
 function setFor(element, propValue, propIndex) {
 	let _this = this;
 	//拆解数据
 	let [forKey, forVal] = propValue.split(' in ');
+	//整理空字符
+	forVal = trim(forVal);
 	//移除花括号数据
 	let filterForVal = forVal.replace(/(\{)?(\})?/g, '');
 	let getForVal;
