@@ -255,23 +255,34 @@ class View {
 		}
 	}
 	createTemplate(vals, appendEl) {
+		if(typeof appendEl === 'string'){
+			appendEl = document.getElementById(appendEl);
+		}else if(appendEl.nodeType !== 1){
+			console.warn('第二参数为添加节点的id或者为对应的节点对象');
+			return;
+		}
+		
 		//循环添加到指定的DOM节点上
-		vals.forEach((item, index) => {
-			//设置数据流更新
-			this.data.templateData = item;
-			//复制临时节点
-			let tempNode = this.el.cloneNode(true);
-			//设置模板中的index属性
-			tempNode.dataset['index'] = this.__bind__.templateIndex++;
-			//添加到对应节点上
-			document.getElementById(appendEl).appendChild(tempNode);
-			//绑定当前节点事件
-			if(tempNode.nodeType == 1) {
-				setEvent.call(this, tempNode);
-			}
-			//模板添加事件
-			setChildTemplateEvent.call(this, tempNode);
-		});
+		try{
+			Object.keys(vals).forEach((key, index) => {
+				//设置数据流更新
+				this.data.templateData = vals[key];
+				//复制临时节点
+				let tempNode = this.el.cloneNode(true);
+				//设置模板中的index属性
+				tempNode.dataset['index'] = this.__bind__.templateIndex++;
+				//添加到对应节点上
+				appendEl.appendChild(tempNode);
+				//绑定当前节点事件
+				if(tempNode.nodeType == 1) {
+					setEvent.call(this, tempNode);
+				}
+				//模板添加事件
+				setChildTemplateEvent.call(this, tempNode);
+			});
+		}catch(e){
+			console.warn('createTemplate方法中的第一个参数只能为的数组或者对象');
+		}
 	}
 	/*设置过滤器*/
 	static setFilter(filterName, handler) {

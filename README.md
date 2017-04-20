@@ -1,21 +1,15 @@
 # View
-###创建实例对象
+### 创建实例对象
 `new View(options);`
 
 ####options参数:
-**el**:为需要解析的element对象的id
+**el**:为需要解析的element对象的id（如果绑定的为template节点，只能存在一个顶层的节点）
 ```javascript
 var app = new View({
 	el:'app'
 });	
 ```
-**template**:为绑定模板的id,template和el不能同时存在(即是绑定更新功能和模板只能选择一个使用)
-```javascript
-var app = new View({
-	el:'app'
-});	
-```
-####有关template的使用:
+#### 有关template的使用:
 先定义模板格式，使用<template></template>:
 ```html
 <div id="app"></div>
@@ -44,8 +38,7 @@ var data = {
 	]
 }
 var app = new View({
-	template:'template', //绑定模板
-	data:{},				//必须定义
+	el:'templateId', //绑定模板
 	methods:{
 		hello:function(){
 			//todo

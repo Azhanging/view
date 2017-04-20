@@ -24,20 +24,52 @@
 					{{m}} --- {{$index}}
 					<!--<div>111</div>-->
 				</div>
-				<div>{{input.val}}</div>
-				<input type="text" _v-model="{{       input.val        }}" />
+				<div>{{        input.val                 }}</div>
+				<input type="text" _v-model="{{       input.val        }}" :value="{{input.val}}"/>
 				<div _v-for="i in 5" :class="{{        $index         }}">
 					{{   i    }} --- {{       $index       }}
 					<div _v-for="n in 2" :class="{{$index}}">
-						{{      n         }} --- {{                   $index               }}
+						{{        n         }} --- {{                   $index               }}
 					</div>
 				</div>
 				{{element | html}}
 			</div>
 		</div>
+		
+		<div id="app-1">
+			
+		</div>
+		
+		<template id="temp">
+			<div>
+				{{templateData.val}}
+			</div>
+		</template>
+		
 		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
 			var time = new Date();
+			
+			data = [
+				{val:1},
+				{val:2},
+				{val:3},
+				{val:4},
+				{val:5}
+			];
+			data_1 ={
+				0:{val:1},
+				1:{val:2},
+				2:{val:3},
+				3:{val:4},
+				4:{val:5}
+			}
+			
+			var _v = new View({
+				el:"temp"
+			});
+			
+			_v.createTemplate(data_1,document.getElementById('app-1'));
 
 			var v = new View({
 				el: "app",

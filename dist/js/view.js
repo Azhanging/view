@@ -1141,23 +1141,34 @@ var View = function () {
 		value: function createTemplate(vals, appendEl) {
 			var _this2 = this;
 
+			if (typeof appendEl === 'string') {
+				appendEl = document.getElementById(appendEl);
+			} else if (appendEl.nodeType !== 1) {
+				console.warn('第二参数为添加节点的id或者为对应的节点对象');
+				return;
+			}
+
 			//循环添加到指定的DOM节点上
-			vals.forEach(function (item, index) {
-				//设置数据流更新
-				_this2.data.templateData = item;
-				//复制临时节点
-				var tempNode = _this2.el.cloneNode(true);
-				//设置模板中的index属性
-				tempNode.dataset['index'] = _this2.__bind__.templateIndex++;
-				//添加到对应节点上
-				document.getElementById(appendEl).appendChild(tempNode);
-				//绑定当前节点事件
-				if (tempNode.nodeType == 1) {
-					_event.setEvent.call(_this2, tempNode);
-				}
-				//模板添加事件
-				_event.setChildTemplateEvent.call(_this2, tempNode);
-			});
+			try {
+				Object.keys(vals).forEach(function (key, index) {
+					//设置数据流更新
+					_this2.data.templateData = vals[key];
+					//复制临时节点
+					var tempNode = _this2.el.cloneNode(true);
+					//设置模板中的index属性
+					tempNode.dataset['index'] = _this2.__bind__.templateIndex++;
+					//添加到对应节点上
+					appendEl.appendChild(tempNode);
+					//绑定当前节点事件
+					if (tempNode.nodeType == 1) {
+						_event.setEvent.call(_this2, tempNode);
+					}
+					//模板添加事件
+					_event.setChildTemplateEvent.call(_this2, tempNode);
+				});
+			} catch (e) {
+				console.warn('createTemplate方法中的第一个参数只能为的数组或者对象');
+			}
 		}
 		/*设置过滤器*/
 
@@ -1335,7 +1346,6 @@ function setAttr(element, vdom) {
 
 		if (/:.?/.test(propName)) {
 			propValue = (0, _tools.trim)(propValue);
-			console.log(propValue);
 			//删除当前绑定到真实attr上的属性
 			element.removeAttribute(propName);
 			_index2 -= 1;
@@ -1744,7 +1754,6 @@ function setFor(element, propValue, propIndex) {
 
 
 	forVal = (0, _tools.trim)(forVal);
-	console.log(forVal);
 	//移除花括号数据
 	var filterForVal = forVal.replace(/(\{)?(\})?/g, '');
 	var getForVal = void 0;
@@ -2021,7 +2030,6 @@ function nextSibling(element, ifCount) {
 					//else和elseif的对象
 					if (propName == 'elseif' || propName == 'else') {
 						propValue = (0, _tools.trim)(propValue);
-						console.log(propValue);
 						var ifKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
 						ifKeys.forEach(function (key, index) {
 							if (key) {
@@ -2066,7 +2074,6 @@ function setIf(element, propName, propValue) {
 	var _this2 = this;
 
 	propValue = (0, _tools.trim)(propValue);
-	console.log(propValue);
 	var ifCount = void 0;
 	var ifKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
 	ifKeys.forEach(function (key, index) {
@@ -2227,7 +2234,6 @@ var _tools = __webpack_require__(0);
 
 function setModel(element, propValue) {
 	propValue = (0, _tools.trim)(propValue);
-	console.log(propValue);
 	var _this = this;
 	var resolveVal = propValue.replace(/\{?\}?/g, '');
 	var elTagName = element.tagName.toLocaleLowerCase();
@@ -2359,7 +2365,6 @@ function setShow(element, propValue) {
 	var _this = this;
 
 	propValue = (0, _tools.trim)(propValue);
-	console.log(propValue);
 	var attrKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
 	attrKeys.forEach(function (val, index) {
 		if (!(_this.__ob__.show[val] instanceof Array)) {

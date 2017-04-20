@@ -13,7 +13,6 @@ function setAttr(element, vdom) {
 
 		if(/:.?/.test(propName)) {
 			propValue = trim(propValue);
-			console.log(propValue);
 			//删除当前绑定到真实attr上的属性
 			element.removeAttribute(propName);
 			_index -= 1;

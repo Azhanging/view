@@ -1,7 +1,6 @@
 import { trim } from './../tools';
 function setModel(element, propValue) {
 	propValue = trim(propValue);
-	console.log(propValue);
 	let _this = this;
 	let resolveVal = propValue.replace(/\{?\}?/g, '')
 	let elTagName = element.tagName.toLocaleLowerCase();

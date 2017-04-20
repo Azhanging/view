@@ -16,7 +16,6 @@ function nextSibling(element, ifCount) {
 					//else和elseif的对象
 					if(propName == 'elseif' || propName == 'else') {
 						propValue = trim(propValue);
-						console.log(propValue);
 						let ifKeys = getDisassemblyKey(disassembly(propValue));
 						ifKeys.forEach((key, index) => {
 							if(key) {
@@ -59,7 +58,6 @@ function nextSibling(element, ifCount) {
 
 function setIf(element, propName, propValue) {
 	propValue = trim(propValue);
-	console.log(propValue);
 	let ifCount;
 	let ifKeys = getDisassemblyKey(disassembly(propValue));
 	ifKeys.forEach((key, index) => {
