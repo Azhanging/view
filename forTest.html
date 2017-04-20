@@ -1,33 +1,35 @@
 <!DOCTYPE html>
 <html>
+
 	<head>
 		<meta charset="UTF-8">
 		<title></title>
 	</head>
+
 	<body>
 		<div id="app">
-			<div _v-show="{{              isShow               }}" style="display: none;">
-				<div :class="{{i}}" _v-show="{{        isShow               }}">
-					{{i}}
+			<div _v-show="{{              isShow               }} == {{              isShow               }}?true:false" style="display: none;">
+				<div :class="{{ i }} + {{ i }}" _v-show="{{        isShow               }}">
+					{{ i }} - {{ i }}
 					<span>
-						{{i}}
+						{{ i }} - {{  i   }}
 					</span>
 				</div>
 				<a href="" _v-if="{{           ifStatus.0            }}">1</a>
 				<a href="" _v-elseif="{{             ifStatus.1}}">2</a>
 				<a href="" _v-else="{{ifStatus.2}}">3</a>
 				<div>{{val}}</div>
-				
-				<div _v-for="m in {{input.val}}" :class="{{$index}}">
+
+				<div _v-for="m in {{           input.val          }}" :class="{{      $index    }}+{{    $index    }}">
 					{{m}} --- {{$index}}
 					<!--<div>111</div>-->
 				</div>
 				<div>{{input.val}}</div>
-				<input type="text" _v-model="{{input.val}}"/>
-				<div _v-for="i in 5" :class="{{$index}}">
-					{{i}} --- {{$index}}
+				<input type="text" _v-model="{{       input.val        }}" />
+				<div _v-for="i in 5" :class="{{        $index         }}">
+					{{   i    }} --- {{       $index       }}
 					<div _v-for="n in 2" :class="{{$index}}">
-						{{n}} --- {{$index}}
+						{{      n         }} --- {{                   $index               }}
 					</div>
 				</div>
 				{{element | html}}
@@ -36,30 +38,38 @@
 		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
 			var time = new Date();
-			
+
 			var v = new View({
-				el:"app",
-				data:{
-					isShow:false,
-					i:1,
-					isShow:true,
-					ifStatus:[
-						{isShow:false,value:1},
-						{isShow:true,value:2},
-						{isShow:false,value:3}
+				el: "app",
+				data: {
+					isShow: false,
+					i: 1,
+					isShow: true,
+					ifStatus: [{
+							isShow: false,
+							value: 1
+						},
+						{
+							isShow: true,
+							value: 2
+						},
+						{
+							isShow: false,
+							value: 3
+						}
 					],
-					testFor:5,
-					input:{
-						val:''
+					testFor: 5,
+					input: {
+						val: ''
 					},
-					val:'测试过滤器',
-					element:"<div>123123456465798798</div>"
+					val: '测试过滤器',
+					element: "<div>123123456465798798</div>"
 				},
-				ready:function(){
+				ready: function() {
 					this.data.isShow = true;
 				}
 			});
-			
+
 			function deepCopy(p, c) {
 				//如果拷贝的对象是dom节点
 				var c = c || (p instanceof Array ? [] : {});
@@ -73,23 +83,41 @@
 				}　　　
 				return c;
 			}
-			
-			var arr = [
-						{isShow:false,value:1},
-						{isShow:true,value:2},
-						{isShow:false,value:3},
-						{isShow:true,value:4},
-						{isShow:false,value:5},
-						{isShow:true,value:6},
-					]
-			
-//			setInterval(()=>{
-//				var arr = deepCopy(v.data.ifStatus);
-//				arr.push(1);
-//				v.data.ifStatus = arr;
-//			},10);
-			
-			console.log(new Date()-time);
+
+			var arr = [{
+					isShow: false,
+					value: 1
+				},
+				{
+					isShow: true,
+					value: 2
+				},
+				{
+					isShow: false,
+					value: 3
+				},
+				{
+					isShow: true,
+					value: 4
+				},
+				{
+					isShow: false,
+					value: 5
+				},
+				{
+					isShow: true,
+					value: 6
+				},
+			]
+
+			//			setInterval(()=>{
+			//				var arr = deepCopy(v.data.ifStatus);
+			//				arr.push(1);
+			//				v.data.ifStatus = arr;
+			//			},10);
+
+			console.log(new Date() - time);
 		</script>
 	</body>
+
 </html>

@@ -1,6 +1,8 @@
-import { disassembly, getDisassemblyKey ,setBind} from './../tools';
+import { disassembly, getDisassemblyKey ,setBind,trim} from './../tools';
 
 function setShow(element,propValue){
+	propValue = trim(propValue);
+	console.log(propValue);
 	let attrKeys = getDisassemblyKey(disassembly(propValue));
 	attrKeys.forEach((val, index) => {
 		if(!(this.__ob__.show[val] instanceof Array)) {

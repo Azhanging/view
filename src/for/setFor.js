@@ -6,6 +6,7 @@ function setFor(element, propValue, propIndex) {
 	let [forKey, forVal] = propValue.split(' in ');
 	//整理空字符
 	forVal = trim(forVal);
+	console.log(forVal);
 	//移除花括号数据
 	let filterForVal = forVal.replace(/(\{)?(\})?/g, '');
 	let getForVal;

@@ -122,7 +122,7 @@ function getDisassemblyKey(keys) {
 //用来清除绑定数据中的空字符串
 function trim(value) {
 	if (value.indexOf(' ') !== -1) {
-		return value.replace(/\{\{ */, '{{').replace(/ *\}\}/, '}}');
+		return value.replace(/\{\{ */g, '{{').replace(/ *\}\}/g, '}}');
 	} else {
 		return value;
 	}
@@ -1335,6 +1335,7 @@ function setAttr(element, vdom) {
 
 		if (/:.?/.test(propName)) {
 			propValue = (0, _tools.trim)(propValue);
+			console.log(propValue);
 			//删除当前绑定到真实attr上的属性
 			element.removeAttribute(propName);
 			_index2 -= 1;
@@ -1369,15 +1370,12 @@ function setAttr(element, vdom) {
 					_for.setFor.call(_this, element, propValue, _index2);
 					break;
 				case 'show':
-					propValue = (0, _tools.trim)(propValue);
 					_show.setShow.call(_this, element, propValue);
 					break;
 				case 'if':
-					propValue = (0, _tools.trim)(propValue);
 					_if.setIf.call(_this, element, propName, propValue);
 					break;
 				case 'model':
-					propValue = (0, _tools.trim)(propValue);
 					_model.setModel.call(_this, element, propValue);
 				default:
 					;
@@ -1746,6 +1744,7 @@ function setFor(element, propValue, propIndex) {
 
 
 	forVal = (0, _tools.trim)(forVal);
+	console.log(forVal);
 	//移除花括号数据
 	var filterForVal = forVal.replace(/(\{)?(\})?/g, '');
 	var getForVal = void 0;
@@ -2021,6 +2020,8 @@ function nextSibling(element, ifCount) {
 					}
 					//else和elseif的对象
 					if (propName == 'elseif' || propName == 'else') {
+						propValue = (0, _tools.trim)(propValue);
+						console.log(propValue);
 						var ifKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
 						ifKeys.forEach(function (key, index) {
 							if (key) {
@@ -2064,6 +2065,8 @@ function nextSibling(element, ifCount) {
 function setIf(element, propName, propValue) {
 	var _this2 = this;
 
+	propValue = (0, _tools.trim)(propValue);
+	console.log(propValue);
 	var ifCount = void 0;
 	var ifKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
 	ifKeys.forEach(function (key, index) {
@@ -2218,7 +2221,13 @@ exports.default = method;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+exports.setModel = undefined;
+
+var _tools = __webpack_require__(0);
+
 function setModel(element, propValue) {
+	propValue = (0, _tools.trim)(propValue);
+	console.log(propValue);
 	var _this = this;
 	var resolveVal = propValue.replace(/\{?\}?/g, '');
 	var elTagName = element.tagName.toLocaleLowerCase();
@@ -2349,6 +2358,8 @@ var _tools = __webpack_require__(0);
 function setShow(element, propValue) {
 	var _this = this;
 
+	propValue = (0, _tools.trim)(propValue);
+	console.log(propValue);
 	var attrKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
 	attrKeys.forEach(function (val, index) {
 		if (!(_this.__ob__.show[val] instanceof Array)) {

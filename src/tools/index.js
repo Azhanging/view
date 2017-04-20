@@ -39,7 +39,7 @@ function getDisassemblyKey(keys){
 //用来清除绑定数据中的空字符串
 function trim(value){
 	if(value.indexOf(' ') !== -1){		
-		return value.replace(/\{\{ */,'{{').replace(/ *\}\}/,'}}');
+		return value.replace(/\{\{ */g,'{{').replace(/ *\}\}/g,'}}');
 	}else{
 		return value;
 	}

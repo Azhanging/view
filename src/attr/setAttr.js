@@ -13,6 +13,7 @@ function setAttr(element, vdom) {
 
 		if(/:.?/.test(propName)) {
 			propValue = trim(propValue);
+			console.log(propValue);
 			//删除当前绑定到真实attr上的属性
 			element.removeAttribute(propName);
 			_index -= 1;
@@ -47,15 +48,12 @@ function setAttr(element, vdom) {
 					setFor.call(this, element, propValue,_index);
 					break;
 				case 'show':
-					propValue = trim(propValue);
 					setShow.call(this, element, propValue);
 					break;
 				case 'if':
-					propValue = trim(propValue);
 					setIf.call(this, element, propName, propValue);
 					break;
 				case 'model':
-					propValue = trim(propValue);
 					setModel.call(this, element, propValue);
 				default:
 					;
