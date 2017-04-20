@@ -21,12 +21,14 @@ class _Element {
 		if(options.tagName) {
 			el = document.createElement(options.tagName);
 			//设置属性
-			for(let key of Object.keys(options.props)) {
+			Object.keys(options.props).forEach((key)=>{
 				let value = options.props[key];
 				el.setAttribute(key, value);
-			}
+			});
+			
 			//设置子节点
-			for(let children of options.childrens) {
+			Object.keys(options.childrens).forEach((index)=>{
+				let children = options.childrens[index];
 				let createElement;
 				if(children instanceof Object) {
 					createElement = this.render(children);
@@ -34,7 +36,7 @@ class _Element {
 					createElement = document.createTextNode(children);
 				}
 				el.appendChild(createElement);
-			}
+			});
 		} else {
 			el = document.createTextNode(options.textContent);
 		}
@@ -62,7 +64,8 @@ class _Element {
 			//设置属性的绑定
 			setAttr.call(_this, element, vdom);
 			
-			for(let el of element.childNodes){
+			for(let index = 0;index<element.childNodes.length;index++){
+				let el = element.childNodes[index];
 				if(el.nodeType === 1 || el.nodeType === 3){
 					this.id++;
 					vdom.childrens.push(this.resolve(el, _this));		
@@ -120,7 +123,8 @@ class _Element {
 	/*判断属性是否有增加或者属性时候是否进行过修改*/
 	diffProps(oldTree, newTree) {
 		let props = {};
-		for(let key of Object.keys(newTree.props)) {
+		
+		Object.keys(newTree.props).forEach((key)=>{
 			let value = newTree.props[key];
 			//如果当前的属性存在，值不相同，存值
 			if(Reflect.has(oldTree.props, key) && !(oldTree.props[key] === value)) {
@@ -128,7 +132,7 @@ class _Element {
 			} else if(!Reflect.has(oldTree.props, key)) {
 				props[key] = newTree.props[key];
 			}
-		}
+		});
 		//添加修改过属性内容
 		return {
 			type: PROPS,

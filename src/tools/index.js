@@ -133,6 +133,21 @@ function getScope(el){
 	}
 }
 
+//获取第一个element节点
+function getFirstElementChild(element){
+	try{
+		return element.firstElementChild;
+	}catch(e){
+		for(let index = 0;index<element.childNodes.length;index++){
+			let children = element.childNodes[index];
+			if(children.nodeType === 1){
+				return children;
+			}
+		}
+	}
+}
+
+
 export {
 	getEl,
 	disassembly,
@@ -144,5 +159,6 @@ export {
 	setBind,
 	setScope,
 	getScope,
-	trim
+	trim,
+	getFirstElementChild
 }

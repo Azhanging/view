@@ -8,7 +8,7 @@
 
 	<body>
 		<div id="app">
-			<div _v-show="{{              isShow               }} == {{              isShow               }}?true:false" style="display: none;">
+			<div _v-show="{{              isShow               }} == {{              isShow               }}" style="display: none;">
 				<div :class="{{ i }} + {{ i }}" _v-show="{{        isShow               }}">
 					{{ i }} - {{ i }}
 					<span>
@@ -74,7 +74,7 @@
 			var v = new View({
 				el: "app",
 				data: {
-					isShow: false,
+					isShow: true,
 					i: 1,
 					isShow: true,
 					ifStatus: [{

@@ -5,8 +5,8 @@ function nextSibling(element, ifCount) {
 		let attributes = element.attributes;
 		if(attributes.length > 0) {
 			Object.keys(attributes).forEach((key, index) => {
-				let propName = attributes[index].name;
-				let propValue = attributes[index].value;
+				let propName = attributes[index] !== null ?attributes[index].name:'';
+				let propValue = attributes[index] !== null ?attributes[index].value:'';
 				if(/_v-.?/.test(propName)) {
 					propName = propName.replace('_v-', '');
 					//再遇到if就跳出

@@ -1,4 +1,4 @@
-import {getEl} from './../tools';
+import {getEl,getFirstElementChild} from './../tools';
 
 //组件初始化
 function componentHandler(node) {
@@ -10,7 +10,7 @@ function componentHandler(node) {
 	//复制的组件中添加子节点
 	cloneNode.innerHTML = elHtml;
 	//获取组件中的节点内容
-	let componentNode = cloneNode.firstElementChild;
+	let componentNode = getFirstElementChild(cloneNode);
 	nodeParent.replaceChild(componentNode, node);
 	return componentNode;
 }

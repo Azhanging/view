@@ -16,7 +16,7 @@ function showUpdate(key){
 		showElements.forEach((element,index)=>{
 			let showValue = this.expr(element.__show__,element);
 			if(showValue == true || showValue.toString().toLocaleLowerCase() === 'ok') {
-				showValue = 'initial';
+				showValue = 'block';
 			} else if(showValue == false || showValue.toString().toLocaleLowerCase() === 'no') {
 				showValue = 'none';
 			}

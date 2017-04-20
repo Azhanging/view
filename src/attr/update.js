@@ -17,10 +17,10 @@ function attrUpdate(key) {
 		let attrNodes = this.__ob__.attr[keyLine];
 		attrNodes.forEach((element, index)=>{
 			let attrs = element.__attrs__;
-			for(let propName of Object.keys(attrs)){
+			Object.keys(attrs).forEach((propName,index)=>{
 				let propValue = attrs[propName];
 				element.setAttribute(propName,this.expr(propValue,element));
-			}
+			});			
 		});
 	}
 }

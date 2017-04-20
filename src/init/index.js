@@ -1,7 +1,7 @@
 import Observer from './../observer';
 import method from './../method';
 import vdom from './../vdom';
-import { getEl, getKeyLink, deepCopy ,getScope} from './../tools';
+import { getEl, getKeyLink, deepCopy ,getScope,getFirstElementChild} from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
@@ -33,7 +33,7 @@ class View {
 			this.isTemplate = false;
 			//判断是否为模板
 			if(this.el.tagName == 'TEMPLATE') {
-				this.el = this.el.content.firstElementChild;
+				this.el = getFirstElementChild(this.el.content?this.el.content:this.el);
 				this.data['templateData'] = {};
 				this.isTemplate = true;
 			}
@@ -109,11 +109,14 @@ class View {
 		//当前的数据依赖
 		updates.push(keys);
 		//设置当前链下面的所有依赖数据
-		for(let key of this.__ob__.bind) {
+		
+		Object.keys(this.__ob__.bind).forEach((index)=>{
+			let key = this.__ob__.bind[index];
 			if(key.indexOf(keys + '.') != -1) {
 				updates.push(key);
 			}
-		}
+		});
+		
 		updates.forEach((keyLine) => {
 			this.update(keyLine);
 		});

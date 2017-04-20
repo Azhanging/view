@@ -55,7 +55,7 @@ function setFor(element, propValue, propIndex) {
 
 	//设置节点
 	let getKeys; 
-	if(getForVal === null ||　getForVal === undefined){
+	if(getForVal === null ||　getForVal === undefined || getForVal === ''){
 		getKeys = [];
 	}else{
 		getKeys = Object.keys(getForVal);

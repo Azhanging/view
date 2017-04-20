@@ -24,13 +24,19 @@ function forUpdate(key) {
 			//获取当前的作用域链数据
 			let getData = this._get(key, element);
 			//如果当前值是null，返回空数组循环
-			if(getData === null){
+			if(getData === null || getData === '' || getData === undefined){
 				getData = [];
 				//判断是否通过数字来循环的
 				if(element.isNumFor){
 					getData = element.__forValue__;
 				}
 			}
+			
+			//IE下Object.keys不识别字符串
+			if(typeof getData === 'string'){
+				getData = getData.split('');
+			}
+			
 			let dataLength = Object.keys(getData).length;
 			//当前循环组内的append的循环节点
 			let forElementGroup = element.__forElementGroup__;
