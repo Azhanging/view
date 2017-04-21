@@ -8,8 +8,8 @@ import { setModel } from './../model';
 function setAttr(element, vdom) {
 	for(let _index = 0;_index<element.attributes.length;_index++) {
 		let prop = element.attributes,
-			propName = prop[_index].name,
-			propValue = prop[_index].value;
+			propName = prop[_index]?prop[_index].name:'',
+			propValue = prop[_index]?prop[_index].value:'';
 
 		if(/:.?/.test(propName)) {
 			propValue = trim(propValue);

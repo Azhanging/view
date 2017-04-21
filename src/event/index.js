@@ -4,8 +4,8 @@ import { getIndex } from './../tools';
 function setEvent(el) {
 	let prop = el.attributes
 	for(let index = 0; index < Object.keys(el.attributes).length; index++) {
-		let propName = prop[index].name,
-			propValue = prop[index].value;
+		let propName = prop[index]?prop[index].name:'',
+			propValue = prop[index]?prop[index].value:'';
 
 		if(/@.?/.test(propName)) {
 			let filterAttrVal = propValue.replace(/\(+\S+\)+/g, '');

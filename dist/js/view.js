@@ -324,8 +324,8 @@ function setEvent(el) {
 
 	var prop = el.attributes;
 	for (var index = 0; index < Object.keys(el.attributes).length; index++) {
-		var propName = prop[index].name,
-		    propValue = prop[index].value;
+		var propName = prop[index] ? prop[index].name : '',
+		    propValue = prop[index] ? prop[index].value : '';
 
 		if (/@.?/.test(propName)) {
 			(function () {
@@ -1262,8 +1262,8 @@ function setAttr(element, vdom) {
 
 	var _loop = function _loop(_index2) {
 		var prop = element.attributes,
-		    propName = prop[_index2].name,
-		    propValue = prop[_index2].value;
+		    propName = prop[_index2] ? prop[_index2].name : '',
+		    propValue = prop[_index2] ? prop[_index2].value : '';
 
 		if (/:.?/.test(propName)) {
 			propValue = (0, _tools.trim)(propValue);
@@ -1925,8 +1925,8 @@ function nextSibling(element, ifCount) {
 		var attributes = element.attributes;
 		if (attributes.length > 0) {
 			Object.keys(attributes).forEach(function (key, index) {
-				var propName = attributes[index] !== null ? attributes[index].name : '';
-				var propValue = attributes[index] !== null ? attributes[index].value : '';
+				var propName = attributes[index] ? attributes[index].name : '';
+				var propValue = attributes[index] ? attributes[index].value : '';
 				if (/_v-.?/.test(propName)) {
 					propName = propName.replace('_v-', '');
 					//再遇到if就跳出
