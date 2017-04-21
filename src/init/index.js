@@ -265,15 +265,22 @@ class View {
 			return;
 		}
 		
+		
+		
 		//循环添加到指定的DOM节点上
 		try{
+			//如果值为字符串（兼容IE）
+			if(typeof vals === 'string'){
+				vals = vals.split('');
+			}
+			
 			Object.keys(vals).forEach((key, index) => {
 				//设置数据流更新
 				this.data.templateData = vals[key];
 				//复制临时节点
 				let tempNode = this.el.cloneNode(true);
 				//设置模板中的index属性
-				tempNode.dataset['index'] = this.__bind__.templateIndex++;
+				tempNode.setAttribute('data-index',this.__bind__.templateIndex++);
 				//添加到对应节点上
 				appendEl.appendChild(tempNode);
 				//绑定当前节点事件

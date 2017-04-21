@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "./dist";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 17);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -254,7 +254,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _update = __webpack_require__(11);
+var _update = __webpack_require__(13);
 
 Object.defineProperty(exports, 'domUpdate', {
   enumerable: true,
@@ -263,7 +263,7 @@ Object.defineProperty(exports, 'domUpdate', {
   }
 });
 
-var _setDom = __webpack_require__(10);
+var _setDom = __webpack_require__(12);
 
 Object.keys(_setDom).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -286,24 +286,21 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setFor = __webpack_require__(13);
+var _setAttr = __webpack_require__(9);
 
-Object.keys(_setFor).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _setFor[key];
-    }
-  });
-});
-
-var _update = __webpack_require__(14);
-
-Object.defineProperty(exports, 'forUpdate', {
+Object.defineProperty(exports, 'setAttr', {
   enumerable: true,
   get: function get() {
-    return _update.forUpdate;
+    return _setAttr.setAttr;
+  }
+});
+
+var _update = __webpack_require__(10);
+
+Object.defineProperty(exports, 'attrUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.attrUpdate;
   }
 });
 
@@ -315,26 +312,111 @@ Object.defineProperty(exports, 'forUpdate', {
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
+exports.setChildTemplateEvent = exports.setForEvent = exports.setEvent = undefined;
 
-var _setIf = __webpack_require__(15);
+var _tools = __webpack_require__(0);
 
-Object.defineProperty(exports, 'setIf', {
-  enumerable: true,
-  get: function get() {
-    return _setIf.setIf;
-  }
-});
+//事件绑定
+function setEvent(el) {
+	var _this = this;
 
-var _update = __webpack_require__(16);
+	var prop = el.attributes;
+	for (var index = 0; index < Object.keys(el.attributes).length; index++) {
+		var propName = prop[index].name,
+		    propValue = prop[index].value;
 
-Object.defineProperty(exports, 'ifUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.ifUpdate;
-  }
-});
+		if (/@.?/.test(propName)) {
+			(function () {
+				var filterAttrVal = propValue.replace(/\(+\S+\)+/g, '');
+				propName = propName.replace('@', '');
+				//存在这个方法
+				if (_this[filterAttrVal]) {
+					//存在参数值
+					if (propValue.match(/\(\S+\)/) instanceof Array) {
+						var args = propValue.match(/\(\S+\)/)[0].replace(/\(?\)?/g, '').split(',');
+						//绑定事件
+						el.addEventListener(propName, function (event) {
+							//对数组内的数据查看是否存在的数据流进行过滤
+							var filterArgs = args.map(function (item, index) {
+								//如果传入的对象是$index,获取当前父级中所在的索引
+								if (item === '$index') {
+									return _tools.getIndex.call(_this, el);
+								} else if (item === '$event') {
+									return event;
+								} else {
+									//解析data中的值
+									return _this.expr(item).toString();
+								}
+							});
+
+							//运行绑定的event
+							_this[filterAttrVal].apply(_this, filterArgs);
+						}, false);
+					} else {
+						//不存在参数值过滤掉空的括号
+						el.addEventListener(propName, function (event) {
+							_this[filterAttrVal].call(_this, event);
+						}, false);
+					}
+				}
+			})();
+		}
+	}
+}
+
+/*_v-for对象循环添加事件*/
+function setForEvent(el, index) {
+	var _this2 = this;
+
+	var childEls = el.childNodes,
+	    childElsLen = childEls.length;
+	if (el.nodeType === 1) {
+		//这里为查看是否通过数组循环出来的，添加index到当前循环对象
+		if (!isNaN(index)) {
+			//如果使用的是模板，cloneNode中无法赋值私有的属性，通过data-index设置所有值
+			if (this.isTemplate) {
+				el.dataset['index'] = index;
+			} else {
+				el.$index = index;
+			}
+		}
+		//绑定循环中的事件
+		setEvent.call(this, el);
+		if (childElsLen > 0) {
+			Object.keys(childEls).forEach(function (index) {
+				if (childEls[index].nodeType == 1) {
+					setEvent.call(_this2, childEls[index]);
+				}
+			});
+		}
+	}
+}
+
+/*
+ *	在templateData中,$index的参数会根据插入的节点对象进行返回index的值
+ *	模板子对象循环添加事件
+ */
+
+function setChildTemplateEvent(el) {
+	var _this3 = this;
+
+	var childEls = el.childNodes;
+	Object.keys(childEls).forEach(function (index) {
+		var el = childEls[index];
+		if (el.nodeType == 1) {
+			if (el.childNodes.length > 0) {
+				setChildTemplateEvent.call(_this3, el);
+			}
+			setEvent.call(_this3, el);
+		}
+	});
+}
+
+exports.setEvent = setEvent;
+exports.setForEvent = setForEvent;
+exports.setChildTemplateEvent = setChildTemplateEvent;
 
 /***/ }),
 /* 4 */
@@ -347,7 +429,68 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setShow = __webpack_require__(21);
+var _setFor = __webpack_require__(14);
+
+Object.keys(_setFor).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _setFor[key];
+    }
+  });
+});
+
+var _update = __webpack_require__(15);
+
+Object.defineProperty(exports, 'forUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.forUpdate;
+  }
+});
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setIf = __webpack_require__(16);
+
+Object.defineProperty(exports, 'setIf', {
+  enumerable: true,
+  get: function get() {
+    return _setIf.setIf;
+  }
+});
+
+var _update = __webpack_require__(17);
+
+Object.defineProperty(exports, 'ifUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.ifUpdate;
+  }
+});
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setShow = __webpack_require__(22);
 
 Object.keys(_setShow).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -359,7 +502,7 @@ Object.keys(_setShow).forEach(function (key) {
   });
 });
 
-var _update = __webpack_require__(22);
+var _update = __webpack_require__(23);
 
 Object.keys(_update).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -372,7 +515,7 @@ Object.keys(_update).forEach(function (key) {
 });
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -386,13 +529,13 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _dom = __webpack_require__(1);
 
-var _component = __webpack_require__(24);
+var _component = __webpack_require__(11);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _attr = __webpack_require__(7);
+var _attr = __webpack_require__(2);
 
-var _event = __webpack_require__(12);
+var _event = __webpack_require__(3);
 
 var _tools = __webpack_require__(0);
 
@@ -586,7 +729,7 @@ var _Element = function () {
 exports.default = _Element;
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -600,15 +743,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _observer = __webpack_require__(20);
+var _observer = __webpack_require__(21);
 
 var _observer2 = _interopRequireDefault(_observer);
 
-var _method = __webpack_require__(18);
+var _method = __webpack_require__(19);
 
 var _method2 = _interopRequireDefault(_method);
 
-var _vdom = __webpack_require__(5);
+var _vdom = __webpack_require__(7);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
@@ -616,17 +759,17 @@ var _tools = __webpack_require__(0);
 
 var _dom = __webpack_require__(1);
 
-var _attr = __webpack_require__(7);
+var _attr = __webpack_require__(2);
 
-var _show = __webpack_require__(4);
+var _show = __webpack_require__(6);
 
-var _if = __webpack_require__(3);
+var _if = __webpack_require__(5);
 
-var _for = __webpack_require__(2);
+var _for = __webpack_require__(4);
 
-var _watch = __webpack_require__(23);
+var _watch = __webpack_require__(24);
 
-var _event = __webpack_require__(12);
+var _event = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -923,13 +1066,18 @@ var View = function () {
 
 			//循环添加到指定的DOM节点上
 			try {
+				//如果值为字符串（兼容IE）
+				if (typeof vals === 'string') {
+					vals = vals.split('');
+				}
+
 				Object.keys(vals).forEach(function (key, index) {
 					//设置数据流更新
 					_this2.data.templateData = vals[key];
 					//复制临时节点
 					var tempNode = _this2.el.cloneNode(true);
 					//设置模板中的index属性
-					tempNode.dataset['index'] = _this2.__bind__.templateIndex++;
+					tempNode.setAttribute('data-index', _this2.__bind__.templateIndex++);
 					//添加到对应节点上
 					appendEl.appendChild(tempNode);
 					//绑定当前节点事件
@@ -1087,36 +1235,7 @@ View.filterHandlers = {
 exports.default = View;
 
 /***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _setAttr = __webpack_require__(8);
-
-Object.defineProperty(exports, 'setAttr', {
-  enumerable: true,
-  get: function get() {
-    return _setAttr.setAttr;
-  }
-});
-
-var _update = __webpack_require__(9);
-
-Object.defineProperty(exports, 'attrUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.attrUpdate;
-  }
-});
-
-/***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1129,13 +1248,13 @@ exports.setAttr = undefined;
 
 var _tools = __webpack_require__(0);
 
-var _show = __webpack_require__(4);
+var _show = __webpack_require__(6);
 
-var _if = __webpack_require__(3);
+var _if = __webpack_require__(5);
 
-var _for = __webpack_require__(2);
+var _for = __webpack_require__(4);
 
-var _model = __webpack_require__(19);
+var _model = __webpack_require__(20);
 
 /*查找element对象中的属性*/
 function setAttr(element, vdom) {
@@ -1241,7 +1360,7 @@ function setAttr(element, vdom) {
 exports.setAttr = setAttr;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1284,7 +1403,38 @@ function attrUpdate(key) {
 exports.attrUpdate = attrUpdate;
 
 /***/ }),
-/* 10 */
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _tools = __webpack_require__(0);
+
+//组件初始化
+function componentHandler(node) {
+	var nodeName = node.nodeName.toLowerCase(),
+	    elHtml = (0, _tools.getEl)(this.components[nodeName]) != null ? (0, _tools.getEl)(this.components[nodeName]).innerHTML : this.components[nodeName],
+
+	//复制组件节点
+	cloneNode = node.cloneNode(true),
+	    nodeParent = node.parentNode;
+	//复制的组件中添加子节点
+	cloneNode.innerHTML = elHtml;
+	//获取组件中的节点内容
+	var componentNode = (0, _tools.getFirstElementChild)(cloneNode);
+	nodeParent.replaceChild(componentNode, node);
+	return componentNode;
+}
+
+exports.default = componentHandler;
+
+/***/ }),
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1385,7 +1535,7 @@ exports.createTextNodes = createTextNodes;
 exports.replaceTextNode = replaceTextNode;
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1475,121 +1625,7 @@ function isTextNodePrevSibline(item) {
 exports.domUpdate = domUpdate;
 
 /***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.setChildTemplateEvent = exports.setForEvent = exports.setEvent = undefined;
-
-var _tools = __webpack_require__(0);
-
-//事件绑定
-function setEvent(el) {
-	var _this = this;
-
-	var prop = el.attributes;
-	for (var index = 0; index < Object.keys(el.attributes).length; index++) {
-		var propName = prop[index].name,
-		    propValue = prop[index].value;
-
-		if (/@.?/.test(propName)) {
-			(function () {
-				var filterAttrVal = propValue.replace(/\(+\S+\)+/g, '');
-				propName = propName.replace('@', '');
-				//存在这个方法
-				if (_this[filterAttrVal]) {
-					//存在参数值
-					if (propValue.match(/\(\S+\)/) instanceof Array) {
-						var args = propValue.match(/\(\S+\)/)[0].replace(/\(?\)?/g, '').split(',');
-						//绑定事件
-						el.addEventListener(propName, function (event) {
-							//对数组内的数据查看是否存在的数据流进行过滤
-							var filterArgs = args.map(function (item, index) {
-								//如果传入的对象是$index,获取当前父级中所在的索引
-								if (item === '$index') {
-									return _tools.getIndex.call(_this, el);
-								} else if (item === '$event') {
-									return event;
-								} else {
-									//解析data中的值
-									return _this.expr(item).toString();
-								}
-							});
-
-							//运行绑定的event
-							_this[filterAttrVal].apply(_this, filterArgs);
-						}, false);
-					} else {
-						//不存在参数值过滤掉空的括号
-						el.addEventListener(propName, function (event) {
-							_this[filterAttrVal].call(_this, event);
-						}, false);
-					}
-				}
-			})();
-		}
-	}
-}
-
-/*_v-for对象循环添加事件*/
-function setForEvent(el, index) {
-	var _this2 = this;
-
-	var childEls = el.childNodes,
-	    childElsLen = childEls.length;
-	if (el.nodeType === 1) {
-		//这里为查看是否通过数组循环出来的，添加index到当前循环对象
-		if (!isNaN(index)) {
-			//如果使用的是模板，cloneNode中无法赋值私有的属性，通过data-index设置所有值
-			if (this.isTemplate) {
-				el.dataset['index'] = index;
-			} else {
-				el.$index = index;
-			}
-		}
-		//绑定循环中的事件
-		setEvent.call(this, el);
-		if (childElsLen > 0) {
-			Object.keys(childEls).forEach(function (index) {
-				if (childEls[index].nodeType == 1) {
-					setEvent.call(_this2, childEls[index]);
-				}
-			});
-		}
-	}
-}
-
-/*
- *	在templateData中,$index的参数会根据插入的节点对象进行返回index的值
- *	模板子对象循环添加事件
- */
-
-function setChildTemplateEvent(el) {
-	var _this3 = this;
-
-	var childEls = el.childNodes;
-	Object.keys(childEls).forEach(function (index) {
-		var el = childEls[index];
-		if (el.nodeType == 1) {
-			if (el.childNodes.length > 0) {
-				setChildTemplateEvent.call(_this3, el);
-			}
-			setEvent.call(_this3, el);
-		}
-	});
-}
-
-exports.setEvent = setEvent;
-exports.setForEvent = setForEvent;
-exports.setChildTemplateEvent = setChildTemplateEvent;
-
-/***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1712,7 +1748,7 @@ function setFor(element, propValue, propIndex) {
 exports.setFor = setFor;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1725,7 +1761,7 @@ exports.forUpdate = undefined;
 
 var _dom = __webpack_require__(1);
 
-var _vdom = __webpack_require__(5);
+var _vdom = __webpack_require__(7);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
@@ -1869,7 +1905,7 @@ function forUpdate(key) {
 exports.forUpdate = forUpdate;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1974,7 +2010,7 @@ function setIf(element, propName, propValue) {
 exports.setIf = setIf;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2034,13 +2070,13 @@ function ifUpdate(key) {
 exports.ifUpdate = ifUpdate;
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
-var _init = __webpack_require__(6);
+var _init = __webpack_require__(8);
 
 var _init2 = _interopRequireDefault(_init);
 
@@ -2067,7 +2103,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 });
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2089,7 +2125,7 @@ function method() {
 exports.default = method;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2123,7 +2159,7 @@ function setModel(element, propValue) {
 exports.setModel = setModel;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2218,7 +2254,7 @@ var Observer = function () {
 exports.default = Observer;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2251,7 +2287,7 @@ function setShow(element, propValue) {
 exports.setShow = setShow;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2282,10 +2318,11 @@ function showUpdate(key) {
 		showElements.forEach(function (element, index) {
 			var showValue = _this2.expr(element.__show__, element);
 			if (showValue == true || showValue.toString().toLocaleLowerCase() === 'ok') {
-				showValue = 'block';
+				showValue = '';
 			} else if (showValue == false || showValue.toString().toLocaleLowerCase() === 'no') {
 				showValue = 'none';
 			}
+			//如果有数据不相同改变				
 			element.style.display = showValue;
 		});
 	}
@@ -2294,7 +2331,7 @@ function showUpdate(key) {
 exports.showUpdate = showUpdate;
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2311,37 +2348,6 @@ function watchUpdate(keyLine) {
 }
 
 exports.watchUpdate = watchUpdate;
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _tools = __webpack_require__(0);
-
-//组件初始化
-function componentHandler(node) {
-	var nodeName = node.nodeName.toLowerCase(),
-	    elHtml = (0, _tools.getEl)(this.components[nodeName]) != null ? (0, _tools.getEl)(this.components[nodeName]).innerHTML : this.components[nodeName],
-
-	//复制组件节点
-	cloneNode = node.cloneNode(true),
-	    nodeParent = node.parentNode;
-	//复制的组件中添加子节点
-	cloneNode.innerHTML = elHtml;
-	//获取组件中的节点内容
-	var componentNode = (0, _tools.getFirstElementChild)(cloneNode);
-	nodeParent.replaceChild(componentNode, node);
-	return componentNode;
-}
-
-exports.default = componentHandler;
 
 /***/ })
 /******/ ]);

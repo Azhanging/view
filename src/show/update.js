@@ -16,10 +16,11 @@ function showUpdate(key){
 		showElements.forEach((element,index)=>{
 			let showValue = this.expr(element.__show__,element);
 			if(showValue == true || showValue.toString().toLocaleLowerCase() === 'ok') {
-				showValue = 'block';
+				showValue = '';
 			} else if(showValue == false || showValue.toString().toLocaleLowerCase() === 'no') {
 				showValue = 'none';
 			}
+			//如果有数据不相同改变				
 			element.style.display = showValue;
 		});
 	}

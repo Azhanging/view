@@ -147,7 +147,6 @@ function getFirstElementChild(element){
 	}
 }
 
-
 export {
 	getEl,
 	disassembly,
