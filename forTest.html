@@ -26,7 +26,7 @@
 				</div>
 				<div>{{        input.val                 }}</div>
 				<input type="text" _v-model="{{       input.val        }}" :value="{{input.val}}"/>
-				<div _v-for="i in 5" :class="{{        $index         }}">
+				<div _v-for="i in 5" :class="{{        $index         }}" @click="getIndex($index)">
 					{{   i    }} --- {{       $index       }}
 					<div _v-for="n in 2" :class="{{$index}}">
 						{{        n         }} --- {{                   $index               }}
@@ -41,7 +41,7 @@
 		</div>
 		
 		<template id="temp">
-			<div>
+			<div @click="getIndex($index)">
 				{{templateData.val}}
 			</div>
 		</template>
@@ -66,7 +66,12 @@
 			}
 			
 			var _v = new View({
-				el:"temp"
+				el:"temp",
+				methods:{
+					getIndex:function(index){
+						console.log(index);
+					}
+				}
 			});
 			
 			_v.createTemplate(data_1,document.getElementById('app-1'));
@@ -99,8 +104,15 @@
 				},
 				ready: function() {
 					this.data.isShow = true;
+				},
+				methods:{
+					getIndex(index){
+						console.log(index);
+					}
 				}
 			});
+			
+			console.log(v);
 
 			function deepCopy(p, c) {
 				//如果拷贝的对象是dom节点

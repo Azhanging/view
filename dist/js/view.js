@@ -1,3 +1,11 @@
+/*!
+ * 
+ * 			create by blue (2017-4-3 11:09:02)
+ * 			更新时间:2017-4-23 11:06:51	
+ * 			修复手机端上获取attr时存在null属性报错
+ * 			优化事件处理代码
+ * 		
+ */
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -283,6 +291,94 @@ Object.keys(_setDom).forEach(function (key) {
 
 
 Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.setEventHandler = exports.setChildTemplateEvent = exports.setEvent = undefined;
+
+var _tools = __webpack_require__(0);
+
+//事件绑定
+function setEvent(element) {
+	var prop = element.attributes;
+	for (var index = 0; index < Object.keys(element.attributes).length; index++) {
+		var propName = prop[index] ? prop[index].name : '',
+		    propValue = prop[index] ? prop[index].value : '';
+
+		if (/@.?/.test(propName)) {
+			setEventHandler.apply(this, [element, propName, propValue]);
+		}
+	}
+}
+
+//事件处理函数
+function setEventHandler(element, propName, propValue) {
+	var _this = this;
+
+	var filterpropValue = propValue.replace(/\(+\S+\)+/g, '');
+	propName = propName.replace('@', '');
+	//存在这个方法
+	if (this[filterpropValue]) {
+		//存在参数值
+		if (propValue.match(/\(\S+\)/) instanceof Array) {
+			var args = propValue.match(/\(\S+\)/)[0].replace(/\(?\)?/g, '').split(',');
+			//绑定事件
+			element.addEventListener(propName, function (event) {
+				//对数组内的数据查看是否存在的数据流进行过滤
+				var filterArgs = args.map(function (item, index) {
+					//如果传入的对象是$index,获取当前父级中所在的索引
+					if (item === '$index') {
+						return _tools.getIndex.call(_this, element);
+					} else if (item === '$event') {
+						return event;
+					} else {
+						//解析data中的值
+						return _this.expr(item).toString();
+					}
+				});
+				//运行绑定的event
+				_this[filterpropValue].apply(_this, filterArgs);
+			}, false);
+		} else {
+			//不存在参数值过滤掉空的括号
+			element.addEventListener(propName, function (event) {
+				_this[filterpropValue].call(_this, event);
+			}, false);
+		}
+	}
+}
+
+/*
+ *	在templateData中,$index的参数会根据插入的节点对象进行返回index的值
+ *	模板子对象循环添加事件
+ */
+
+function setChildTemplateEvent(el) {
+	var _this2 = this;
+
+	var childEls = el.childNodes;
+	Object.keys(childEls).forEach(function (index) {
+		var el = childEls[index];
+		if (el.nodeType == 1) {
+			if (el.childNodes.length > 0) {
+				setChildTemplateEvent.call(_this2, el);
+			}
+			setEvent.call(_this2, el);
+		}
+	});
+}
+
+exports.setEvent = setEvent;
+exports.setChildTemplateEvent = setChildTemplateEvent;
+exports.setEventHandler = setEventHandler;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
@@ -303,120 +399,6 @@ Object.defineProperty(exports, 'attrUpdate', {
     return _update.attrUpdate;
   }
 });
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.setChildTemplateEvent = exports.setForEvent = exports.setEvent = undefined;
-
-var _tools = __webpack_require__(0);
-
-//事件绑定
-function setEvent(el) {
-	var _this = this;
-
-	var prop = el.attributes;
-	for (var index = 0; index < Object.keys(el.attributes).length; index++) {
-		var propName = prop[index] ? prop[index].name : '',
-		    propValue = prop[index] ? prop[index].value : '';
-
-		if (/@.?/.test(propName)) {
-			(function () {
-				var filterAttrVal = propValue.replace(/\(+\S+\)+/g, '');
-				propName = propName.replace('@', '');
-				//存在这个方法
-				if (_this[filterAttrVal]) {
-					//存在参数值
-					if (propValue.match(/\(\S+\)/) instanceof Array) {
-						var args = propValue.match(/\(\S+\)/)[0].replace(/\(?\)?/g, '').split(',');
-						//绑定事件
-						el.addEventListener(propName, function (event) {
-							//对数组内的数据查看是否存在的数据流进行过滤
-							var filterArgs = args.map(function (item, index) {
-								//如果传入的对象是$index,获取当前父级中所在的索引
-								if (item === '$index') {
-									return _tools.getIndex.call(_this, el);
-								} else if (item === '$event') {
-									return event;
-								} else {
-									//解析data中的值
-									return _this.expr(item).toString();
-								}
-							});
-
-							//运行绑定的event
-							_this[filterAttrVal].apply(_this, filterArgs);
-						}, false);
-					} else {
-						//不存在参数值过滤掉空的括号
-						el.addEventListener(propName, function (event) {
-							_this[filterAttrVal].call(_this, event);
-						}, false);
-					}
-				}
-			})();
-		}
-	}
-}
-
-/*_v-for对象循环添加事件*/
-function setForEvent(el, index) {
-	var _this2 = this;
-
-	var childEls = el.childNodes,
-	    childElsLen = childEls.length;
-	if (el.nodeType === 1) {
-		//这里为查看是否通过数组循环出来的，添加index到当前循环对象
-		if (!isNaN(index)) {
-			//如果使用的是模板，cloneNode中无法赋值私有的属性，通过data-index设置所有值
-			if (this.isTemplate) {
-				el.dataset['index'] = index;
-			} else {
-				el.$index = index;
-			}
-		}
-		//绑定循环中的事件
-		setEvent.call(this, el);
-		if (childElsLen > 0) {
-			Object.keys(childEls).forEach(function (index) {
-				if (childEls[index].nodeType == 1) {
-					setEvent.call(_this2, childEls[index]);
-				}
-			});
-		}
-	}
-}
-
-/*
- *	在templateData中,$index的参数会根据插入的节点对象进行返回index的值
- *	模板子对象循环添加事件
- */
-
-function setChildTemplateEvent(el) {
-	var _this3 = this;
-
-	var childEls = el.childNodes;
-	Object.keys(childEls).forEach(function (index) {
-		var el = childEls[index];
-		if (el.nodeType == 1) {
-			if (el.childNodes.length > 0) {
-				setChildTemplateEvent.call(_this3, el);
-			}
-			setEvent.call(_this3, el);
-		}
-	});
-}
-
-exports.setEvent = setEvent;
-exports.setForEvent = setForEvent;
-exports.setChildTemplateEvent = setChildTemplateEvent;
 
 /***/ }),
 /* 4 */
@@ -533,9 +515,9 @@ var _component = __webpack_require__(11);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _attr = __webpack_require__(2);
+var _attr = __webpack_require__(3);
 
-var _event = __webpack_require__(3);
+var _event = __webpack_require__(2);
 
 var _tools = __webpack_require__(0);
 
@@ -759,7 +741,7 @@ var _tools = __webpack_require__(0);
 
 var _dom = __webpack_require__(1);
 
-var _attr = __webpack_require__(2);
+var _attr = __webpack_require__(3);
 
 var _show = __webpack_require__(6);
 
@@ -769,7 +751,7 @@ var _for = __webpack_require__(4);
 
 var _watch = __webpack_require__(24);
 
-var _event = __webpack_require__(3);
+var _event = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -839,8 +821,6 @@ var View = function () {
 	_createClass(View, [{
 		key: '_init',
 		value: function _init() {
-			this.vdomFn = _vdom2.default;
-
 			//构建前钩子函数
 			this.init();
 			//配置对象
@@ -879,6 +859,8 @@ var View = function () {
 				tempFragmentElements: [],
 				templateIndex: 0
 			};
+			//事件委托
+			this.__event__ = {};
 		}
 	}, {
 		key: 'dep',
@@ -1254,9 +1236,12 @@ var _if = __webpack_require__(5);
 
 var _for = __webpack_require__(4);
 
+var _event = __webpack_require__(2);
+
 var _model = __webpack_require__(20);
 
 /*查找element对象中的属性*/
+/*拆解绑定的信息*/
 function setAttr(element, vdom) {
 	var _this = this;
 
@@ -1312,43 +1297,13 @@ function setAttr(element, vdom) {
 					;
 			}
 		} else if (/@.?/.test(propName)) {
-			var filterpropValue = propValue.replace(/\(+\S+\)+/g, '');
+			//如果不是模板中的事件
 			if (!_this.isTemplate) {
 				//删除当前绑定到真实attr上的属性
 				element.removeAttribute(propName);
 				_index2 -= 1;
 			}
-
-			propName = propName.replace('@', '');
-			//存在这个方法
-			if (_this[filterpropValue]) {
-				//存在参数值
-				if (propValue.match(/\(\S+\)/) instanceof Array) {
-					var args = propValue.match(/\(\S+\)/)[0].replace(/\(?\)?/g, '').split(',');
-					//绑定事件
-					element.addEventListener(propName, function (event) {
-						//对数组内的数据查看是否存在的数据流进行过滤
-						var filterArgs = args.map(function (item, index) {
-							//如果传入的对象是$index,获取当前父级中所在的索引
-							if (item === '$index') {
-								return _tools.getIndex.call(_this, element);
-							} else if (item === '$event') {
-								return event;
-							} else {
-								//解析data中的值
-								return _this.expr(item).toString();
-							}
-						});
-						//运行绑定的event
-						_this[filterpropValue].apply(_this, filterArgs);
-					}, false);
-				} else {
-					//不存在参数值过滤掉空的括号
-					el.addEventListener(propName, function (event) {
-						_this[filterpropValue].call(_this, event);
-					}, false);
-				}
-			}
+			_event.setEventHandler.apply(_this, [element, propName, propValue]);
 		}
 		_index = _index2;
 	};
@@ -1356,7 +1311,8 @@ function setAttr(element, vdom) {
 	for (var _index = 0; _index < element.attributes.length; _index++) {
 		_loop(_index);
 	}
-} /*拆解绑定的信息*/
+}
+
 exports.setAttr = setAttr;
 
 /***/ }),

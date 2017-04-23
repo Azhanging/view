@@ -59,8 +59,6 @@ class View {
 		this._init();
 	}
 	_init() {
-		this.vdomFn = vdom;
-		
 		//构建前钩子函数
 		this.init();
 		//配置对象
@@ -97,6 +95,8 @@ class View {
 			tempFragmentElements: [],
 			templateIndex:0
 		}
+		//事件委托
+		this.__event__ = {};
 	}
 	dep(keys) {
 		let updates = [];
@@ -264,9 +264,7 @@ class View {
 			console.warn('第二参数为添加节点的id或者为对应的节点对象');
 			return;
 		}
-		
-		
-		
+
 		//循环添加到指定的DOM节点上
 		try{
 			//如果值为字符串（兼容IE）

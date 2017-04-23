@@ -44,6 +44,12 @@ module.exports = {
 	//map文件生成
 	//	devtool: 'source-map',
 	plugins: [
+		new webpack.BannerPlugin(`
+			create by blue (2017-4-3 11:09:02)
+			更新时间:2017-4-23 11:06:51	
+			修复手机端上获取attr时存在null属性报错
+			优化事件处理代码
+		`),
 		new ExtractTextPlugin({
 			filename:'./css/[name].css',
 			publicPath:'./dist/'
