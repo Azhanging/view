@@ -303,8 +303,9 @@ function setEvent(element) {
 	for (var index = 0; index < Object.keys(element.attributes).length; index++) {
 		var propName = prop[index] ? prop[index].name : '',
 		    propValue = prop[index] ? prop[index].value : '';
-
 		if (/@.?/.test(propName)) {
+			element.removeAttribute(propName);
+			index -= 1;
 			setEventHandler.apply(this, [element, propName, propValue]);
 		}
 	}
@@ -793,8 +794,9 @@ var View = function () {
 			//判断是否为模板
 			if (this.el.tagName == 'TEMPLATE') {
 				this.el = (0, _tools.getFirstElementChild)(this.el.content ? this.el.content : this.el);
-				this.data['templateData'] = {};
+				this.data['templateData'] = [];
 				this.isTemplate = true;
+				this.data['$index'] = -1;
 			}
 		} else {
 			this.el = '';
@@ -859,8 +861,6 @@ var View = function () {
 				tempFragmentElements: [],
 				templateIndex: 0
 			};
-			//事件委托
-			this.__event__ = {};
 		}
 	}, {
 		key: 'dep',
@@ -1054,6 +1054,8 @@ var View = function () {
 				}
 
 				Object.keys(vals).forEach(function (key, index) {
+					//更新模板的index
+					_this2.el.$scope.$index++;
 					//设置数据流更新
 					_this2.data.templateData = vals[key];
 					//复制临时节点

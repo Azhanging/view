@@ -6,8 +6,9 @@ function setEvent(element) {
 	for(let index = 0; index < Object.keys(element.attributes).length; index++) {
 		let propName = prop[index] ? prop[index].name : '',
 			propValue = prop[index] ? prop[index].value : '';
-
 		if(/@.?/.test(propName)) {
+			element.removeAttribute(propName);
+			index -= 1;
 			setEventHandler.apply(this, [element, propName, propValue]);
 		}
 	}

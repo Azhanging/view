@@ -34,8 +34,9 @@ class View {
 			//判断是否为模板
 			if(this.el.tagName == 'TEMPLATE') {
 				this.el = getFirstElementChild(this.el.content?this.el.content:this.el);
-				this.data['templateData'] = {};
+				this.data['templateData'] = [];
 				this.isTemplate = true;
+				this.data['$index'] = -1;
 			}
 		} else {
 			this.el = '';
@@ -95,8 +96,6 @@ class View {
 			tempFragmentElements: [],
 			templateIndex:0
 		}
-		//事件委托
-		this.__event__ = {};
 	}
 	dep(keys) {
 		let updates = [];
@@ -273,6 +272,8 @@ class View {
 			}
 			
 			Object.keys(vals).forEach((key, index) => {
+				//更新模板的index
+				this.el.$scope.$index++;
 				//设置数据流更新
 				this.data.templateData = vals[key];
 				//复制临时节点

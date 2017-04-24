@@ -41,8 +41,8 @@
 		</div>
 		
 		<template id="temp">
-			<div @click="getIndex($index)">
-				{{templateData.val}}
+			<div @click="getIndex($index)" :class="{{templateData.val}}">
+				{{templateData.val}} - {{$index}}
 			</div>
 		</template>
 		
