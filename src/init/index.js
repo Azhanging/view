@@ -297,6 +297,17 @@ class View {
 	static setFilter(filterName, handler) {
 		this.filter[filterName] = handler;
 	}
+	/*新增属性过滤器*/
+	static $F(val,filter){
+		if(filter instanceof Array){
+			filter.forEach((filterName,index)=>{
+				val = this.filter[filterName](val);
+			});
+			return val;
+		}else if(typeof filter === 'string'){
+			return this.filter[filter](val);
+		}
+	}
 	/*----------------------数组操作---------------------------*/
 	/*
 	 * push方法

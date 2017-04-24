@@ -58,15 +58,6 @@ function getKeyLink(expr) {
 	}
 }
 
-/*获取到keyLine中的主key*/
-function getKey(keyLine) {
-	var keys = keyLine.split('.');
-	if(this.data[keys[0]] != undefined) {
-		return keys[0];
-	}
-	return null;
-}
-
 //深拷贝
 function deepCopy(p, c) {
 	//如果拷贝的对象是dom节点
@@ -152,7 +143,6 @@ export {
 	disassembly,
 	getDisassemblyKey,
 	getKeyLink,
-	getKey,
 	deepCopy,
 	getIndex,
 	setBind,

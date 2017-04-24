@@ -9,7 +9,7 @@
 	<body>
 		<div id="app">
 			<div _v-show="{{              isShow               }}" style="display: none;">
-				<div :class="View.filter.length({{ i }} + {{ i }})" _v-show="{{        isShow               }}">
+				<div :class="$F({{ i }} + {{ i }},'length')" _v-show="{{        isShow               }}">
 					{{ i }} - {{ i }}
 					<span>
 						{{ i }} - {{  i   }}
@@ -125,20 +125,6 @@
 			
 			console.log(v);
 
-			function deepCopy(p, c) {
-				//如果拷贝的对象是dom节点
-				var c = c || (p instanceof Array ? [] : {});
-				for(var i in p) {　　　　　　
-					if(typeof p[i] === 'object' && !(p[i].nodeType)) {　　　　　　
-						c[i] = (p[i].constructor === Array) ? [] : {};　　　　　　　　
-						deepCopy(p[i], c[i]);　　　　　　
-					} else {
-						c[i] = p[i];
-					}　　　　
-				}　　　
-				return c;
-			}
-
 			var arr = [{
 					isShow: false,
 					value: 1
@@ -164,12 +150,6 @@
 					value: 6
 				},
 			]
-
-			//			setInterval(()=>{
-			//				var arr = deepCopy(v.data.ifStatus);
-			//				arr.push(1);
-			//				v.data.ifStatus = arr;
-			//			},10);
 
 			console.log(new Date() - time);
 		</script>

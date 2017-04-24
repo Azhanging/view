@@ -46,9 +46,10 @@ module.exports = {
 	plugins: [
 		new webpack.BannerPlugin(`
 			create by blue (2017-4-3 11:09:02)
-			更新时间:2017-4-23 11:06:51	
+			更新时间:2017-4-24 18:18:29	
 			修复手机端上获取attr时存在null属性报错
 			优化事件处理代码
+			属性过滤器，优化事件代码，添加template模板中的$index的支持
 		`),
 		new ExtractTextPlugin({
 			filename:'./css/[name].css',

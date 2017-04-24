@@ -5,9 +5,12 @@ import View from './init';
 	(typeof _require === 'function' ? _require.define('View', factory) : (global.View = factory()));
 })(typeof window !== 'undefined' ? window : this, function() {
 	
-	View.version = "v1.0.0";
+	View.version = "v1.0.1";
 	
-	View.versionDescription = "移植旧版功能，细化更新，优化了for的算法";
+	View.versionDescription = "属性过滤器，优化事件代码，添加template模板中的$index的支持";
+	
+	//全局调用过滤器
+	global.$F = View.$F.bind(View);
 	
 	//AMD module
 	if(typeof define === "function" && define.amd) {

@@ -1,9 +1,10 @@
 /*!
  * 
  * 			create by blue (2017-4-3 11:09:02)
- * 			更新时间:2017-4-23 11:06:51	
+ * 			更新时间:2017-4-24 18:18:29	
  * 			修复手机端上获取attr时存在null属性报错
  * 			优化事件处理代码
+ * 			属性过滤器，优化事件代码，添加template模板中的$index的支持
  * 		
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -71,7 +72,7 @@
 /******/ 	__webpack_require__.p = "./dist";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 18);
+/******/ 	return __webpack_require__(__webpack_require__.s = 19);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -147,15 +148,6 @@ function getKeyLink(expr) {
 	} else {
 		return expr;
 	}
-}
-
-/*获取到keyLine中的主key*/
-function getKey(keyLine) {
-	var keys = keyLine.split('.');
-	if (this.data[keys[0]] != undefined) {
-		return keys[0];
-	}
-	return null;
 }
 
 //深拷贝
@@ -242,7 +234,6 @@ exports.getEl = getEl;
 exports.disassembly = disassembly;
 exports.getDisassemblyKey = getDisassemblyKey;
 exports.getKeyLink = getKeyLink;
-exports.getKey = getKey;
 exports.deepCopy = deepCopy;
 exports.getIndex = getIndex;
 exports.setBind = setBind;
@@ -262,7 +253,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _update = __webpack_require__(13);
+var _update = __webpack_require__(14);
 
 Object.defineProperty(exports, 'domUpdate', {
   enumerable: true,
@@ -271,7 +262,7 @@ Object.defineProperty(exports, 'domUpdate', {
   }
 });
 
-var _setDom = __webpack_require__(12);
+var _setDom = __webpack_require__(13);
 
 Object.keys(_setDom).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -383,7 +374,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setAttr = __webpack_require__(9);
+var _setAttr = __webpack_require__(10);
 
 Object.defineProperty(exports, 'setAttr', {
   enumerable: true,
@@ -392,7 +383,7 @@ Object.defineProperty(exports, 'setAttr', {
   }
 });
 
-var _update = __webpack_require__(10);
+var _update = __webpack_require__(11);
 
 Object.defineProperty(exports, 'attrUpdate', {
   enumerable: true,
@@ -412,7 +403,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setFor = __webpack_require__(14);
+var _setFor = __webpack_require__(15);
 
 Object.keys(_setFor).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -424,7 +415,7 @@ Object.keys(_setFor).forEach(function (key) {
   });
 });
 
-var _update = __webpack_require__(15);
+var _update = __webpack_require__(16);
 
 Object.defineProperty(exports, 'forUpdate', {
   enumerable: true,
@@ -444,7 +435,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setIf = __webpack_require__(16);
+var _setIf = __webpack_require__(17);
 
 Object.defineProperty(exports, 'setIf', {
   enumerable: true,
@@ -453,7 +444,7 @@ Object.defineProperty(exports, 'setIf', {
   }
 });
 
-var _update = __webpack_require__(17);
+var _update = __webpack_require__(18);
 
 Object.defineProperty(exports, 'ifUpdate', {
   enumerable: true,
@@ -473,7 +464,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setShow = __webpack_require__(22);
+var _setShow = __webpack_require__(23);
 
 Object.keys(_setShow).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -485,7 +476,7 @@ Object.keys(_setShow).forEach(function (key) {
   });
 });
 
-var _update = __webpack_require__(23);
+var _update = __webpack_require__(24);
 
 Object.keys(_update).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -512,7 +503,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _dom = __webpack_require__(1);
 
-var _component = __webpack_require__(11);
+var _component = __webpack_require__(12);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -718,6 +709,36 @@ exports.default = _Element;
 "use strict";
 
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var g;
+
+// This works in non-strict mode
+g = function () {
+	return this;
+}();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1, eval)("this");
+} catch (e) {
+	// This works if the window reference is available
+	if ((typeof window === "undefined" ? "undefined" : _typeof(window)) === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
@@ -726,11 +747,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _observer = __webpack_require__(21);
+var _observer = __webpack_require__(22);
 
 var _observer2 = _interopRequireDefault(_observer);
 
-var _method = __webpack_require__(19);
+var _method = __webpack_require__(20);
 
 var _method2 = _interopRequireDefault(_method);
 
@@ -750,7 +771,7 @@ var _if = __webpack_require__(5);
 
 var _for = __webpack_require__(4);
 
-var _watch = __webpack_require__(24);
+var _watch = __webpack_require__(25);
 
 var _event = __webpack_require__(2);
 
@@ -1175,6 +1196,22 @@ var View = function () {
 		value: function setFilter(filterName, handler) {
 			this.filter[filterName] = handler;
 		}
+		/*新增属性过滤器*/
+
+	}, {
+		key: '$F',
+		value: function $F(val, filter) {
+			var _this3 = this;
+
+			if (filter instanceof Array) {
+				filter.forEach(function (filterName, index) {
+					val = _this3.filter[filterName](val);
+				});
+				return val;
+			} else if (typeof filter === 'string') {
+				return this.filter[filter](val);
+			}
+		}
 	}]);
 
 	return View;
@@ -1219,7 +1256,7 @@ View.filter = {
 exports.default = View;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1240,7 +1277,7 @@ var _for = __webpack_require__(4);
 
 var _event = __webpack_require__(2);
 
-var _model = __webpack_require__(20);
+var _model = __webpack_require__(21);
 
 /*查找element对象中的属性*/
 /*拆解绑定的信息*/
@@ -1318,7 +1355,7 @@ function setAttr(element, vdom) {
 exports.setAttr = setAttr;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1361,7 +1398,7 @@ function attrUpdate(key) {
 exports.attrUpdate = attrUpdate;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1392,7 +1429,7 @@ function componentHandler(node) {
 exports.default = componentHandler;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1493,7 +1530,7 @@ exports.createTextNodes = createTextNodes;
 exports.replaceTextNode = replaceTextNode;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1583,7 +1620,7 @@ function isTextNodePrevSibline(item) {
 exports.domUpdate = domUpdate;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1706,7 +1743,7 @@ function setFor(element, propValue, propIndex) {
 exports.setFor = setFor;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1863,7 +1900,7 @@ function forUpdate(key) {
 exports.forUpdate = forUpdate;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1968,7 +2005,7 @@ function setIf(element, propName, propValue) {
 exports.setIf = setIf;
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2028,13 +2065,13 @@ function ifUpdate(key) {
 exports.ifUpdate = ifUpdate;
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
+/* WEBPACK VAR INJECTION */(function(global) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
-var _init = __webpack_require__(8);
+var _init = __webpack_require__(9);
 
 var _init2 = _interopRequireDefault(_init);
 
@@ -2045,9 +2082,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 	typeof _require === 'function' ? _require.define('View', factory) : global.View = factory();
 })(typeof window !== 'undefined' ? window : undefined, function () {
 
-	_init2.default.version = "v1.0.0";
+	_init2.default.version = "v1.0.1";
 
-	_init2.default.versionDescription = "移植旧版功能，细化更新，优化了for的算法";
+	_init2.default.versionDescription = "属性过滤器，优化事件代码，添加template模板中的$index的支持";
+
+	//全局调用过滤器
+	global.$F = _init2.default.$F.bind(_init2.default);
 
 	//AMD module
 	if (true) {
@@ -2059,9 +2099,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 	return _init2.default;
 });
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2083,7 +2124,7 @@ function method() {
 exports.default = method;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2117,7 +2158,7 @@ function setModel(element, propValue) {
 exports.setModel = setModel;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2212,7 +2253,7 @@ var Observer = function () {
 exports.default = Observer;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2245,7 +2286,7 @@ function setShow(element, propValue) {
 exports.setShow = setShow;
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2289,7 +2330,7 @@ function showUpdate(key) {
 exports.showUpdate = showUpdate;
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
