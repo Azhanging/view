@@ -295,7 +295,7 @@ class View {
 	}
 	/*设置过滤器*/
 	static setFilter(filterName, handler) {
-		this.filterHandlers[filterName] = handler;
+		this.filter[filterName] = handler;
 	}
 	/*----------------------数组操作---------------------------*/
 	/*
@@ -378,7 +378,7 @@ class View {
 }
 
 //过滤器数据(带默认过滤器)
-View.filterHandlers = {
+View.filter = {
 	'trim': function(data) {
 		return data.replace(/(^ +)?( +$)?/g, '');
 	},

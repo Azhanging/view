@@ -9,13 +9,13 @@
 	<body>
 		<div id="app">
 			<div _v-show="{{              isShow               }}" style="display: none;">
-				<div :class="{{ i }} + {{ i }}" _v-show="{{        isShow               }}">
+				<div :class="View.filter.length({{ i }} + {{ i }})" _v-show="{{        isShow               }}">
 					{{ i }} - {{ i }}
 					<span>
 						{{ i }} - {{  i   }}
 					</span>
 				</div>
-				<a href="" _v-if="{{           ifStatus.0            }}">1</a>
+				<a href="" _v-if="{{         ifStatus.0}}">1</a>
 				<a href="" _v-elseif="{{             ifStatus.1}}">2</a>
 				<a href="" _v-else="{{ifStatus.2}}">3</a>
 				<div>{{val}}</div>
@@ -41,9 +41,14 @@
 		</div>
 		
 		<template id="temp">
-			<div @click="getIndex($index)" :class="{{templateData.val}}">
+			<div @click="getIndex($index)" :class="parseInt({{$index}}) + 1">
 				{{templateData.val}} - {{$index}}
+				<my-comp></my-comp>
 			</div>
+		</template>
+		
+		<template id="app--1">
+			<div>{{i}}</div>
 		</template>
 		
 		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
@@ -67,10 +72,16 @@
 			
 			var _v = new View({
 				el:"temp",
+				data:{
+					i:1
+				},
 				methods:{
 					getIndex:function(index){
 						console.log(index);
 					}
+				},
+				components:{
+					'my-comp':'app--1'
 				}
 			});
 			

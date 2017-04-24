@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	</head>
+	<body>
+		<div id="app">
+			<div>
+				<button @click="add(1)">文本</button>
+				<button @click="add(2)">单选</button>
+				<button @click="add(3)">多选</button>
+			</div>
+			<div _v-for="i in {{formData}}">
+				<div _v-if="{{i.type}} == 1">					
+					<span>文本</span>
+					<input type="text" />
+				</div>
+				<div  _v-elseif="{{i.type}} == 2">					
+					<span>单选</span>
+					<input type="radio" />
+				</div>
+				<div _v-else="{{i.type}} == 3">					
+					<span>多选</span>
+					<input type="checkbox" />
+				</div>
+			</div>
+		</div>
+		<script src="dist/js/view.min.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			var app = new View({
+				el:'app',
+				data:{
+					formData:[]
+				},
+				methods:{
+					add(type){
+						this.push('formData',{
+							type:type,
+							value:''
+						});
+					}
+				}
+			});
+		</script>
+	</body>
+</html>

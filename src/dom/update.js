@@ -41,7 +41,7 @@ function domUpdate(key) {
 //检测绑定的对象是否存在过滤器,存在过滤器则返回过滤的值
 function filter(val, filters) {
 	filters.forEach((item, index)=>{
-		val = View.filterHandlers[filters[index]](val);
+		val = View.filter[filters[index]](val);
 	});
 	return val;
 };

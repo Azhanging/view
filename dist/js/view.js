@@ -1173,7 +1173,7 @@ var View = function () {
 	}], [{
 		key: 'setFilter',
 		value: function setFilter(filterName, handler) {
-			this.filterHandlers[filterName] = handler;
+			this.filter[filterName] = handler;
 		}
 	}]);
 
@@ -1183,7 +1183,7 @@ var View = function () {
 //过滤器数据(带默认过滤器)
 
 
-View.filterHandlers = {
+View.filter = {
 	'trim': function trim(data) {
 		return data.replace(/(^ +)?( +$)?/g, '');
 	},
@@ -1549,7 +1549,7 @@ function domUpdate(key) {
 //检测绑定的对象是否存在过滤器,存在过滤器则返回过滤的值
 function filter(val, filters) {
 	filters.forEach(function (item, index) {
-		val = View.filterHandlers[filters[index]](val);
+		val = View.filter[filters[index]](val);
 	});
 	return val;
 };
