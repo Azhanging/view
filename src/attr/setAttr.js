@@ -1,5 +1,5 @@
 /*拆解绑定的信息*/
-import { disassembly, getDisassemblyKey,setBind ,getIndex ,trim } from './../tools';
+import { disassembly, getDisassemblyKey,setBind ,getIndex ,trim ,getKeyLink} from './../tools';
 import { setShow } from './../show';
 import { setIf } from './../if';
 import { setFor } from './../for';
@@ -21,7 +21,10 @@ function setAttr(element, vdom) {
 			propName = propName.replace(':', '');
 			//给vdom加上属性
 			vdom.props[propName] = propValue;
-			let attrKeys = getDisassemblyKey(disassembly(propValue));
+			
+			let attrKeys = getKeyLink(propValue);
+			
+//			attrKeys = getDisassemblyKey(disassembly(propValue));
 			attrKeys.forEach((val, index) => {
 				if(!this.__ob__.attr[val]) {
 					this.__ob__.attr[val] = [];	

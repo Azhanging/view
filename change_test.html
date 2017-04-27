@@ -9,28 +9,28 @@
 
 	<body>
 		<div id="app">
-			<div _v-show="{{              isShow               }}" style="display: none;">
-				<div :class="$F({{ i }} + {{ i }},'length')" _v-show="{{        isShow               }}">
-					{{ i }} - {{ i }}
+			<div _v-show="getVal(isShow,'1') + getValue(_data,'1')" :class="getVal(isShow,'1',isShow.data)">
+				<div :class="i + i" _v-show="isShow">
+					{{i}} - {{i}}
 					<span>
-						{{ i }} - {{  i   }}
+						{{i}} - {{i}}
 					</span>
 				</div>
-				<a href="" _v-if="{{         ifStatus.0}}">1</a>
-				<a href="" _v-elseif="{{             ifStatus.1}}">2</a>
-				<a href="" _v-else="{{ifStatus.2}}">3</a>
+				<a href="" _v-if="ifStatus.0">1</a>
+				<a href="" _v-elseif="ifStatus.1">2</a>
+				<a href="" _v-else="ifStatus.2">3</a>
 				<div>{{val}}</div>
 
-				<div _v-for="m in {{           input.val          }}" :class="{{      $index    }}+{{    $index    }}">
+				<div _v-for="m in input.val" :class="$index + $index">
 					{{m}} --- {{$index}}
 					<!--<div>111</div>-->
 				</div>
-				<div>{{        input.val                 }}</div>
-				<input type="text" _v-model="{{       input.val        }}" :value="{{input.val}}"/>
-				<div _v-for="i in 5" :class="{{        $index         }}" @click="getIndex($index)">
-					{{   i    }} --- {{       $index       }}
-					<div _v-for="n in 2" :class="{{$index}}">
-						{{        n         }} --- {{                   $index               }}
+				<div>{{input.val}}</div>
+				<input type="text" _v-model="input.val" :value="input.val"/>
+				<div _v-for="i in 5" :class="$index" @click="getIndex($index)">
+					{{i}} --- {{$index}}
+					<div _v-for="n in 2" :class="$index">
+						{{n}} --- {{$index}}
 					</div>
 				</div>
 				{{element | html}}
@@ -42,7 +42,7 @@
 		</div>
 		
 		<template id="temp">
-			<div @click="getIndex($index)" :class="parseInt({{$index}}) + 1">
+			<div @click="getIndex($index)" :class="parseInt($index) + 1">
 				{{templateData.val}} - {{$index}}
 				<my-comp></my-comp>
 			</div>
@@ -71,22 +71,22 @@
 				4:{val:5}
 			}
 			
-			var _v = new View({
-				el:"temp",
-				data:{
-					i:1
-				},
-				methods:{
-					getIndex:function(index){
-						console.log(index);
-					}
-				},
-				components:{
-					'my-comp':'app--1'
-				}
-			});
+//			var _v = new View({
+//				el:"temp",
+//				data:{
+//					i:1
+//				},
+//				methods:{
+//					getIndex:function(index){
+//						console.log(index);
+//					}
+//				},
+//				components:{
+//					'my-comp':'app--1'
+//				}
+//			});
 			
-			_v.createTemplate(data_1,document.getElementById('app-1'));
+//			_v.createTemplate(data_1,document.getElementById('app-1'));
 
 			var v = new View({
 				el: "app",
