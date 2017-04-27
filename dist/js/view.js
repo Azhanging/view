@@ -139,28 +139,27 @@ function trim(value) {
 
 /*获取表达式中data绑定的值*/
 function getKeyLink(expr) {
-
 	var matchVal = expr.split(/\+|-|\*|\/|:|\?/g);
 	var tempExpr = [];
 	matchVal.forEach(function (key, index) {
-		var result = /\((.*?)\)/.exec(key);
+		key = key.trim();
+		var result = /\((.*?)\)$/.exec(key);
 		//函数处理
 		if (result) {
 			//检查多个参数是否存在绑定的数值
 			result[1].split(',').forEach(function (key) {
-				if (!/"(.*?)"|'(.*?)'|\d+/.test(key)) {
+				if (!/^"(.*?)"$|^'(.*?)'$|^\d+$/.test(key)) {
 					tempExpr.push(key.trim());
 				}
 			});
 		} else {
 			//非函数
-			if (!/"(.*?)"|'(.*?)'|\d+/.test(key)) {
+			if (!/^"(.*?)"$|^'(.*?)'$|^\d+$/.test(key)) {
 				tempExpr.push(key.trim());
 			}
 		}
 	});
 	//返回数据
-	console.log(tempExpr);
 	return tempExpr;
 
 	/*let tempExpr = expr.match(/\{\{.*?\}\}/g);
@@ -604,6 +603,8 @@ var _Element = function () {
 					index: this.id,
 					el: element
 				};
+				//设置element属性中会存在的函数操作
+				element.__fns__ = {};
 				//设置作用域
 				_tools.setScope.call(_this, element);
 
@@ -1035,16 +1036,100 @@ var View = function () {
 		}
 	}, {
 		key: 'expr',
-		value: function expr(_expr, element) {
-			var dataValues = _tools.getKeyLink.call(this, _expr);
+		value: function expr(_expr2, element) {
+			var _this2 = this;
+
+			var matchVal = _expr2.split(/\+|-|\*|\/|:|\?/g);
+			var instruction = _expr2.split(/[^\+|-|\*|\/|:|\?]/g);
+			var _expr = _expr2;
+			var result = void 0;
+
+			matchVal.forEach(function (matchExpr) {
+				var isFun = false;
+				var isString = false;
+				matchExpr = matchExpr.trim();
+				//判断当前的值是否为字符串
+				if (/^'.*?'$|^".*?"$/.test(matchExpr)) {
+					isString = true;
+				} else if (!isString && /^[^\d][A-z0-9_\$]*\(.*?\)$/.test(matchExpr)) {
+					//是函数的时候
+					isFun = true;
+					var newMatchExpr = matchExpr.split(/\(.*?\)$/).filter(function (isFn) {
+						return isFn !== '';
+					});
+					var fn = newMatchExpr.toString();
+					//查看在哪个作用域
+					if (fn in _this2) {
+						fn = _this2[fn];
+					} else if (fn in window) {
+						fn = window[fn];
+					} else {
+						fn = function fn() {};
+					}
+
+					//存储element中的fns
+					if (!element.__fns__[matchExpr]) {
+						element.__fns__[matchExpr] = function () {
+							//计算参数中的所有值
+							var args = getArgs.call(_this2, matchExpr, element);
+							//参数带入函数中运行
+							return fn.apply(_this2, args);
+						};
+					}
+
+					//计算参数中的所有值
+					var args = getArgs.call(_this2, matchExpr, element);
+					//参数带入函数中运行
+					result = fn.apply(_this2, args);
+					//替换函数中的值
+					_expr2 = _expr2.replace(new RegExp(initRegExp(matchExpr), 'g'), "'" + result + "'");
+				} else {
+					//是绑定直接量
+					_expr2 = _expr2.replace(new RegExp(initRegExp(matchExpr), 'g'), "'" + _this2._get(matchExpr, element) + "'");
+				}
+			});
+
+			return new Function('return ' + _expr2)();
+
+			//处理转义
+			function initRegExp(expr) {
+				var tm = '\\/*.?+$^[](){}|';
+				for (var index = 0; index < tm.length; index++) {
+					expr = expr.replace(new RegExp('\\' + tm[index], 'g'), '\\' + tm[index]);
+				}
+				return expr;
+			}
+
+			function getArgs(expr, element) {
+				var _this3 = this;
+
+				var result = /\((.*?)\)$/.exec(expr);
+				//函数处理
+				if (result) {
+					var tempArgs = [];
+					//检查多个参数是否存在绑定的数值
+					result[1].split(',').forEach(function (key) {
+						//分字符串
+						if (!/^"(.*?)"$|^'(.*?)'$|^\d+$/.test(key)) {
+							tempArgs.push(_this3._get(key, element));
+						} else {
+							//字符串
+							tempArgs.push(key.replace(/'|"/g, ''));
+						}
+					});
+					return tempArgs;
+				}
+			}
+
+			var dataValues = _tools.getKeyLink.call(this, _expr2);
 			var dataValueLen = dataValues.length;
-			var newExpr = _expr;
+			var newExpr = _expr2;
 
 			//返回的不是主key数组
 			if (!(dataValues instanceof Array)) {
 				//解析表达式抛出
 				try {
-					return eval("(" + _expr + ")");
+					return eval("(" + _expr2 + ")");
 				} catch (e) {
 					return '';
 				}
@@ -1082,7 +1167,7 @@ var View = function () {
 	}, {
 		key: 'createTemplate',
 		value: function createTemplate(vals, appendEl) {
-			var _this2 = this;
+			var _this4 = this;
 
 			if (typeof appendEl === 'string') {
 				appendEl = document.getElementById(appendEl);
@@ -1100,21 +1185,21 @@ var View = function () {
 
 				Object.keys(vals).forEach(function (key, index) {
 					//更新模板的index
-					_this2.el.$scope.$index++;
+					_this4.el.$scope.$index++;
 					//设置数据流更新
-					_this2.data.templateData = vals[key];
+					_this4.data.templateData = vals[key];
 					//复制临时节点
-					var tempNode = _this2.el.cloneNode(true);
+					var tempNode = _this4.el.cloneNode(true);
 					//设置模板中的index属性
-					tempNode.setAttribute('data-index', _this2.__bind__.templateIndex++);
+					tempNode.setAttribute('data-index', _this4.__bind__.templateIndex++);
 					//添加到对应节点上
 					appendEl.appendChild(tempNode);
 					//绑定当前节点事件
 					if (tempNode.nodeType == 1) {
-						_event.setEvent.call(_this2, tempNode);
+						_event.setEvent.call(_this4, tempNode);
 					}
 					//模板添加事件
-					_event.setChildTemplateEvent.call(_this2, tempNode);
+					_event.setChildTemplateEvent.call(_this4, tempNode);
 				});
 			} catch (e) {
 				console.warn('createTemplate方法中的第一个参数只能为的数组或者对象');
@@ -1225,11 +1310,11 @@ var View = function () {
 	}, {
 		key: '$F',
 		value: function $F(val, filter) {
-			var _this3 = this;
+			var _this5 = this;
 
 			if (filter instanceof Array) {
 				filter.forEach(function (filterName, index) {
-					val = _this3.filter[filterName](val);
+					val = _this5.filter[filterName](val);
 				});
 				return val;
 			} else if (typeof filter === 'string') {

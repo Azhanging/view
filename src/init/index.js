@@ -1,12 +1,12 @@
 import Observer from './../observer';
 import method from './../method';
 import vdom from './../vdom';
-import { getEl, getKeyLink, deepCopy ,getScope,getFirstElementChild} from './../tools';
+import { getEl, getKeyLink, deepCopy, getScope, getFirstElementChild } from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
 import { ifUpdate } from './../if';
-import { forUpdate} from './../for';
+import { forUpdate } from './../for';
 import { watchUpdate } from './../watch';
 import { setEvent, setChildTemplateEvent } from './../event';
 
@@ -33,7 +33,7 @@ class View {
 			this.isTemplate = false;
 			//判断是否为模板
 			if(this.el.tagName == 'TEMPLATE') {
-				this.el = getFirstElementChild(this.el.content?this.el.content:this.el);
+				this.el = getFirstElementChild(this.el.content ? this.el.content : this.el);
 				this.data['templateData'] = [];
 				this.isTemplate = true;
 				this.data['$index'] = -1;
@@ -94,13 +94,13 @@ class View {
 		this.__bind__ = {
 			textNodeLists: [],
 			tempFragmentElements: [],
-			templateIndex:0
+			templateIndex: 0
 		}
 	}
 	dep(keys) {
 		let updates = [];
 		//设置当前链上一级依赖
-		if(keys.indexOf('.') != -1){
+		if(keys.indexOf('.') != -1) {
 			let newKeys = keys.split('.');
 			newKeys.pop();
 			updates.push(newKeys[0]);
@@ -108,14 +108,14 @@ class View {
 		//当前的数据依赖
 		updates.push(keys);
 		//设置当前链下面的所有依赖数据
-		
-		Object.keys(this.__ob__.bind).forEach((index)=>{
+
+		Object.keys(this.__ob__.bind).forEach((index) => {
 			let key = this.__ob__.bind[index];
 			if(key.indexOf(keys + '.') != -1) {
 				updates.push(key);
 			}
 		});
-		
+
 		updates.forEach((keyLine) => {
 			this.update(keyLine);
 		});
@@ -128,12 +128,12 @@ class View {
 		forUpdate.call(this, keys);
 		domUpdate.call(this, keys);
 	}
-	_get(keyLink,element) {
+	_get(keyLink, element) {
 		//获取作用域内的值
 		let getVal;
-		if(element){
-			getVal = getScope.call(this,element);			
-		}else{
+		if(element) {
+			getVal = getScope.call(this, element);
+		} else {
 			getVal = this.data;
 		}
 		//存在实例屬性對象
@@ -143,9 +143,9 @@ class View {
 			if(getVal[keys[0]]) {
 				for(let i = 0; i < keys.length; i++) {
 					let key = keys[i];
-					try{						
-						getVal = getVal !== null && getVal[key] !== undefined? getVal[key] : null;
-					}catch(error){
+					try {
+						getVal = getVal !== null && getVal[key] !== undefined ? getVal[key] : null;
+					} catch(error) {
 						return null;
 					}
 				}
@@ -159,7 +159,7 @@ class View {
 			return null;
 		}
 	}
-	_set(element,obj, val, key) {
+	_set(element, obj, val, key) {
 		let data = this['data'],
 			objs = obj.split('.'),
 			keyLen = objs.length,
@@ -176,9 +176,9 @@ class View {
 			//把key链重组
 			obj = objs.join('.');
 			let getData;
-			if(element){
-				getData = this._get(obj,element);
-			}else{
+			if(element) {
+				getData = this._get(obj, element);
+			} else {
 				getData = this._get(obj);
 			}
 			if(getData !== null) {
@@ -189,19 +189,19 @@ class View {
 					getData[lastIndex] = val;
 				}
 				//处理字符串数据流更新
-				if(!(typeof val === 'string')) {					
+				if(!(typeof val === 'string')) {
 					getData[lastIndex] = deepCopy(getData[lastIndex]);
 				}
 			}
 		} else {
-			let getData; 
-			
-			if(element){
-				getData = this._get(obj,element);
-			}else{
+			let getData;
+
+			if(element) {
+				getData = this._get(obj, element);
+			} else {
 				getData = this._get(obj);
 			}
-			
+
 			/*只有一个key值*/
 			if(getData !== null) {
 				if(key != undefined) {
@@ -212,7 +212,92 @@ class View {
 			}
 		}
 	}
-	expr(expr,element) {		
+	expr(expr, element) {
+
+		let matchVal = expr.split(/\+|-|\*|\/|:|\?/g);
+		let instruction = expr.split(/[^\+|-|\*|\/|:|\?]/g);
+		let _expr = expr;
+		let result;
+		
+		matchVal.forEach((matchExpr) => {
+			let isFun = false;
+			let isString = false;
+			matchExpr = matchExpr.trim();
+			//判断当前的值是否为字符串
+			if(/^'.*?'$|^".*?"$/.test(matchExpr)) {
+				isString = true;
+			} else if(!isString && /^[^\d][A-z0-9_\$]*\(.*?\)$/.test(matchExpr)) {
+				//是函数的时候
+				isFun = true;
+				let newMatchExpr = matchExpr.split(/\(.*?\)$/).filter((isFn) => {
+					return isFn !== '';
+				});
+				let fn = newMatchExpr.toString();
+				//查看在哪个作用域
+				if(fn in this) {
+					fn = this[fn]
+				} else if(fn in window) {
+					fn = window[fn];
+				} else {
+					fn = function() {}
+				}
+
+				//存储element中的fns
+				if(!element.__fns__[matchExpr]){
+					element.__fns__[matchExpr] = ()=>{
+						//计算参数中的所有值
+						let args = getArgs.call(this,matchExpr,element);
+						//参数带入函数中运行
+						return fn.apply(this,args);
+					}
+				}
+				
+				//计算参数中的所有值
+				let args = getArgs.call(this,matchExpr,element);
+				//参数带入函数中运行
+				result = fn.apply(this,args);
+				//替换函数中的值
+				expr = expr.replace(new RegExp(initRegExp(matchExpr),'g'),"'" + result + "'");
+				
+			} else {
+				//是绑定直接量
+				expr = expr.replace(new RegExp(initRegExp(matchExpr),'g'),"'" + this._get(matchExpr,element) + "'");
+			}
+		});
+		
+		return new Function('return ' + expr)();		
+		
+		//处理转义
+		function initRegExp(expr){
+			let tm = '\\/*.?+$^[](){}|';
+			for(let index = 0;index<tm.length;index++){
+				expr = expr.replace(new RegExp('\\' + tm[index],'g'),'\\' + tm[index]);
+			}
+			return expr;
+		}
+	
+
+		function getArgs(expr,element) {
+			let result = /\((.*?)\)$/.exec(expr);
+			//函数处理
+			if(result) {
+				let tempArgs = [];
+				//检查多个参数是否存在绑定的数值
+				result[1].split(',').forEach((key) => {
+					//分字符串
+					if(!(/^"(.*?)"$|^'(.*?)'$|^\d+$/.test(key))) {
+						tempArgs.push(this._get(key,element));
+					}else{
+					//字符串
+						tempArgs.push(key.replace(/'|"/g,''));
+					}
+				});
+				return tempArgs;
+			}
+		}
+		
+		
+
 		let dataValues = getKeyLink.call(this, expr);
 		let dataValueLen = dataValues.length;
 		let newExpr = expr;
@@ -228,19 +313,19 @@ class View {
 		}
 
 		for(let i = 0; i < dataValueLen; i++) {
-			let getVal = this._get(dataValues[i],element);
+			let getVal = this._get(dataValues[i], element);
 			//这里处理一种带$的key数据
-			if(dataValues[i].indexOf('$') !== -1){
-				dataValues[i] = dataValues[i].replace(/\$/g,'\\$');
+			if(dataValues[i].indexOf('$') !== -1) {
+				dataValues[i] = dataValues[i].replace(/\$/g, '\\$');
 			}
-			
+
 			if(getVal !== null) {
 				let data = getVal;
 				//处理for绑定,for只允许绑定一个data,不支持表达式
 				if(arguments[1] === 'for') {
 					return getVal;
 				}
-				
+
 				//更新为绑定表达式
 				newExpr = newExpr.replace(new RegExp('\\{\\{' + dataValues[i] + '\\}\\}', 'g'), (data === false || data === true) ? data : "'" + data + "'");
 			} else {
@@ -250,27 +335,28 @@ class View {
 		}
 		try {
 			//解析表达式
-			return new Function('return '+ newExpr)();
+			return new Function('return ' + newExpr)();
 		} catch(e) {
 			//报错返回空值
 			return '';
 		}
 	}
+
 	createTemplate(vals, appendEl) {
-		if(typeof appendEl === 'string'){
+		if(typeof appendEl === 'string') {
 			appendEl = document.getElementById(appendEl);
-		}else if(appendEl.nodeType !== 1){
+		} else if(appendEl.nodeType !== 1) {
 			console.warn('第二参数为添加节点的id或者为对应的节点对象');
 			return;
 		}
 
 		//循环添加到指定的DOM节点上
-		try{
+		try {
 			//如果值为字符串（兼容IE）
-			if(typeof vals === 'string'){
+			if(typeof vals === 'string') {
 				vals = vals.split('');
 			}
-			
+
 			Object.keys(vals).forEach((key, index) => {
 				//更新模板的index
 				this.el.$scope.$index++;
@@ -279,7 +365,7 @@ class View {
 				//复制临时节点
 				let tempNode = this.el.cloneNode(true);
 				//设置模板中的index属性
-				tempNode.setAttribute('data-index',this.__bind__.templateIndex++);
+				tempNode.setAttribute('data-index', this.__bind__.templateIndex++);
 				//添加到对应节点上
 				appendEl.appendChild(tempNode);
 				//绑定当前节点事件
@@ -289,7 +375,7 @@ class View {
 				//模板添加事件
 				setChildTemplateEvent.call(this, tempNode);
 			});
-		}catch(e){
+		} catch(e) {
 			console.warn('createTemplate方法中的第一个参数只能为的数组或者对象');
 		}
 	}
@@ -298,13 +384,13 @@ class View {
 		this.filter[filterName] = handler;
 	}
 	/*新增属性过滤器*/
-	static $F(val,filter){
-		if(filter instanceof Array){
-			filter.forEach((filterName,index)=>{
+	static $F(val, filter) {
+		if(filter instanceof Array) {
+			filter.forEach((filterName, index) => {
 				val = this.filter[filterName](val);
 			});
 			return val;
-		}else if(typeof filter === 'string'){
+		} else if(typeof filter === 'string') {
 			return this.filter[filter](val);
 		}
 	}
@@ -324,7 +410,7 @@ class View {
 			} else {
 				getData.push(pushData);
 			}
-			this._set(undefined,data, getData);
+			this._set(undefined, data, getData);
 		}
 	}
 	/* 
@@ -357,7 +443,7 @@ class View {
 			} else {
 				getData.unshift(unshiftData);
 			}
-			this._set(undefined,data, getData);
+			this._set(undefined, data, getData);
 		}
 	}
 	/*
@@ -370,7 +456,7 @@ class View {
 		//必须为数组
 		if(Array.isArray(getData)) {
 			shiftData = getData.shift();
-			this._set(undefined,data, getData);
+			this._set(undefined, data, getData);
 		}
 		return shiftData;
 	}
@@ -383,7 +469,7 @@ class View {
 		//必须为数组
 		if(Array.isArray(getData)) {
 			getData.splice(index, length);
-			this._set(undefined,data, getData);
+			this._set(undefined, data, getData);
 		}
 	}
 }
@@ -402,7 +488,7 @@ View.filter = {
 	'length': function(data) {
 		return data.length;
 	},
-	'sequence':function(sequence){
+	'sequence': function(sequence) {
 		return parseFloat(sequence) + 1;
 	},
 	'html': function(data) {

@@ -47,28 +47,27 @@ function trim(value){
 
 /*获取表达式中data绑定的值*/
 function getKeyLink(expr) {
-	
 	let matchVal = expr.split(/\+|-|\*|\/|:|\?/g);
 	let tempExpr = [];
 	matchVal.forEach((key,index)=>{
-		let result = /\((.*?)\)/.exec(key);
+		key = key.trim();
+		let result = /\((.*?)\)$/.exec(key);
 		//函数处理
 		if(result){
 			//检查多个参数是否存在绑定的数值
 			result[1].split(',').forEach((key)=>{
-				if(!(/"(.*?)"|'(.*?)'|\d+/.test(key))){
+				if(!(/^"(.*?)"$|^'(.*?)'$|^\d+$/.test(key))){
 					tempExpr.push(key.trim());
 				}
 			});	
 		}else{
 		//非函数
-			if(!(/"(.*?)"|'(.*?)'|\d+/.test(key))){
+			if(!(/^"(.*?)"$|^'(.*?)'$|^\d+$/.test(key))){
 				tempExpr.push(key.trim());
 			}
 		}
 	});
 	//返回数据
-	console.log(tempExpr);
 	return tempExpr;
 	
 	/*let tempExpr = expr.match(/\{\{.*?\}\}/g);
@@ -81,6 +80,7 @@ function getKeyLink(expr) {
 		return expr;
 	}*/
 }
+
 
 //深拷贝
 function deepCopy(p, c) {
