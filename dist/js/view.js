@@ -137,40 +137,79 @@ function trim(value) {
 	}
 }
 
-/*获取表达式中data绑定的值*/
-function getKeyLink(expr) {
-	var matchVal = expr.split(/\+|-|\*|\/|:|\?/g);
-	var tempExpr = [];
-	matchVal.forEach(function (key, index) {
-		key = key.trim();
-		var result = /\((.*?)\)$/.exec(key);
-		//函数处理
-		if (result) {
-			//检查多个参数是否存在绑定的数值
-			result[1].split(',').forEach(function (key) {
-				if (!/^"(.*?)"$|^'(.*?)'$|^\d+$/.test(key)) {
-					tempExpr.push(key.trim());
-				}
-			});
-		} else {
-			//非函数
-			if (!/^"(.*?)"$|^'(.*?)'$|^\d+$/.test(key)) {
-				tempExpr.push(key.trim());
-			}
+//function getKeyLink(expr) {	
+//拆解表达式和返回绑定值
+/*
+ *	isExpr是的为了返回解析表达式还是 
+ * */
+function resolveExpr(expr, isExpr) {
+	//新的解析解析符
+	var newExpr = expr;
+	var bindKeys = [];
+	var strings = [];
+	//判断字符串内容
+	expr.match(/\'(.*?)\'|\"(.*?)\"/g).forEach(function (string) {
+		strings.push(string);
+		newExpr = newExpr.replace(string, "||string||");
+	});
+
+	//判断函数
+	unique(newExpr.match(/([_$A-z\d]*\()/g)).forEach(function (fn) {
+		newExpr = newExpr.replace(new RegExp(initRegExp(fn), 'g'), '$fn.' + fn);
+	});
+
+	//清空数组内项目的空格内的值
+	var trimData = newExpr.split(/\+|-|\*|\/|:|\?|\(|\)|,/g).map(function (data) {
+		return data.trim();
+	});
+
+	//判断绑定值
+	unique(trimData).forEach(function (bindData) {
+		if (!/^[\$fn\.|\$scope\.]\S*?/g.test(bindData) && !/^\d*$/.test(bindData)) {
+			bindKeys.push(bindData);
+			newExpr = newExpr.replace(new RegExp(initRegExp(bindData), 'g'), '$scope.' + bindData);
 		}
 	});
-	//返回数据
-	return tempExpr;
 
-	/*let tempExpr = expr.match(/\{\{.*?\}\}/g);
- if(tempExpr != null) {
- 	var _this = this;
- 	return tempExpr.map(function(item, index) {
- 		return item.replace(/\{?\}?/g, '');
- 	});
- } else {
- 	return expr;
- }*/
+	//把抽离的字符串重新插回到表达式中
+	var splitString = newExpr.split('||');
+	for (var index = 0; index < splitString.length; index++) {
+		var _index = splitString.indexOf("string");
+		if (_index !== -1) {
+			splitString[_index] = strings.shift();
+		}
+	}
+
+	//合并字符内容
+	newExpr = splitString.join('');
+
+	//返回解析函数
+	if (isExpr) {
+		return newExpr;
+	} else {
+		//返回绑定的键值组
+		return bindKeys;
+	}
+}
+
+//去重
+function unique(array) {
+	var newArray = [];
+	array.forEach(function (item) {
+		if (newArray.indexOf(item) === -1) {
+			newArray.push(item);
+		}
+	});
+	return newArray;
+}
+
+//转义正则里面的内容
+function initRegExp(expr) {
+	var tm = '\\/*.?+$^[](){}|';
+	for (var index = 0; index < tm.length; index++) {
+		expr = expr.replace(new RegExp('\\' + tm[index], 'g'), '\\' + tm[index]);
+	}
+	return expr;
 }
 
 //深拷贝
