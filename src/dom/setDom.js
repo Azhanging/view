@@ -1,4 +1,5 @@
-import {disassembly,setBind,trim} from './../tools';
+import {disassembly,setBind , ResolveExpr} from './../tools';
+
 
 function setDom(element) {
 	//非空的节点才进入过滤赛选
@@ -21,9 +22,9 @@ function createTextNodes() {
 function createTextNodeElements(textNodes, el) {
 	//创建文档片段
 	let fragment = document.createDocumentFragment();
-	//数据推入文档节点
+	//数据推入文档节点(当个花括号内的值)
 	for(let i = 0; i < textNodes.length; i++) {
-		//过滤器组
+/*		//过滤器组
 		let filters = [];
 		//查找是否存在过滤器
 		if(textNodes[i].indexOf('|') != -1) {
@@ -41,22 +42,35 @@ function createTextNodeElements(textNodes, el) {
 		}
 		
 		//中间在过滤一次空格层
-		textNodes[i] = textNodes[i].replace(/ /g, '');
-		
+		textNodes[i] = textNodes[i].replace(/ /g, '');*/
+
 		if(textNodes[i].trim() !== "") {
 			//查看是否为数据绑定
-			let textNode = document.createTextNode(textNodes[i]);
-			if(/\{\{\S+\}\}/.test(textNodes[i]) == true) {
-				let key = textNodes[i].replace(/(\{)?(\})?/g, '');
-				if(!(this.__ob__.dom[key] instanceof Object)) {
-					this.__ob__.dom[key] = [];
-					setBind.call(this,key);
-				}
-				//设置节点的过滤器
-				textNode['filters'] = filters;
-				this.__ob__.dom[key].push(textNode);
+			let element = document.createTextNode(textNodes[i]);
+			if(/\{\{.*?\}\}/.test(textNodes[i]) == true) {
+				let expr = textNodes[i].replace(/(\{)?(\})?/g, '');
+				let re = new ResolveExpr(expr);
+				
+				re.getKeys().forEach((key)=>{
+					if(!(this.__ob__.dom[key] instanceof Array)) {
+						this.__ob__.dom[key] = [];
+						setBind.call(this,key);
+					}
+					
+					//设置attrs的expr
+					if(!(element.__dom__ instanceof Object)) {
+						element.__dom__ = {};
+					}
+					
+					//给element元素加上__attrs__依赖
+					element.__dom__.__bind__ = re.getExpr();
+					element.__dom__.__filter__ = re.getFilter();
+					
+					this.__ob__.dom[key].push(element);
+				});
+				
 			}
-			fragment.appendChild(textNode);
+			fragment.appendChild(element);
 		}
 	}
 	//el为父级节点,fragment为文档片段,index为索取文本节点在父级节点的位置

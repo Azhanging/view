@@ -6,6 +6,8 @@ function method() {
 			this[i] = methods[i];
 		}
 	}
+	//集成window下的方法
+	this.methods.__proto__ = window;
 }
 
 export default method;

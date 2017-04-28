@@ -1,3 +1,5 @@
+import Filter from './../filter';
+
 //属性更新
 function attrUpdate(key) {
 	//初始化
@@ -18,8 +20,10 @@ function attrUpdate(key) {
 		attrNodes.forEach((element, index)=>{
 			let attrs = element.__attrs__;
 			Object.keys(attrs).forEach((propName,index)=>{
-				let propValue = attrs[propName];
-				element.setAttribute(propName,this.expr(propValue,element));
+				let propValue = attrs[propName].__bind__;
+				let data = new Filter(this.expr(propValue,element),attrs[propName].__filter__).runFilter();
+				/*----------预留过滤器--------------------*/
+				element.setAttribute(propName,data);
 			});			
 		});
 	}

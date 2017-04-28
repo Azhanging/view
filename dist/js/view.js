@@ -88,6 +88,10 @@ Object.defineProperty(exports, "__esModule", {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 function getEl(id) {
 	return document.getElementById(id);
 }
@@ -142,57 +146,104 @@ function trim(value) {
 /*
  *	isExpr是的为了返回解析表达式还是 
  * */
-function resolveExpr(expr, isExpr) {
-	//新的解析解析符
-	var newExpr = expr;
-	var bindKeys = [];
-	var strings = [];
-	//判断字符串内容
-	expr.match(/\'(.*?)\'|\"(.*?)\"/g).forEach(function (string) {
-		strings.push(string);
-		newExpr = newExpr.replace(string, "||string||");
-	});
 
-	//判断函数
-	unique(newExpr.match(/([_$A-z\d]*\()/g)).forEach(function (fn) {
-		newExpr = newExpr.replace(new RegExp(initRegExp(fn), 'g'), '$fn.' + fn);
-	});
+var ResolveExpr = function () {
+	function ResolveExpr(expr) {
+		_classCallCheck(this, ResolveExpr);
 
-	//清空数组内项目的空格内的值
-	var trimData = newExpr.split(/\+|-|\*|\/|:|\?|\(|\)|,/g).map(function (data) {
-		return data.trim();
-	});
-
-	//判断绑定值
-	unique(trimData).forEach(function (bindData) {
-		if (!/^[\$fn\.|\$scope\.]\S*?/g.test(bindData) && !/^\d*$/.test(bindData)) {
-			bindKeys.push(bindData);
-			newExpr = newExpr.replace(new RegExp(initRegExp(bindData), 'g'), '$scope.' + bindData);
-		}
-	});
-
-	//把抽离的字符串重新插回到表达式中
-	var splitString = newExpr.split('||');
-	for (var index = 0; index < splitString.length; index++) {
-		var _index = splitString.indexOf("string");
-		if (_index !== -1) {
-			splitString[_index] = strings.shift();
-		}
+		this.expr = expr;
+		this._expr = expr;
+		this.strings = [];
+		this.bindKeys = [];
+		this.keyword = ["undefined", "null", "true", "false"];
+		this.filter = [];
+		this._init();
 	}
 
-	//合并字符内容
-	newExpr = splitString.join('');
+	_createClass(ResolveExpr, [{
+		key: '_init',
+		value: function _init() {
+			var _this = this;
 
-	//返回解析函数
-	if (isExpr) {
-		return newExpr;
-	} else {
-		//返回绑定的键值组
-		return bindKeys;
-	}
-}
+			//抽离字符串
+
+			var pullString = this.expr.match(/\'(.*?)\'|\"(.*?)\"/g);
+
+			if (pullString) {
+				pullString.forEach(function (string) {
+					_this.strings.push(string);
+					_this._expr = _this._expr.replace(string, "__string__");
+				});
+			}
+
+			var splitExpr = this._expr.split('|');
+			//拆分过滤器
+			this._expr = splitExpr[0];
+			//是否存在过滤器
+			if (splitExpr.length > 1) {
+				//设置过滤器
+				this.filter = splitExpr[1].split(' ').filter(function (filter) {
+					return filter;
+				});
+			}
+
+			//是否存在函数处理
+			var exprFn = this._expr.match(/([_$A-z\d]*\()/g);
+			if (exprFn) {
+				//判断函数
+				unique(exprFn).forEach(function (fn) {
+					_this._expr = _this._expr.replace(new RegExp(initRegExp(fn), 'g'), '$fn.' + fn);
+				});
+			}
+
+			//清空数组内项目的空格内的值
+			var trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,/g).map(function (data) {
+				return data.trim();
+			});
+
+			//判断绑定值
+			unique(trimData).forEach(function (bindData) {
+				if (bindData !== "" && !/^[\$fn\.|\$scope\.|__string__]\S*?/g.test(bindData) && !/^\d*$/.test(bindData) && _this.keyword.indexOf(bindData) === -1) {
+					_this.bindKeys.push(bindData);
+					_this._expr = _this._expr.replace(new RegExp(initRegExp(bindData), 'g'), '$scope.' + bindData);
+				}
+			});
+
+			//把抽离的字符串重新插回到表达式中
+			var splitString = this._expr.split('__');
+			for (var index = 0; index < splitString.length; index++) {
+				var _index = splitString.indexOf("string");
+				if (_index !== -1) {
+					splitString[_index] = this.strings.shift();
+				}
+			}
+
+			//合并字符内容
+			this._expr = splitString.join('');
+		}
+	}, {
+		key: 'getKeys',
+		value: function getKeys() {
+			return this.bindKeys;
+		}
+	}, {
+		key: 'getExpr',
+		value: function getExpr() {
+			return this._expr;
+		}
+	}, {
+		key: 'getFilter',
+		value: function getFilter() {
+			return this.filter;
+		}
+	}]);
+
+	return ResolveExpr;
+}();
 
 //去重
+
+
 function unique(array) {
 	var newArray = [];
 	array.forEach(function (item) {
@@ -295,7 +346,7 @@ function getFirstElementChild(element) {
 exports.getEl = getEl;
 exports.disassembly = disassembly;
 exports.getDisassemblyKey = getDisassemblyKey;
-exports.getKeyLink = getKeyLink;
+exports.ResolveExpr = ResolveExpr;
 exports.deepCopy = deepCopy;
 exports.getIndex = getIndex;
 exports.setBind = setBind;
@@ -642,8 +693,6 @@ var _Element = function () {
 					index: this.id,
 					el: element
 				};
-				//设置element属性中会存在的函数操作
-				element.__fns__ = {};
 				//设置作用域
 				_tools.setScope.call(_this, element);
 
@@ -1075,138 +1124,19 @@ var View = function () {
 		}
 	}, {
 		key: 'expr',
-		value: function expr(_expr2, element) {
-			var _this2 = this;
-
-			var matchVal = _expr2.split(/\+|-|\*|\/|:|\?/g);
-			var instruction = _expr2.split(/[^\+|-|\*|\/|:|\?]/g);
-			var _expr = _expr2;
-			var result = void 0;
-
-			matchVal.forEach(function (matchExpr) {
-				var isFun = false;
-				var isString = false;
-				matchExpr = matchExpr.trim();
-				//判断当前的值是否为字符串
-				if (/^'.*?'$|^".*?"$/.test(matchExpr)) {
-					isString = true;
-				} else if (!isString && /^[^\d][A-z0-9_\$]*\(.*?\)$/.test(matchExpr)) {
-					//是函数的时候
-					isFun = true;
-					var newMatchExpr = matchExpr.split(/\(.*?\)$/).filter(function (isFn) {
-						return isFn !== '';
-					});
-					var fn = newMatchExpr.toString();
-					//查看在哪个作用域
-					if (fn in _this2) {
-						fn = _this2[fn];
-					} else if (fn in window) {
-						fn = window[fn];
-					} else {
-						fn = function fn() {};
-					}
-
-					//存储element中的fns
-					if (!element.__fns__[matchExpr]) {
-						element.__fns__[matchExpr] = function () {
-							//计算参数中的所有值
-							var args = getArgs.call(_this2, matchExpr, element);
-							//参数带入函数中运行
-							return fn.apply(_this2, args);
-						};
-					}
-
-					//计算参数中的所有值
-					var args = getArgs.call(_this2, matchExpr, element);
-					//参数带入函数中运行
-					result = fn.apply(_this2, args);
-					//替换函数中的值
-					_expr2 = _expr2.replace(new RegExp(initRegExp(matchExpr), 'g'), "'" + result + "'");
-				} else {
-					//是绑定直接量
-					_expr2 = _expr2.replace(new RegExp(initRegExp(matchExpr), 'g'), "'" + _this2._get(matchExpr, element) + "'");
-				}
-			});
-
-			return new Function('return ' + _expr2)();
-
-			//处理转义
-			function initRegExp(expr) {
-				var tm = '\\/*.?+$^[](){}|';
-				for (var index = 0; index < tm.length; index++) {
-					expr = expr.replace(new RegExp('\\' + tm[index], 'g'), '\\' + tm[index]);
-				}
-				return expr;
-			}
-
-			function getArgs(expr, element) {
-				var _this3 = this;
-
-				var result = /\((.*?)\)$/.exec(expr);
-				//函数处理
-				if (result) {
-					var tempArgs = [];
-					//检查多个参数是否存在绑定的数值
-					result[1].split(',').forEach(function (key) {
-						//分字符串
-						if (!/^"(.*?)"$|^'(.*?)'$|^\d+$/.test(key)) {
-							tempArgs.push(_this3._get(key, element));
-						} else {
-							//字符串
-							tempArgs.push(key.replace(/'|"/g, ''));
-						}
-					});
-					return tempArgs;
-				}
-			}
-
-			var dataValues = _tools.getKeyLink.call(this, _expr2);
-			var dataValueLen = dataValues.length;
-			var newExpr = _expr2;
-
-			//返回的不是主key数组
-			if (!(dataValues instanceof Array)) {
-				//解析表达式抛出
-				try {
-					return eval("(" + _expr2 + ")");
-				} catch (e) {
-					return '';
-				}
-			}
-
-			for (var i = 0; i < dataValueLen; i++) {
-				var getVal = this._get(dataValues[i], element);
-				//这里处理一种带$的key数据
-				if (dataValues[i].indexOf('$') !== -1) {
-					dataValues[i] = dataValues[i].replace(/\$/g, '\\$');
-				}
-
-				if (getVal !== null) {
-					var data = getVal;
-					//处理for绑定,for只允许绑定一个data,不支持表达式
-					if (arguments[1] === 'for') {
-						return getVal;
-					}
-
-					//更新为绑定表达式
-					newExpr = newExpr.replace(new RegExp('\\{\\{' + dataValues[i] + '\\}\\}', 'g'), data === false || data === true ? data : "'" + data + "'");
-				} else {
-					//处理不存在数据流空值替换对象内容
-					newExpr = newExpr.replace(new RegExp('\\{\\{' + dataValues[i] + '\\}\\}', 'g'), "''");
-				}
-			}
-			try {
-				//解析表达式
-				return new Function('return ' + newExpr)();
-			} catch (e) {
-				//报错返回空值
-				return '';
-			}
+		value: function expr(_expr, element) {
+			//作用域
+			var $scope = element.$scope;
+			//方法
+			var $fn = this.methods;
+			//返回值
+			var data = new Function('$scope', '$fn', 'return ' + _expr).apply(this, [$scope, $fn]);
+			return data;
 		}
 	}, {
 		key: 'createTemplate',
 		value: function createTemplate(vals, appendEl) {
-			var _this4 = this;
+			var _this2 = this;
 
 			if (typeof appendEl === 'string') {
 				appendEl = document.getElementById(appendEl);
@@ -1224,21 +1154,21 @@ var View = function () {
 
 				Object.keys(vals).forEach(function (key, index) {
 					//更新模板的index
-					_this4.el.$scope.$index++;
+					_this2.el.$scope.$index++;
 					//设置数据流更新
-					_this4.data.templateData = vals[key];
+					_this2.data.templateData = vals[key];
 					//复制临时节点
-					var tempNode = _this4.el.cloneNode(true);
+					var tempNode = _this2.el.cloneNode(true);
 					//设置模板中的index属性
-					tempNode.setAttribute('data-index', _this4.__bind__.templateIndex++);
+					tempNode.setAttribute('data-index', _this2.__bind__.templateIndex++);
 					//添加到对应节点上
 					appendEl.appendChild(tempNode);
 					//绑定当前节点事件
 					if (tempNode.nodeType == 1) {
-						_event.setEvent.call(_this4, tempNode);
+						_event.setEvent.call(_this2, tempNode);
 					}
 					//模板添加事件
-					_event.setChildTemplateEvent.call(_this4, tempNode);
+					_event.setChildTemplateEvent.call(_this2, tempNode);
 				});
 			} catch (e) {
 				console.warn('createTemplate方法中的第一个参数只能为的数组或者对象');
@@ -1349,11 +1279,11 @@ var View = function () {
 	}, {
 		key: '$F',
 		value: function $F(val, filter) {
-			var _this5 = this;
+			var _this3 = this;
 
 			if (filter instanceof Array) {
 				filter.forEach(function (filterName, index) {
-					val = _this5.filter[filterName](val);
+					val = _this3.filter[filterName](val);
 				});
 				return val;
 			} else if (typeof filter === 'string') {
@@ -1438,7 +1368,9 @@ function setAttr(element, vdom) {
 		    propValue = prop[_index2] ? prop[_index2].value : '';
 
 		if (/:.?/.test(propName)) {
-			propValue = (0, _tools.trim)(propValue);
+			//解析表达式
+			var re = new _tools.ResolveExpr(propValue);
+			propValue = re.getExpr();
 			//删除当前绑定到真实attr上的属性
 			element.removeAttribute(propName);
 			_index2 -= 1;
@@ -1447,9 +1379,8 @@ function setAttr(element, vdom) {
 			//给vdom加上属性
 			vdom.props[propName] = propValue;
 
-			var attrKeys = (0, _tools.getKeyLink)(propValue);
+			var attrKeys = re.getKeys();
 
-			//			attrKeys = getDisassemblyKey(disassembly(propValue));
 			attrKeys.forEach(function (val, index) {
 				if (!_this.__ob__.attr[val]) {
 					_this.__ob__.attr[val] = [];
@@ -1459,8 +1390,14 @@ function setAttr(element, vdom) {
 				if (!(element.__attrs__ instanceof Object)) {
 					element.__attrs__ = {};
 				}
+
+				if (!(element.__attrs__[propName] instanceof Object)) {
+					element.__attrs__[propName] = {};
+				}
+
 				//给element元素加上__attrs__依赖
-				element.__attrs__[propName] = propValue;
+				element.__attrs__[propName].__bind__ = propValue;
+				element.__attrs__[propName].__filter__ = re.getFilter();
 				//在__ob__设置attr的依赖
 				_this.__ob__.attr[val].push(element);
 			});
@@ -1515,6 +1452,14 @@ exports.setAttr = setAttr;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+exports.attrUpdate = undefined;
+
+var _filter = __webpack_require__(26);
+
+var _filter2 = _interopRequireDefault(_filter);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 //属性更新
 function attrUpdate(key) {
 	var _this = this;
@@ -1539,8 +1484,10 @@ function attrUpdate(key) {
 		attrNodes.forEach(function (element, index) {
 			var attrs = element.__attrs__;
 			Object.keys(attrs).forEach(function (propName, index) {
-				var propValue = attrs[propName];
-				element.setAttribute(propName, _this2.expr(propValue, element));
+				var propValue = attrs[propName].__bind__;
+				var data = new _filter2.default(_this2.expr(propValue, element), attrs[propName].__filter__).runFilter();
+				/*----------预留过滤器--------------------*/
+				element.setAttribute(propName, data);
 			});
 		});
 	}
@@ -1619,44 +1566,60 @@ function createTextNodes() {
 
 //创建文本节点对象,推送到临时的存放点
 function createTextNodeElements(textNodes, el) {
+	var _this2 = this;
+
 	//创建文档片段
 	var fragment = document.createDocumentFragment();
-	//数据推入文档节点
+	//数据推入文档节点(当个花括号内的值)
 	for (var i = 0; i < textNodes.length; i++) {
-		//过滤器组
-		var filters = [];
-		//查找是否存在过滤器
-		if (textNodes[i].indexOf('|') != -1) {
-			//获取过滤器
-			var templateFilters = textNodes[i].substring(textNodes[i].indexOf('|'), textNodes[i].length - 2);
-			filters = templateFilters.replace('|', '').split(' ');
-			//过滤空白数组
-			filters = filters.filter(function (item, index) {
-				if (item != '') {
-					return item;
-				}
-			});
-			//重写绑定链
-			textNodes[i] = (0, _tools.trim)(textNodes[i].replace(templateFilters, ''));
-		}
-
-		//中间在过滤一次空格层
-		textNodes[i] = textNodes[i].replace(/ /g, '');
+		/*		//过滤器组
+  		let filters = [];
+  		//查找是否存在过滤器
+  		if(textNodes[i].indexOf('|') != -1) {
+  			//获取过滤器
+  			let templateFilters = textNodes[i].substring(textNodes[i].indexOf('|'), textNodes[i].length - 2);
+  			filters = templateFilters.replace('|', '').split(' ');
+  			//过滤空白数组
+  			filters = filters.filter(function(item, index) {
+  				if(item != '') {
+  					return item;
+  				}
+  			});
+  			//重写绑定链
+  			textNodes[i] = trim(textNodes[i].replace(templateFilters, ''));
+  		}
+  		
+  		//中间在过滤一次空格层
+  		textNodes[i] = textNodes[i].replace(/ /g, '');*/
 
 		if (textNodes[i].trim() !== "") {
-			//查看是否为数据绑定
-			var textNode = document.createTextNode(textNodes[i]);
-			if (/\{\{\S+\}\}/.test(textNodes[i]) == true) {
-				var key = textNodes[i].replace(/(\{)?(\})?/g, '');
-				if (!(this.__ob__.dom[key] instanceof Object)) {
-					this.__ob__.dom[key] = [];
-					_tools.setBind.call(this, key);
+			(function () {
+				//查看是否为数据绑定
+				var element = document.createTextNode(textNodes[i]);
+				if (/\{\{.*?\}\}/.test(textNodes[i]) == true) {
+					var expr = textNodes[i].replace(/(\{)?(\})?/g, '');
+					var re = new _tools.ResolveExpr(expr);
+
+					re.getKeys().forEach(function (key) {
+						if (!(_this2.__ob__.dom[key] instanceof Array)) {
+							_this2.__ob__.dom[key] = [];
+							_tools.setBind.call(_this2, key);
+						}
+
+						//设置attrs的expr
+						if (!(element.__dom__ instanceof Object)) {
+							element.__dom__ = {};
+						}
+
+						//给element元素加上__attrs__依赖
+						element.__dom__.__bind__ = re.getExpr();
+						element.__dom__.__filter__ = re.getFilter();
+
+						_this2.__ob__.dom[key].push(element);
+					});
 				}
-				//设置节点的过滤器
-				textNode['filters'] = filters;
-				this.__ob__.dom[key].push(textNode);
-			}
-			fragment.appendChild(textNode);
+				fragment.appendChild(element);
+			})();
 		}
 	}
 	//el为父级节点,fragment为文档片段,index为索取文本节点在父级节点的位置
@@ -1690,6 +1653,14 @@ exports.replaceTextNode = replaceTextNode;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+exports.domUpdate = undefined;
+
+var _filter = __webpack_require__(26);
+
+var _filter2 = _interopRequireDefault(_filter);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function domUpdate(key) {
 	var _this = this;
 
@@ -1711,62 +1682,13 @@ function domUpdate(key) {
 
 		var textNodes = this.__ob__.dom[keyLine];
 		textNodes.forEach(function (element) {
-			var val = _this2._get(keyLine, element);
-			//如果当前的对象获取到的为null，返回一个空的字符串
-			val = val == null ? '' : val;
-			//是否存在过滤器
-			if (element['filters'].length > 0) {
-				val = filter(val, element['filters']);
-			}
-			//如果返回的是节点
-			if (val instanceof Array && val.length > 0 && val[0].nodeType) {
-				//走接点过滤处理
-				htmlNode(val, element);
-			} else {
-				//检查是否存在过滤器或者数组插入的dom节点
-				isTextNodePrevSibline(element);
-				//直接为数据节点
-				if (element.textContent !== val) {
-					element.textContent = val;
-				}
-			}
+			var data = new _filter2.default(_this2.expr(element.__dom__.__bind__, element.parentNode), element.__dom__.__filter__).runFilter();
+			element.textContent = data;
 		});
 	}
 }
 
-//检测绑定的对象是否存在过滤器,存在过滤器则返回过滤的值
-function filter(val, filters) {
-	filters.forEach(function (item, index) {
-		val = View.filter[filters[index]](val);
-	});
-	return val;
-};
-
-//处理过滤器html内容
-function htmlNode(domNodes, item) {
-	//存在过节点
-	isTextNodePrevSibline(item);
-	//把新的dom插入到对应的节点中
-	domNodes.forEach(function (dom, index) {
-		dom.htmlNode = true;
-		item.parentNode.insertBefore(dom, item);
-		item.appendNode = item.appendNode instanceof Array ? item.appendNode : [];
-		item.appendNode.push(dom);
-	});
-
-	//清空占位文本节点的内容
-	item.textContent !== "" ? item.textContent = '' : false;
-}
-
-//查看文本节点中是否存在插入式的dom对象
-function isTextNodePrevSibline(item) {
-	if (item.previousSibling != null && !!item.previousSibling.htmlNode) {
-		for (var i = 0, len = item.appendNode.length; i < len; i++) {
-			var dom = item.appendNode.shift();
-			item.parentNode.removeChild(dom);
-		}
-	}
-}
+/*------------移除html过滤器-------------*/
 
 exports.domUpdate = domUpdate;
 
@@ -2270,6 +2192,8 @@ function method() {
 			this[i] = methods[i];
 		}
 	}
+	//集成window下的方法
+	this.methods.__proto__ = window;
 }
 
 exports.default = method;
@@ -2498,6 +2422,51 @@ function watchUpdate(keyLine) {
 }
 
 exports.watchUpdate = watchUpdate;
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*
+ * 对过滤对象进行处理 
+ * */
+
+var Filter = function () {
+	function Filter(data, filter, view) {
+		_classCallCheck(this, Filter);
+
+		this.data = data;
+		this.filter = filter;
+		this.view = view;
+	}
+
+	_createClass(Filter, [{
+		key: "runFilter",
+		value: function runFilter() {
+			var _this = this;
+
+			this.filter.forEach(function (filter) {
+				_this.data = View.filter[filter](_this.data);
+			});
+			return this.data;
+		}
+	}]);
+
+	return Filter;
+}();
+
+exports.default = Filter;
 
 /***/ })
 /******/ ]);

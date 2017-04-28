@@ -58,8 +58,6 @@ class _Element {
 				index: this.id,
 				el: element
 			};
-			//设置element属性中会存在的函数操作
-			element.__fns__ = {};
 			//设置作用域
 			setScope.call(_this,element);
 			
