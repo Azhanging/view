@@ -1,9 +1,17 @@
-import { setBind, setScope, trim} from './../tools';
+import { setBind, setScope,ResolveExpr,resolveKey} from './../tools';
 
 function setFor(element, propValue, propIndex) {
 	let _this = this;
 	//拆解数据
-	let [forKey, forVal] = propValue.split(' in ');
+	let forKey = propValue.split(' in ')[0];
+	let forVal = propValue.split(' in ')[1];
+	
+	/*解析表达式*/
+	let re = new ResolveExpr(forVal);
+	let showKeys = re.getKeys();
+	let showExpr = re.getExpr();
+	let filter = re.getFilter();
+	
 	//整理空字符
 	forVal = trim(forVal);
 	//移除花括号数据

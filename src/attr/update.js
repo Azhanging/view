@@ -22,7 +22,6 @@ function attrUpdate(key) {
 			Object.keys(attrs).forEach((propName,index)=>{
 				let propValue = attrs[propName].__bind__;
 				let data = new Filter(this.expr(propValue,element),attrs[propName].__filter__).runFilter();
-				/*----------预留过滤器--------------------*/
 				element.setAttribute(propName,data);
 			});			
 		});

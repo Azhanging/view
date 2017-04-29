@@ -72,7 +72,7 @@
 /******/ 	__webpack_require__.p = "./dist";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 19);
+/******/ 	return __webpack_require__(__webpack_require__.s = 20);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -141,7 +141,6 @@ function trim(value) {
 	}
 }
 
-//function getKeyLink(expr) {	
 //拆解表达式和返回绑定值
 /*
  *	isExpr是的为了返回解析表达式还是 
@@ -172,7 +171,7 @@ var ResolveExpr = function () {
 			if (pullString) {
 				pullString.forEach(function (string) {
 					_this.strings.push(string);
-					_this._expr = _this._expr.replace(string, "__string__");
+					_this._expr = _this._expr.replace(string, "_____string_____");
 				});
 			}
 
@@ -191,7 +190,7 @@ var ResolveExpr = function () {
 			var exprFn = this._expr.match(/([_$A-z\d]*\()/g);
 			if (exprFn) {
 				//判断函数
-				unique(exprFn).forEach(function (fn) {
+				this.unique(exprFn).forEach(function (fn) {
 					_this._expr = _this._expr.replace(new RegExp(initRegExp(fn), 'g'), '$fn.' + fn);
 				});
 			}
@@ -202,15 +201,15 @@ var ResolveExpr = function () {
 			});
 
 			//判断绑定值
-			unique(trimData).forEach(function (bindData) {
-				if (bindData !== "" && !/^[\$fn\.|\$scope\.|__string__]\S*?/g.test(bindData) && !/^\d*$/.test(bindData) && _this.keyword.indexOf(bindData) === -1) {
-					_this.bindKeys.push(bindData);
+			this.unique(trimData).forEach(function (bindData) {
+				if (bindData !== "" && !/^\$fn\.|^\$scope\.|^_____string_____\S*?/g.test(bindData) && !/^\d*$/.test(bindData) && _this.keyword.indexOf(bindData) === -1) {
+					_this.bindKeys.push(_this.getBindHasStringIndex(_this.unique(trimData), bindData));
 					_this._expr = _this._expr.replace(new RegExp(initRegExp(bindData), 'g'), '$scope.' + bindData);
 				}
 			});
 
 			//把抽离的字符串重新插回到表达式中
-			var splitString = this._expr.split('__');
+			var splitString = this._expr.split('_____');
 			for (var index = 0; index < splitString.length; index++) {
 				var _index = splitString.indexOf("string");
 				if (_index !== -1) {
@@ -236,14 +235,69 @@ var ResolveExpr = function () {
 		value: function getFilter() {
 			return this.filter;
 		}
+	}, {
+		key: 'unique',
+		value: function unique(array) {
+			var newArray = [];
+			array.forEach(function (item) {
+				if (newArray.indexOf(item) === -1 || item === '_____string_____') {
+					newArray.push(item);
+				}
+			});
+			return newArray;
+		}
+	}, {
+		key: 'getBindHasStringIndex',
+		value: function getBindHasStringIndex(isBinds, bindData) {
+			var hasString = [];
+			isBinds.forEach(function (val) {
+				if (/_____string_____/.test(val)) {
+					hasString.push(val);
+				}
+			});
+
+			var getIndex = hasString.indexOf(bindData);
+
+			if (getIndex !== 1) {
+				return bindData.replace(/_____string_____/g, this.strings[getIndex]);
+			}
+
+			return bindData;
+		}
 	}]);
 
 	return ResolveExpr;
 }();
 
+//解析键值为.链接
+
+
+function resolveKey(key) {
+	var _key = key;
+	var strings = [];
+
+	//抽离字符串
+	var pullString = key.match(/\'(.*?)\'|\"(.*?)\"/g);
+	if (pullString) {
+		key.match(/\'(.*?)\'|\"(.*?)\"/g).forEach(function (string) {
+			strings.push(string);
+			_key = _key.replace(string, "_____string_____");
+		});
+	}
+
+	//查找[]范围并替换为点
+	_key = _key.replace(/\[/g, '.').replace(/\]/g, '');
+	var splitString = _key.split('_____');
+	for (var index = 0; index < splitString.length; index++) {
+		var _index = splitString.indexOf("string");
+		if (_index !== -1) {
+			splitString[_index] = strings.shift().replace(/\'|\"/g, '');
+		}
+	}
+	return splitString.join('');
+}
+
 //去重
-
-
 function unique(array) {
 	var newArray = [];
 	array.forEach(function (item) {
@@ -354,6 +408,7 @@ exports.setScope = setScope;
 exports.getScope = getScope;
 exports.trim = trim;
 exports.getFirstElementChild = getFirstElementChild;
+exports.resolveKey = resolveKey;
 
 /***/ }),
 /* 1 */
@@ -366,7 +421,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _update = __webpack_require__(14);
+var _update = __webpack_require__(15);
 
 Object.defineProperty(exports, 'domUpdate', {
   enumerable: true,
@@ -375,7 +430,7 @@ Object.defineProperty(exports, 'domUpdate', {
   }
 });
 
-var _setDom = __webpack_require__(13);
+var _setDom = __webpack_require__(14);
 
 Object.keys(_setDom).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -487,7 +542,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setAttr = __webpack_require__(10);
+var _setAttr = __webpack_require__(11);
 
 Object.defineProperty(exports, 'setAttr', {
   enumerable: true,
@@ -496,7 +551,7 @@ Object.defineProperty(exports, 'setAttr', {
   }
 });
 
-var _update = __webpack_require__(11);
+var _update = __webpack_require__(12);
 
 Object.defineProperty(exports, 'attrUpdate', {
   enumerable: true,
@@ -513,29 +568,42 @@ Object.defineProperty(exports, 'attrUpdate', {
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
 
-var _setFor = __webpack_require__(15);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-Object.keys(_setFor).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _setFor[key];
-    }
-  });
-});
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var _update = __webpack_require__(16);
+/*
+ * 对过滤对象进行处理 
+ * */
 
-Object.defineProperty(exports, 'forUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.forUpdate;
-  }
-});
+var Filter = function () {
+	function Filter(data, filter, view) {
+		_classCallCheck(this, Filter);
+
+		this.data = data;
+		this.filter = filter;
+		this.view = view;
+	}
+
+	_createClass(Filter, [{
+		key: "runFilter",
+		value: function runFilter() {
+			var _this = this;
+
+			this.filter.forEach(function (filter) {
+				_this.data = View.filter[filter](_this.data);
+			});
+			return this.data;
+		}
+	}]);
+
+	return Filter;
+}();
+
+exports.default = Filter;
 
 /***/ }),
 /* 5 */
@@ -548,21 +616,24 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setIf = __webpack_require__(17);
+var _setFor = __webpack_require__(16);
 
-Object.defineProperty(exports, 'setIf', {
-  enumerable: true,
-  get: function get() {
-    return _setIf.setIf;
-  }
+Object.keys(_setFor).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _setFor[key];
+    }
+  });
 });
 
-var _update = __webpack_require__(18);
+var _update = __webpack_require__(17);
 
-Object.defineProperty(exports, 'ifUpdate', {
+Object.defineProperty(exports, 'forUpdate', {
   enumerable: true,
   get: function get() {
-    return _update.ifUpdate;
+    return _update.forUpdate;
   }
 });
 
@@ -577,7 +648,36 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setShow = __webpack_require__(23);
+var _setIf = __webpack_require__(18);
+
+Object.defineProperty(exports, 'setIf', {
+  enumerable: true,
+  get: function get() {
+    return _setIf.setIf;
+  }
+});
+
+var _update = __webpack_require__(19);
+
+Object.defineProperty(exports, 'ifUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.ifUpdate;
+  }
+});
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setShow = __webpack_require__(24);
 
 Object.keys(_setShow).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -589,7 +689,7 @@ Object.keys(_setShow).forEach(function (key) {
   });
 });
 
-var _update = __webpack_require__(24);
+var _update = __webpack_require__(25);
 
 Object.keys(_update).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -602,7 +702,7 @@ Object.keys(_update).forEach(function (key) {
 });
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -616,7 +716,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _dom = __webpack_require__(1);
 
-var _component = __webpack_require__(12);
+var _component = __webpack_require__(13);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -816,7 +916,7 @@ var _Element = function () {
 exports.default = _Element;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -846,7 +946,7 @@ try {
 module.exports = g;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -860,15 +960,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _observer = __webpack_require__(22);
+var _observer = __webpack_require__(23);
 
 var _observer2 = _interopRequireDefault(_observer);
 
-var _method = __webpack_require__(20);
+var _method = __webpack_require__(21);
 
 var _method2 = _interopRequireDefault(_method);
 
-var _vdom = __webpack_require__(7);
+var _vdom = __webpack_require__(8);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
@@ -878,13 +978,13 @@ var _dom = __webpack_require__(1);
 
 var _attr = __webpack_require__(3);
 
-var _show = __webpack_require__(6);
+var _show = __webpack_require__(7);
 
-var _if = __webpack_require__(5);
+var _if = __webpack_require__(6);
 
-var _for = __webpack_require__(4);
+var _for = __webpack_require__(5);
 
-var _watch = __webpack_require__(25);
+var _watch = __webpack_require__(26);
 
 var _event = __webpack_require__(2);
 
@@ -1334,7 +1434,7 @@ View.filter = {
 exports.default = View;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1347,15 +1447,15 @@ exports.setAttr = undefined;
 
 var _tools = __webpack_require__(0);
 
-var _show = __webpack_require__(6);
+var _show = __webpack_require__(7);
 
-var _if = __webpack_require__(5);
+var _if = __webpack_require__(6);
 
-var _for = __webpack_require__(4);
+var _for = __webpack_require__(5);
 
 var _event = __webpack_require__(2);
 
-var _model = __webpack_require__(21);
+var _model = __webpack_require__(22);
 
 /*查找element对象中的属性*/
 /*拆解绑定的信息*/
@@ -1370,36 +1470,33 @@ function setAttr(element, vdom) {
 		if (/:.?/.test(propName)) {
 			//解析表达式
 			var re = new _tools.ResolveExpr(propValue);
-			propValue = re.getExpr();
+			var attrExpr = re.getExpr();
+			var filter = re.getFilter();
+			var attrKeys = re.getKeys();
+
 			//删除当前绑定到真实attr上的属性
 			element.removeAttribute(propName);
 			_index2 -= 1;
 			//清除:号
 			propName = propName.replace(':', '');
 			//给vdom加上属性
-			vdom.props[propName] = propValue;
+			vdom.props[propName] = attrExpr;
 
-			var attrKeys = re.getKeys();
-
-			attrKeys.forEach(function (val, index) {
-				if (!_this.__ob__.attr[val]) {
-					_this.__ob__.attr[val] = [];
-					_tools.setBind.call(_this, val);
+			attrKeys.forEach(function (key, index) {
+				key = (0, _tools.resolveKey)(key);
+				if (!_this.__ob__.attr[key]) {
+					_this.__ob__.attr[key] = [];
+					_tools.setBind.call(_this, key);
 				}
-				//设置attrs的expr
 				if (!(element.__attrs__ instanceof Object)) {
 					element.__attrs__ = {};
 				}
-
 				if (!(element.__attrs__[propName] instanceof Object)) {
 					element.__attrs__[propName] = {};
 				}
-
-				//给element元素加上__attrs__依赖
-				element.__attrs__[propName].__bind__ = propValue;
-				element.__attrs__[propName].__filter__ = re.getFilter();
-				//在__ob__设置attr的依赖
-				_this.__ob__.attr[val].push(element);
+				element.__attrs__[propName].__bind__ = attrExpr;
+				element.__attrs__[propName].__filter__ = filter;
+				_this.__ob__.attr[key].push(element);
 			});
 		} else if (/_v-.?/.test(propName)) {
 			//删除当前绑定到真实attr上的属性
@@ -1443,7 +1540,7 @@ function setAttr(element, vdom) {
 exports.setAttr = setAttr;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1454,7 +1551,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.attrUpdate = undefined;
 
-var _filter = __webpack_require__(26);
+var _filter = __webpack_require__(4);
 
 var _filter2 = _interopRequireDefault(_filter);
 
@@ -1486,7 +1583,6 @@ function attrUpdate(key) {
 			Object.keys(attrs).forEach(function (propName, index) {
 				var propValue = attrs[propName].__bind__;
 				var data = new _filter2.default(_this2.expr(propValue, element), attrs[propName].__filter__).runFilter();
-				/*----------预留过滤器--------------------*/
 				element.setAttribute(propName, data);
 			});
 		});
@@ -1496,7 +1592,7 @@ function attrUpdate(key) {
 exports.attrUpdate = attrUpdate;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1527,7 +1623,7 @@ function componentHandler(node) {
 exports.default = componentHandler;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1572,26 +1668,6 @@ function createTextNodeElements(textNodes, el) {
 	var fragment = document.createDocumentFragment();
 	//数据推入文档节点(当个花括号内的值)
 	for (var i = 0; i < textNodes.length; i++) {
-		/*		//过滤器组
-  		let filters = [];
-  		//查找是否存在过滤器
-  		if(textNodes[i].indexOf('|') != -1) {
-  			//获取过滤器
-  			let templateFilters = textNodes[i].substring(textNodes[i].indexOf('|'), textNodes[i].length - 2);
-  			filters = templateFilters.replace('|', '').split(' ');
-  			//过滤空白数组
-  			filters = filters.filter(function(item, index) {
-  				if(item != '') {
-  					return item;
-  				}
-  			});
-  			//重写绑定链
-  			textNodes[i] = trim(textNodes[i].replace(templateFilters, ''));
-  		}
-  		
-  		//中间在过滤一次空格层
-  		textNodes[i] = textNodes[i].replace(/ /g, '');*/
-
 		if (textNodes[i].trim() !== "") {
 			(function () {
 				//查看是否为数据绑定
@@ -1599,19 +1675,17 @@ function createTextNodeElements(textNodes, el) {
 				if (/\{\{.*?\}\}/.test(textNodes[i]) == true) {
 					var expr = textNodes[i].replace(/(\{)?(\})?/g, '');
 					var re = new _tools.ResolveExpr(expr);
-
 					re.getKeys().forEach(function (key) {
+						key = (0, _tools.resolveKey)(key);
 						if (!(_this2.__ob__.dom[key] instanceof Array)) {
 							_this2.__ob__.dom[key] = [];
 							_tools.setBind.call(_this2, key);
 						}
-
-						//设置attrs的expr
+						//设置dom的expr
 						if (!(element.__dom__ instanceof Object)) {
 							element.__dom__ = {};
 						}
-
-						//给element元素加上__attrs__依赖
+						//给element元素加上__dom__依赖,过滤器
 						element.__dom__.__bind__ = re.getExpr();
 						element.__dom__.__filter__ = re.getFilter();
 
@@ -1644,7 +1718,7 @@ exports.createTextNodes = createTextNodes;
 exports.replaceTextNode = replaceTextNode;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1655,7 +1729,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.domUpdate = undefined;
 
-var _filter = __webpack_require__(26);
+var _filter = __webpack_require__(4);
 
 var _filter2 = _interopRequireDefault(_filter);
 
@@ -1693,7 +1767,7 @@ function domUpdate(key) {
 exports.domUpdate = domUpdate;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1704,8 +1778,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.setFor = undefined;
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 var _tools = __webpack_require__(0);
 
 function setFor(element, propValue, propIndex) {
@@ -1713,15 +1785,17 @@ function setFor(element, propValue, propIndex) {
 
 	var _this = this;
 	//拆解数据
+	var forKey = propValue.split(' in ')[0];
+	var forVal = propValue.split(' in ')[1];
 
-	var _propValue$split = propValue.split(' in '),
-	    _propValue$split2 = _slicedToArray(_propValue$split, 2),
-	    forKey = _propValue$split2[0],
-	    forVal = _propValue$split2[1];
+	/*解析表达式*/
+	var re = new _tools.ResolveExpr(forVal);
+	var showKeys = re.getKeys();
+	var showExpr = re.getExpr();
+	var filter = re.getFilter();
+
 	//整理空字符
-
-
-	forVal = (0, _tools.trim)(forVal);
+	forVal = trim(forVal);
 	//移除花括号数据
 	var filterForVal = forVal.replace(/(\{)?(\})?/g, '');
 	var getForVal = void 0;
@@ -1816,7 +1890,7 @@ function setFor(element, propValue, propIndex) {
 exports.setFor = setFor;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1829,7 +1903,7 @@ exports.forUpdate = undefined;
 
 var _dom = __webpack_require__(1);
 
-var _vdom = __webpack_require__(7);
+var _vdom = __webpack_require__(8);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
@@ -1973,7 +2047,7 @@ function forUpdate(key) {
 exports.forUpdate = forUpdate;
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2003,10 +2077,14 @@ function nextSibling(element, ifCount) {
 					}
 					//else和elseif的对象
 					if (propName == 'elseif' || propName == 'else') {
-						propValue = (0, _tools.trim)(propValue);
-						var ifKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
+						var re = new _tools.ResolveExpr(propValue);
+						var ifKeys = re.getKeys();
+						var ifExpr = re.getExpr();
+						var filter = re.getFilter();
+
 						ifKeys.forEach(function (key, index) {
 							if (key) {
+								key = (0, _tools.resolveKey)(key);
 								if (!(_this.__ob__.if[key] instanceof Array)) {
 									_this.__ob__.if[key] = [];
 								}
@@ -2015,9 +2093,15 @@ function nextSibling(element, ifCount) {
 						});
 						if (propName == 'else') {
 							//因为要过match，必须为字符串类型的true
-							element.__if__ = 'true';
+							element.__if__ = {
+								__bind__: 'true',
+								__filter__: filter
+							};
 						} else {
-							element.__if__ = propValue;
+							element.__if__ = {
+								__bind__: ifExpr,
+								__filter__: filter
+							};
 						}
 
 						ifCount.push(element);
@@ -2047,19 +2131,27 @@ function nextSibling(element, ifCount) {
 function setIf(element, propName, propValue) {
 	var _this2 = this;
 
-	propValue = (0, _tools.trim)(propValue);
 	var ifCount = void 0;
-	var ifKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
+	var re = new _tools.ResolveExpr(propValue);
+	var ifKeys = re.getKeys();
+	var ifExpr = re.getExpr();
+	var filter = re.getFilter();
+
 	ifKeys.forEach(function (key, index) {
 		if (key) {
+			key = (0, _tools.resolveKey)(key);
 			//创建绑定的ob对象
 			if (!(_this2.__ob__.if[key] instanceof Array)) {
 				_this2.__ob__.if[key] = [];
 				_tools.setBind.call(_this2, key);
 			}
+
 			//存储当前的if组
 			ifCount = [];
-			element.__if__ = propValue;
+			element.__if__ = {
+				__bind__: ifExpr,
+				__filter__: filter
+			};
 
 			var seize = document.createTextNode('');
 			var parentNode = element.parentNode ? element.parentNode : element.__parentNode__;
@@ -2078,7 +2170,7 @@ function setIf(element, propName, propValue) {
 exports.setIf = setIf;
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2087,6 +2179,14 @@ exports.setIf = setIf;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+exports.ifUpdate = undefined;
+
+var _filter = __webpack_require__(4);
+
+var _filter2 = _interopRequireDefault(_filter);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /*更新if*/
 function ifUpdate(key) {
 	var _this = this;
@@ -2114,7 +2214,7 @@ function ifUpdate(key) {
 			var seize = elements.__seize__;
 			var parentNode = seize.parentNode;
 			for (var j = 0; j < elements.length; j++) {
-				var obj = _this2.expr(elements[j].__if__, elements[j]);
+				var obj = new _filter2.default(_this2.expr(elements[j].__if__.__bind__, elements[j]), elements[j].__if__.__filter__).runFilter();
 				if (obj) {
 					elements.forEach(function (el, _index) {
 						if (_index != j) {
@@ -2138,13 +2238,13 @@ function ifUpdate(key) {
 exports.ifUpdate = ifUpdate;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
-var _init = __webpack_require__(9);
+var _init = __webpack_require__(10);
 
 var _init2 = _interopRequireDefault(_init);
 
@@ -2172,10 +2272,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 	return _init2.default;
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2199,7 +2299,7 @@ function method() {
 exports.default = method;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2233,7 +2333,7 @@ function setModel(element, propValue) {
 exports.setModel = setModel;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2328,7 +2428,7 @@ var Observer = function () {
 exports.default = Observer;
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2344,24 +2444,31 @@ var _tools = __webpack_require__(0);
 function setShow(element, propValue) {
 	var _this = this;
 
-	propValue = (0, _tools.trim)(propValue);
-	var attrKeys = (0, _tools.getDisassemblyKey)((0, _tools.disassembly)(propValue));
-	attrKeys.forEach(function (val, index) {
-		if (!(_this.__ob__.show[val] instanceof Array)) {
-			_this.__ob__.show[val] = [];
-			_tools.setBind.call(_this, val);
+	var re = new _tools.ResolveExpr(propValue);
+	var showKeys = re.getKeys();
+	var showExpr = re.getExpr();
+	var filter = re.getFilter();
+
+	showKeys.forEach(function (key, index) {
+		key = (0, _tools.resolveKey)(key);
+		if (!(_this.__ob__.show[key] instanceof Array)) {
+			_this.__ob__.show[key] = [];
+			_tools.setBind.call(_this, key);
 		}
 		//给element元素加上__attrs__依赖
-		element.__show__ = propValue;
+		element.__show__ = {
+			__bind__: showExpr,
+			__filter__: filter
+		};
 		//在__ob__设置attr的依赖
-		_this.__ob__.show[val].push(element);
+		_this.__ob__.show[key].push(element);
 	});
 }
 
 exports.setShow = setShow;
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2370,6 +2477,14 @@ exports.setShow = setShow;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+exports.showUpdate = undefined;
+
+var _filter = __webpack_require__(4);
+
+var _filter2 = _interopRequireDefault(_filter);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function showUpdate(key) {
 	var _this = this;
 
@@ -2390,7 +2505,7 @@ function showUpdate(key) {
 
 		var showElements = this.__ob__.show[keyLine];
 		showElements.forEach(function (element, index) {
-			var showValue = _this2.expr(element.__show__, element);
+			var showValue = new _filter2.default(_this2.expr(element.__show__.__bind__, element), element.__show__.__filter__).runFilter();
 			if (showValue == true || showValue.toString().toLocaleLowerCase() === 'ok') {
 				showValue = '';
 			} else if (showValue == false || showValue.toString().toLocaleLowerCase() === 'no') {
@@ -2405,7 +2520,7 @@ function showUpdate(key) {
 exports.showUpdate = showUpdate;
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2422,51 +2537,6 @@ function watchUpdate(keyLine) {
 }
 
 exports.watchUpdate = watchUpdate;
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
- * 对过滤对象进行处理 
- * */
-
-var Filter = function () {
-	function Filter(data, filter, view) {
-		_classCallCheck(this, Filter);
-
-		this.data = data;
-		this.filter = filter;
-		this.view = view;
-	}
-
-	_createClass(Filter, [{
-		key: "runFilter",
-		value: function runFilter() {
-			var _this = this;
-
-			this.filter.forEach(function (filter) {
-				_this.data = View.filter[filter](_this.data);
-			});
-			return this.data;
-		}
-	}]);
-
-	return Filter;
-}();
-
-exports.default = Filter;
 
 /***/ })
 /******/ ]);

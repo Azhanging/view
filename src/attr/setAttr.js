@@ -1,5 +1,5 @@
 /*拆解绑定的信息*/
-import { disassembly, getDisassemblyKey,setBind ,getIndex ,trim ,ResolveExpr} from './../tools';
+import { disassembly, getDisassemblyKey,setBind ,getIndex ,ResolveExpr,resolveKey} from './../tools';
 import { setShow } from './../show';
 import { setIf } from './../if';
 import { setFor } from './../for';
@@ -15,36 +15,33 @@ function setAttr(element, vdom) {
 		if(/:.?/.test(propName)) {
 			//解析表达式
 			let re = new ResolveExpr(propValue);
-			propValue = re.getExpr(); 
+			let attrExpr = re.getExpr(); 
+			let filter = re.getFilter();
+			let attrKeys = re.getKeys();
+			
 			//删除当前绑定到真实attr上的属性
 			element.removeAttribute(propName);
 			_index -= 1;
 			//清除:号
 			propName = propName.replace(':', '');
 			//给vdom加上属性
-			vdom.props[propName] = propValue;
+			vdom.props[propName] = attrExpr;
 			
-			let attrKeys = re.getKeys();
-			
-			attrKeys.forEach((val, index) => {
-				if(!this.__ob__.attr[val]) {
-					this.__ob__.attr[val] = [];	
-					setBind.call(this,val);
+			attrKeys.forEach((key, index) => {
+				key = resolveKey(key);
+				if(!this.__ob__.attr[key]) {
+					this.__ob__.attr[key] = [];	
+					setBind.call(this,key);
 				}
-				//设置attrs的expr
 				if(!(element.__attrs__ instanceof Object)) {
 					element.__attrs__ = {};
 				}
-				
 				if(!(element.__attrs__[propName] instanceof Object)){
 					element.__attrs__[propName] = {}
 				}
-				
-				//给element元素加上__attrs__依赖
-				element.__attrs__[propName].__bind__ = propValue;
-				element.__attrs__[propName].__filter__ = re.getFilter();
-				//在__ob__设置attr的依赖
-				this.__ob__.attr[val].push(element);
+				element.__attrs__[propName].__bind__ = attrExpr;
+				element.__attrs__[propName].__filter__ = filter;
+				this.__ob__.attr[key].push(element);
 			});
 		}else if(/_v-.?/.test(propName)) {
 			//删除当前绑定到真实attr上的属性

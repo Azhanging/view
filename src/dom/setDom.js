@@ -1,4 +1,4 @@
-import {disassembly,setBind , ResolveExpr} from './../tools';
+import {disassembly,setBind , ResolveExpr,resolveKey} from './../tools';
 
 
 function setDom(element) {
@@ -24,45 +24,23 @@ function createTextNodeElements(textNodes, el) {
 	let fragment = document.createDocumentFragment();
 	//数据推入文档节点(当个花括号内的值)
 	for(let i = 0; i < textNodes.length; i++) {
-/*		//过滤器组
-		let filters = [];
-		//查找是否存在过滤器
-		if(textNodes[i].indexOf('|') != -1) {
-			//获取过滤器
-			let templateFilters = textNodes[i].substring(textNodes[i].indexOf('|'), textNodes[i].length - 2);
-			filters = templateFilters.replace('|', '').split(' ');
-			//过滤空白数组
-			filters = filters.filter(function(item, index) {
-				if(item != '') {
-					return item;
-				}
-			});
-			//重写绑定链
-			textNodes[i] = trim(textNodes[i].replace(templateFilters, ''));
-		}
-		
-		//中间在过滤一次空格层
-		textNodes[i] = textNodes[i].replace(/ /g, '');*/
-
 		if(textNodes[i].trim() !== "") {
 			//查看是否为数据绑定
 			let element = document.createTextNode(textNodes[i]);
 			if(/\{\{.*?\}\}/.test(textNodes[i]) == true) {
 				let expr = textNodes[i].replace(/(\{)?(\})?/g, '');
 				let re = new ResolveExpr(expr);
-				
 				re.getKeys().forEach((key)=>{
+					key = resolveKey(key);
 					if(!(this.__ob__.dom[key] instanceof Array)) {
 						this.__ob__.dom[key] = [];
 						setBind.call(this,key);
 					}
-					
-					//设置attrs的expr
+					//设置dom的expr
 					if(!(element.__dom__ instanceof Object)) {
 						element.__dom__ = {};
 					}
-					
-					//给element元素加上__attrs__依赖
+					//给element元素加上__dom__依赖,过滤器
 					element.__dom__.__bind__ = re.getExpr();
 					element.__dom__.__filter__ = re.getFilter();
 					
@@ -89,5 +67,5 @@ function replaceTextNode() {
 export {
 	setDom,
 	createTextNodes,
-	replaceTextNode
+	replaceTextNode	
 };

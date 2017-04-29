@@ -1,5 +1,4 @@
-import { disassembly, getDisassemblyKey, setBind ,trim} from './../tools';
-
+import { setBind ,ResolveExpr,resolveKey} from './../tools';
 function nextSibling(element, ifCount) {
 	if(element.nodeType === 1) {
 		let attributes = element.attributes;
@@ -15,10 +14,14 @@ function nextSibling(element, ifCount) {
 					}
 					//else和elseif的对象
 					if(propName == 'elseif' || propName == 'else') {
-						propValue = trim(propValue);
-						let ifKeys = getDisassemblyKey(disassembly(propValue));
+						let re = new ResolveExpr(propValue);
+						let ifKeys = re.getKeys();
+						let ifExpr = re.getExpr();
+						let filter = re.getFilter();
+						
 						ifKeys.forEach((key, index) => {
 							if(key) {
+								key = resolveKey(key);
 								if(!(this.__ob__.if[key] instanceof Array)) {
 									this.__ob__.if[key] = [];
 								}
@@ -27,9 +30,15 @@ function nextSibling(element, ifCount) {
 						});
 						if(propName == 'else') {
 							//因为要过match，必须为字符串类型的true
-							element.__if__ = 'true';
+							element.__if__ = {
+								__bind__:'true',
+								__filter__:filter
+							};
 						} else {
-							element.__if__ = propValue;
+							element.__if__ = {
+								__bind__:ifExpr,
+								__filter__:filter
+							};
 						}
 
 						ifCount.push(element);
@@ -57,19 +66,27 @@ function nextSibling(element, ifCount) {
 }
 
 function setIf(element, propName, propValue) {
-	propValue = trim(propValue);
 	let ifCount;
-	let ifKeys = getDisassemblyKey(disassembly(propValue));
+	let re = new ResolveExpr(propValue);
+	let ifKeys = re.getKeys();
+	let ifExpr = re.getExpr();
+	let filter = re.getFilter();
+	
 	ifKeys.forEach((key, index) => {
 		if(key) {
+			key = resolveKey(key);
 			//创建绑定的ob对象
 			if(!(this.__ob__.if[key] instanceof Array)) {
 				this.__ob__.if[key] = [];
 				setBind.call(this, key);
 			}
+			
 			//存储当前的if组
 			ifCount = [];
-			element.__if__ = propValue;
+			element.__if__ = {
+				__bind__:ifExpr,
+				__filter__:filter
+			};
 			
 			let seize = document.createTextNode('');
 			let parentNode = element.parentNode?element.parentNode:element.__parentNode__;

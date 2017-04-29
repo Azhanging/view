@@ -1,3 +1,4 @@
+import Filter from './../filter';
 /*更新if*/
 function ifUpdate(key) {
 	//初始化
@@ -21,7 +22,7 @@ function ifUpdate(key) {
 			let seize = elements.__seize__;
 			let parentNode = seize.parentNode;
 			for(var j = 0; j < elements.length; j++) {
-				var obj = this.expr(elements[j].__if__,elements[j]);
+				var obj = new Filter(this.expr(elements[j].__if__.__bind__,elements[j]),elements[j].__if__.__filter__).runFilter();
 				if(obj) {
 					elements.forEach((el,_index)=>{
 						if(_index != j){							

@@ -1,3 +1,4 @@
+import Filter from './../filter';
 function showUpdate(key){
 	if(key === undefined || key === '') {
 		Object.keys(this.__ob__.show).forEach((keyLine, index) => {
@@ -14,7 +15,7 @@ function showUpdate(key){
 	function updateFn(keyLine){
 		let showElements = this.__ob__.show[keyLine];
 		showElements.forEach((element,index)=>{
-			let showValue = this.expr(element.__show__,element);
+			let showValue = new Filter(this.expr(element.__show__.__bind__,element),element.__show__.__filter__).runFilter();
 			if(showValue == true || showValue.toString().toLocaleLowerCase() === 'ok') {
 				showValue = '';
 			} else if(showValue == false || showValue.toString().toLocaleLowerCase() === 'no') {

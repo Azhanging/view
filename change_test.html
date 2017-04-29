@@ -9,8 +9,21 @@
 
 	<body>
 		<div id="app">
-			<div :class="true ? data_1 + parseInt('2')+1 + '':''| length ">
-				{{data_1 + 1 + 'aaaa'}}
+			<div :class="true ? data_1+data_2['data__2'][0] + parseInt('2')+1 + '':''">
+				{{data_1 + 1 + 'aaaa' + data_2.data__2[0]}}
+			</div>
+			<div _v-if="ifStatus[0]">
+				这是if状态0
+			</div>
+			<div _v-elseif="!(ifStatus[1])">
+				这是if状态1
+			</div>
+			<div _v-else="!(ifStatus[2])">
+				这是if状态2
+			</div>
+			
+			<div _v-show="!(ifStatus[3])">
+				这是show内容
 			</div>
 		</div>
 		
@@ -23,10 +36,12 @@
 				data: {
 					data_1:1,
 					data_2:{
-						data__2:2
+						data__2:[
+							2
+						]
 					},
-					data_3:[3]
-					
+					data_3:[3],
+					ifStatus:[false,false,true]
 				},
 				ready: function() {
 					

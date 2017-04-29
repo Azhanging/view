@@ -45,7 +45,6 @@ function trim(value) {
 	}
 }
 
-//function getKeyLink(expr) {	
 //拆解表达式和返回绑定值
 /*
  *	isExpr是的为了返回解析表达式还是 
@@ -69,7 +68,7 @@ class ResolveExpr {
 		if(pullString){
 			pullString.forEach((string)=>{
 				this.strings.push(string);
-				this._expr = this._expr.replace(string, "__string__");
+				this._expr = this._expr.replace(string, "_____string_____");
 			});	
 		}
 		
@@ -88,7 +87,7 @@ class ResolveExpr {
 		let exprFn = this._expr.match(/([_$A-z\d]*\()/g)
 		if(exprFn){			
 			//判断函数
-			unique(exprFn).forEach((fn) => {
+			this.unique(exprFn).forEach((fn) => {
 				this._expr = this._expr.replace(new RegExp(initRegExp(fn), 'g'), '$fn.' + fn);
 			});
 		}
@@ -99,21 +98,21 @@ class ResolveExpr {
 		})
 
 		//判断绑定值
-		unique(trimData).forEach((bindData) => {
-			if(bindData !== "" && !/^[\$fn\.|\$scope\.|__string__]\S*?/g.test(bindData) && !(/^\d*$/.test(bindData)) && this.keyword.indexOf(bindData) === -1) {
-				this.bindKeys.push(bindData);
+		this.unique(trimData).forEach((bindData) => {
+			if(bindData !== "" && !/^\$fn\.|^\$scope\.|^_____string_____\S*?/g.test(bindData) && !(/^\d*$/.test(bindData)) && this.keyword.indexOf(bindData) === -1) {
+				this.bindKeys.push(this.getBindHasStringIndex(this.unique(trimData),bindData));
 				this._expr = this._expr.replace(new RegExp(initRegExp(bindData), 'g'), '$scope.' + bindData);
 			}
 		});
 
 		//把抽离的字符串重新插回到表达式中
-		let splitString = this._expr.split('__');
+		let splitString = this._expr.split('_____');
 		for(let index = 0; index < splitString.length; index++) {
 			let _index = splitString.indexOf("string")
 			if(_index !== -1) {
 				splitString[_index] = this.strings.shift();
 			}
-		}
+		} 
 
 		//合并字符内容
 		this._expr = splitString.join('');
@@ -127,7 +126,59 @@ class ResolveExpr {
 	getFilter(){
 		return this.filter;
 	}
+	unique(array) {
+		let newArray = [];
+		array.forEach((item) => {
+			if(newArray.indexOf(item) === -1 || item === '_____string_____') {
+				newArray.push(item);
+			}
+		});
+		return newArray;
+	}
+	getBindHasStringIndex(isBinds,bindData){
+		let hasString = [];
+		isBinds.forEach((val)=>{
+			if(/_____string_____/.test(val)){
+				hasString.push(val);	
+			}
+		});
+		
+		let getIndex = hasString.indexOf(bindData);
+		
+		if(getIndex !== 1){
+			return bindData.replace(/_____string_____/g,this.strings[getIndex]);
+		}
+		
+		return bindData;
+	}
 }
+
+//解析键值为.链接
+function resolveKey(key){
+	let _key = key;
+	let strings = [];
+	
+	//抽离字符串
+	let pullString = key.match(/\'(.*?)\'|\"(.*?)\"/g); 
+	if(pullString){
+		key.match(/\'(.*?)\'|\"(.*?)\"/g).forEach(function(string){
+			strings.push(string);
+			_key = _key.replace(string,"_____string_____");
+		});	
+	}
+	
+	//查找[]范围并替换为点
+	_key = _key.replace(/\[/g,'.').replace(/\]/g,'');
+	let splitString = _key.split('_____');
+	for(let index = 0; index < splitString.length; index++) {
+		let _index = splitString.indexOf("string")
+		if(_index !== -1) {
+			splitString[_index] = strings.shift().replace(/\'|\"/g,'');
+		}
+	}
+	return splitString.join('');
+}
+
 
 //去重
 function unique(array) {
@@ -240,5 +291,6 @@ export {
 	setScope,
 	getScope,
 	trim,
-	getFirstElementChild
+	getFirstElementChild,
+	resolveKey
 }
