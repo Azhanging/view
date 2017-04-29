@@ -18,6 +18,7 @@ function forUpdate(key) {
 
 	function updateFn(key) {
 		let _this = this;
+		let updateKeys = [];
 		//获取element节点
 		let elements = this.__ob__.for[key];
 		elements.forEach((element) => {
@@ -54,7 +55,12 @@ function forUpdate(key) {
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
 				//更新数据
-				this.dep(element.__forKey__);
+				
+				if(updateKeys.indexOf(element.__forKey__) === -1){
+					updateKeys.push(element.__forKey__);
+				}
+				
+//				this.dep(element.__forKey__);
 			} else if(dataLength < forElementGroupLength) {
 				let _fragment = document.createDocumentFragment();
 				//移除已添加的节点
@@ -73,8 +79,12 @@ function forUpdate(key) {
 				}
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
-
-				this.dep(element.__forKey__);
+				
+				if(updateKeys.indexOf(element.__forKey__) === -1){
+					updateKeys.push(element.__forKey__);
+				}
+				
+//				this.dep(element.__forKey__);
 			} else if(dataLength > forElementGroupLength) {
 				let cloneNodeElements = [];
 				let getDataKeys = Object.keys(getData);
@@ -128,6 +138,10 @@ function forUpdate(key) {
 				//更新当前键值链数据
 				this.update();
 			}
+		});
+		
+		updateKeys.forEach((key)=>{
+			this.dep(key);	
 		});
 	}
 }

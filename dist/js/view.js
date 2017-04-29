@@ -187,16 +187,17 @@ var ResolveExpr = function () {
 			}
 
 			//是否存在函数处理
-			var exprFn = this._expr.match(/([_$A-z\d]*\()/g);
+			var exprFn = this._expr.match(/([^!][_$A-z\d]*\()/g);
 			if (exprFn) {
 				//判断函数
 				this.unique(exprFn).forEach(function (fn) {
+					fn = fn.trim();
 					_this._expr = _this._expr.replace(new RegExp(initRegExp(fn), 'g'), '$fn.' + fn);
 				});
 			}
 
 			//清空数组内项目的空格内的值
-			var trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,/g).map(function (data) {
+			var trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!/g).map(function (data) {
 				return data.trim();
 			});
 
@@ -258,7 +259,7 @@ var ResolveExpr = function () {
 
 			var getIndex = hasString.indexOf(bindData);
 
-			if (getIndex !== 1) {
+			if (getIndex !== -1) {
 				return bindData.replace(/_____string_____/g, this.strings[getIndex]);
 			}
 
@@ -418,6 +419,51 @@ exports.resolveKey = resolveKey;
 
 
 Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/*
+ * 对过滤对象进行处理 
+ * */
+
+var Filter = function () {
+	function Filter(data, filter, view) {
+		_classCallCheck(this, Filter);
+
+		this.data = data;
+		this.filter = filter;
+		this.view = view;
+	}
+
+	_createClass(Filter, [{
+		key: "runFilter",
+		value: function runFilter() {
+			var _this = this;
+
+			this.filter.forEach(function (filter) {
+				_this.data = View.filter[filter](_this.data);
+			});
+			return this.data;
+		}
+	}]);
+
+	return Filter;
+}();
+
+exports.default = Filter;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
@@ -443,7 +489,7 @@ Object.keys(_setDom).forEach(function (key) {
 });
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -532,7 +578,7 @@ exports.setChildTemplateEvent = setChildTemplateEvent;
 exports.setEventHandler = setEventHandler;
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -559,51 +605,6 @@ Object.defineProperty(exports, 'attrUpdate', {
     return _update.attrUpdate;
   }
 });
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
- * 对过滤对象进行处理 
- * */
-
-var Filter = function () {
-	function Filter(data, filter, view) {
-		_classCallCheck(this, Filter);
-
-		this.data = data;
-		this.filter = filter;
-		this.view = view;
-	}
-
-	_createClass(Filter, [{
-		key: "runFilter",
-		value: function runFilter() {
-			var _this = this;
-
-			this.filter.forEach(function (filter) {
-				_this.data = View.filter[filter](_this.data);
-			});
-			return this.data;
-		}
-	}]);
-
-	return Filter;
-}();
-
-exports.default = Filter;
 
 /***/ }),
 /* 5 */
@@ -714,15 +715,15 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _dom = __webpack_require__(1);
+var _dom = __webpack_require__(2);
 
 var _component = __webpack_require__(13);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _attr = __webpack_require__(3);
+var _attr = __webpack_require__(4);
 
-var _event = __webpack_require__(2);
+var _event = __webpack_require__(3);
 
 var _tools = __webpack_require__(0);
 
@@ -974,9 +975,9 @@ var _vdom2 = _interopRequireDefault(_vdom);
 
 var _tools = __webpack_require__(0);
 
-var _dom = __webpack_require__(1);
+var _dom = __webpack_require__(2);
 
-var _attr = __webpack_require__(3);
+var _attr = __webpack_require__(4);
 
 var _show = __webpack_require__(7);
 
@@ -986,7 +987,7 @@ var _for = __webpack_require__(5);
 
 var _watch = __webpack_require__(26);
 
-var _event = __webpack_require__(2);
+var _event = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1126,6 +1127,7 @@ var View = function () {
 	}, {
 		key: 'update',
 		value: function update(keys) {
+			console.log(keys);
 			_watch.watchUpdate.call(this, keys);
 			_attr.attrUpdate.call(this, keys);
 			_show.showUpdate.call(this, keys);
@@ -1453,7 +1455,7 @@ var _if = __webpack_require__(6);
 
 var _for = __webpack_require__(5);
 
-var _event = __webpack_require__(2);
+var _event = __webpack_require__(3);
 
 var _model = __webpack_require__(22);
 
@@ -1551,7 +1553,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.attrUpdate = undefined;
 
-var _filter = __webpack_require__(4);
+var _filter = __webpack_require__(1);
 
 var _filter2 = _interopRequireDefault(_filter);
 
@@ -1729,7 +1731,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.domUpdate = undefined;
 
-var _filter = __webpack_require__(4);
+var _filter = __webpack_require__(1);
 
 var _filter2 = _interopRequireDefault(_filter);
 
@@ -1788,16 +1790,10 @@ function setFor(element, propValue, propIndex) {
 	var forKey = propValue.split(' in ')[0];
 	var forVal = propValue.split(' in ')[1];
 
-	/*解析表达式*/
-	var re = new _tools.ResolveExpr(forVal);
-	var showKeys = re.getKeys();
-	var showExpr = re.getExpr();
-	var filter = re.getFilter();
-
 	//整理空字符
-	forVal = trim(forVal);
+	forVal = (0, _tools.trim)(forVal);
 	//移除花括号数据
-	var filterForVal = forVal.replace(/(\{)?(\})?/g, '');
+	var filterForVal = (0, _tools.resolveKey)(forVal);
 	var getForVal = void 0;
 	//查看是否为数字的循环
 	if (!isNaN(filterForVal)) {
@@ -1901,7 +1897,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.forUpdate = undefined;
 
-var _dom = __webpack_require__(1);
+var _dom = __webpack_require__(2);
 
 var _vdom = __webpack_require__(8);
 
@@ -1930,6 +1926,7 @@ function forUpdate(key) {
 		var _this3 = this;
 
 		var _this = this;
+		var updateKeys = [];
 		//获取element节点
 		var elements = this.__ob__.for[key];
 		elements.forEach(function (element) {
@@ -1966,7 +1963,12 @@ function forUpdate(key) {
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
 				//更新数据
-				_this3.dep(element.__forKey__);
+
+				if (updateKeys.indexOf(element.__forKey__) === -1) {
+					updateKeys.push(element.__forKey__);
+				}
+
+				//				this.dep(element.__forKey__);
 			} else if (dataLength < forElementGroupLength) {
 				var _fragment = document.createDocumentFragment();
 				//移除已添加的节点
@@ -1986,7 +1988,11 @@ function forUpdate(key) {
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
 
-				_this3.dep(element.__forKey__);
+				if (updateKeys.indexOf(element.__forKey__) === -1) {
+					updateKeys.push(element.__forKey__);
+				}
+
+				//				this.dep(element.__forKey__);
 			} else if (dataLength > forElementGroupLength) {
 				var cloneNodeElements = [];
 				var getDataKeys = Object.keys(getData);
@@ -2040,6 +2046,10 @@ function forUpdate(key) {
 				//更新当前键值链数据
 				_this3.update();
 			}
+		});
+
+		updateKeys.forEach(function (key) {
+			_this3.dep(key);
 		});
 	}
 }
@@ -2181,7 +2191,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ifUpdate = undefined;
 
-var _filter = __webpack_require__(4);
+var _filter = __webpack_require__(1);
 
 var _filter2 = _interopRequireDefault(_filter);
 
@@ -2479,7 +2489,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.showUpdate = undefined;
 
-var _filter = __webpack_require__(4);
+var _filter = __webpack_require__(1);
 
 var _filter2 = _interopRequireDefault(_filter);
 

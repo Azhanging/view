@@ -1,4 +1,4 @@
-import { setBind, setScope,ResolveExpr,resolveKey} from './../tools';
+import { setBind, setScope, trim,resolveKey} from './../tools';
 
 function setFor(element, propValue, propIndex) {
 	let _this = this;
@@ -6,16 +6,10 @@ function setFor(element, propValue, propIndex) {
 	let forKey = propValue.split(' in ')[0];
 	let forVal = propValue.split(' in ')[1];
 	
-	/*解析表达式*/
-	let re = new ResolveExpr(forVal);
-	let showKeys = re.getKeys();
-	let showExpr = re.getExpr();
-	let filter = re.getFilter();
-	
 	//整理空字符
 	forVal = trim(forVal);
 	//移除花括号数据
-	let filterForVal = forVal.replace(/(\{)?(\})?/g, '');
+	let filterForVal = resolveKey(forVal);
 	let getForVal;
 	//查看是否为数字的循环
 	if(!isNaN(filterForVal)){

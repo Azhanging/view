@@ -19,6 +19,8 @@ function nextSibling(element, ifCount) {
 						let ifExpr = re.getExpr();
 						let filter = re.getFilter();
 						
+						
+						
 						ifKeys.forEach((key, index) => {
 							if(key) {
 								key = resolveKey(key);

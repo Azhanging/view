@@ -84,16 +84,17 @@ class ResolveExpr {
 		}
 		
 		//是否存在函数处理
-		let exprFn = this._expr.match(/([_$A-z\d]*\()/g)
+		let exprFn = this._expr.match(/([^!][_$A-z\d]*\()/g)
 		if(exprFn){			
 			//判断函数
 			this.unique(exprFn).forEach((fn) => {
+				fn = fn.trim();
 				this._expr = this._expr.replace(new RegExp(initRegExp(fn), 'g'), '$fn.' + fn);
 			});
 		}
 
 		//清空数组内项目的空格内的值
-		let trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,/g).map((data) => {
+		let trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!/g).map((data) => {
 			return data.trim();
 		})
 
@@ -145,7 +146,7 @@ class ResolveExpr {
 		
 		let getIndex = hasString.indexOf(bindData);
 		
-		if(getIndex !== 1){
+		if(getIndex !== -1){
 			return bindData.replace(/_____string_____/g,this.strings[getIndex]);
 		}
 		
