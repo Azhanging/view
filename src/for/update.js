@@ -95,8 +95,23 @@ function forUpdate(key) {
 						fragment.appendChild(forElementGroup[index]);
 					}
 				}
+				
+				for(let index = forElementGroupLength,len = getDataKeys.length;index < len;index++){
+					let cloneNode = element.__self__.cloneNode(true);
+					cloneNode.__for__ = {
+						forKey: element.__forKey__,
+						index: index,
+						keyLine: key + '.' + getDataKeys[index],
+						isAppend: true
+					};
+					cloneNode.$index = index;
+					element.__forElementGroup__.push(cloneNode);
+					fragment.appendChild(cloneNode);
+					cloneNodeElements.push(cloneNode);
+				}
+				
 				//增加数据数量更新数据流
-				getDataKeys.forEach((_key, index) => {
+				/*getDataKeys.forEach((_key, index) => {
 					if(index >= forElementGroupLength) {
 						let cloneNode = element.__self__.cloneNode(true);
 						cloneNode.__for__ = {
@@ -110,7 +125,7 @@ function forUpdate(key) {
 						fragment.appendChild(cloneNode);
 						cloneNodeElements.push(cloneNode);
 					}
-				});
+				});*/
 				
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);

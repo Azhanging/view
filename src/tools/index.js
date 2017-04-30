@@ -293,5 +293,6 @@ export {
 	getScope,
 	trim,
 	getFirstElementChild,
-	resolveKey
+	resolveKey,
+	initRegExp
 }

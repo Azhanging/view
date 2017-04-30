@@ -410,6 +410,7 @@ exports.getScope = getScope;
 exports.trim = trim;
 exports.getFirstElementChild = getFirstElementChild;
 exports.resolveKey = resolveKey;
+exports.initRegExp = initRegExp;
 
 /***/ }),
 /* 1 */
@@ -1103,22 +1104,33 @@ var View = function () {
 			var _this = this;
 
 			var updates = [];
-			//设置当前链上一级依赖
-			if (keys.indexOf('.') != -1) {
-				var newKeys = keys.split('.');
-				newKeys.pop();
-				updates.push(newKeys[0]);
-			}
-			//当前的数据依赖
-			updates.push(keys);
-			//设置当前链下面的所有依赖数据
-
+			//数据主键
+			var mainKey = keys.split('.')[0];
+			//获取所有依赖的数据链
 			Object.keys(this.__ob__.bind).forEach(function (index) {
 				var key = _this.__ob__.bind[index];
-				if (key.indexOf(keys + '.') != -1) {
+				if (new RegExp((0, _tools.initRegExp)(mainKey) + '\\.?').test(key)) {
 					updates.push(key);
 				}
 			});
+
+			//设置当前链上一级依赖
+			//		if(keys.indexOf('.') != -1) {
+			//			let newKeys = keys.split('.');
+			//			//获取主键
+			//			mainKey = newKeys[0];
+			//			updates.push(newKeys[0]);
+			//		}
+			//		//当前的数据依赖
+			//		updates.push(keys);
+			//		//设置当前链下面的所有依赖数据
+			//
+			//		Object.keys(this.__ob__.bind).forEach((index) => {
+			//			let key = this.__ob__.bind[index];
+			//			if(key.indexOf(keys + '.') != -1) {
+			//				updates.push(key);
+			//			}
+			//		});
 
 			updates.forEach(function (keyLine) {
 				_this.update(keyLine);
@@ -2045,22 +2057,37 @@ function forUpdate(key) {
 						fragment.appendChild(forElementGroup[_index3]);
 					}
 				}
+
+				for (var _index4 = forElementGroupLength, len = getDataKeys.length; _index4 < len; _index4++) {
+					var cloneNode = element.__self__.cloneNode(true);
+					cloneNode.__for__ = {
+						forKey: element.__forKey__,
+						index: _index4,
+						keyLine: key + '.' + getDataKeys[_index4],
+						isAppend: true
+					};
+					cloneNode.$index = _index4;
+					element.__forElementGroup__.push(cloneNode);
+					fragment.appendChild(cloneNode);
+					cloneNodeElements.push(cloneNode);
+				}
+
 				//增加数据数量更新数据流
-				getDataKeys.forEach(function (_key, index) {
-					if (index >= forElementGroupLength) {
-						var cloneNode = element.__self__.cloneNode(true);
-						cloneNode.__for__ = {
-							forKey: element.__forKey__,
-							index: index,
-							keyLine: key + '.' + getDataKeys[index],
-							isAppend: true
-						};
-						cloneNode.$index = index;
-						element.__forElementGroup__.push(cloneNode);
-						fragment.appendChild(cloneNode);
-						cloneNodeElements.push(cloneNode);
-					}
-				});
+				/*getDataKeys.forEach((_key, index) => {
+    	if(index >= forElementGroupLength) {
+    		let cloneNode = element.__self__.cloneNode(true);
+    		cloneNode.__for__ = {
+    			forKey: element.__forKey__,
+    			index: index,
+    			keyLine: key + '.' + getDataKeys[index],
+    			isAppend: true
+    		};
+    		cloneNode.$index = index;
+    		element.__forElementGroup__.push(cloneNode);
+    		fragment.appendChild(cloneNode);
+    		cloneNodeElements.push(cloneNode);
+    	}
+    });*/
 
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
