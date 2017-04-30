@@ -121,7 +121,6 @@ class View {
 		});
 	}
 	update(keys) {
-		console.log(keys);
 		watchUpdate.call(this, keys);
 		attrUpdate.call(this, keys);
 		showUpdate.call(this, keys);

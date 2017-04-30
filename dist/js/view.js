@@ -1127,7 +1127,6 @@ var View = function () {
 	}, {
 		key: 'update',
 		value: function update(keys) {
-			console.log(keys);
 			_watch.watchUpdate.call(this, keys);
 			_attr.attrUpdate.call(this, keys);
 			_show.showUpdate.call(this, keys);
