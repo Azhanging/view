@@ -84,7 +84,7 @@ class ResolveExpr {
 		}
 		
 		//是否存在函数处理
-		let exprFn = this._expr.match(/([^!][_$A-z\d]*\()/g)
+		let exprFn = this._expr.match(/([^!][_$A-z\d]+\()/g)
 		if(exprFn){			
 			//判断函数
 			this.unique(exprFn).forEach((fn) => {
@@ -96,7 +96,7 @@ class ResolveExpr {
 		//清空数组内项目的空格内的值
 		let trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!/g).map((data) => {
 			return data.trim();
-		})
+		});
 
 		//判断绑定值
 		this.unique(trimData).forEach((bindData) => {

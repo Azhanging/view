@@ -11,7 +11,7 @@
 		<div id="app">
 			<div _v-show="isShow" style="display: none;">
 				<div :class="i" _v-show="isShow">
-					{{ i }} - {{ i }}
+					{{ i * 2}} - {{ i }}
 					<span>
 						{{ i }} - {{  i   }}
 					</span>
@@ -28,7 +28,7 @@
 				<div>{{input.val}}</div>
 				<input type="text" _v-model="input.val" :value="input.val"/>
 				<div _v-for="i in 5" :class="$index" @click="getIndex($index)">
-					{{   i    }} --- {{       $index       }}
+					{{   i+1+2+3*4-(2+1)    }} --- {{       $index       }}
 					<div _v-for="n in 2" :class="$index">
 						{{        n         }} --- {{                   $index               }}
 					</div>

@@ -215,7 +215,7 @@ class View {
 	}
 	expr(expr, element) {
 		//作用域
-		let $scope = element.$scope;
+		let $scope = getScope.call(this,element);
 		//方法
 		let $fn = this.methods;
 		//返回值

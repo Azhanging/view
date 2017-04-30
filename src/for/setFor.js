@@ -8,7 +8,7 @@ function setFor(element, propValue, propIndex) {
 	
 	//整理空字符
 	forVal = trim(forVal);
-	//移除花括号数据
+	//处理数据链
 	let filterForVal = resolveKey(forVal);
 	let getForVal;
 	//查看是否为数字的循环
