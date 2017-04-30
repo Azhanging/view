@@ -1,7 +1,7 @@
 import Observer from './../observer';
 import method from './../method';
 import vdom from './../vdom';
-import { getEl, getKeyLink, deepCopy, getScope, getFirstElementChild ,initRegExp} from './../tools';
+import { getEl, getKeyLink, deepCopy, getScope, getFirstElementChild, initRegExp } from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
@@ -99,34 +99,20 @@ class View {
 	}
 	dep(keys) {
 		let updates = [];
-		//数据主键
-		let mainKey = keys.split('.')[0];
-		//获取所有依赖的数据链
+		//设置当前链上一级依赖
+		if(keys.indexOf('.') != -1) {
+			let newKeys = keys.split('.');
+			updates.push(newKeys[0]);
+		}
+		//当前的数据依赖
+		updates.push(keys);
+		//设置当前链下面的所有依赖数据
 		Object.keys(this.__ob__.bind).forEach((index) => {
 			let key = this.__ob__.bind[index];
-			if(new RegExp(initRegExp(mainKey)+'\\.?').test(key)) {
+			if(key.indexOf(keys + '.') != -1) {
 				updates.push(key);
 			}
 		});
-		
-		//设置当前链上一级依赖
-//		if(keys.indexOf('.') != -1) {
-//			let newKeys = keys.split('.');
-//			//获取主键
-//			mainKey = newKeys[0];
-//			updates.push(newKeys[0]);
-//		}
-//		//当前的数据依赖
-//		updates.push(keys);
-//		//设置当前链下面的所有依赖数据
-//
-//		Object.keys(this.__ob__.bind).forEach((index) => {
-//			let key = this.__ob__.bind[index];
-//			if(key.indexOf(keys + '.') != -1) {
-//				updates.push(key);
-//			}
-//		});
-		
 		updates.forEach((keyLine) => {
 			this.update(keyLine);
 		});
@@ -225,11 +211,11 @@ class View {
 	}
 	expr(expr, element) {
 		//作用域
-		let $scope = getScope.call(this,element);
+		let $scope = getScope.call(this, element);
 		//方法
 		let $fn = this.methods;
 		//返回值
-		let data = new Function('$scope','$fn','return '+ expr).apply(this,[$scope,$fn]);
+		let data = new Function('$scope', '$fn', 'return ' + expr).apply(this, [$scope, $fn]);
 		return data;
 	}
 
