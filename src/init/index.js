@@ -99,20 +99,16 @@ class View {
 	}
 	dep(keys) {
 		let updates = [];
-		//设置当前链上一级依赖
-		if(keys.indexOf('.') != -1) {
-			let newKeys = keys.split('.');
-			updates.push(newKeys[0]);
-		}
-		//当前的数据依赖
-		updates.push(keys);
-		//设置当前链下面的所有依赖数据
+		let mainKey = keys.split('.')[0];
 		Object.keys(this.__ob__.bind).forEach((index) => {
 			let key = this.__ob__.bind[index];
-			if(key.indexOf(keys + '.') != -1) {
+			if(new RegExp('^'+initRegExp(mainKey)+'\\.?').test(key)) {
 				updates.push(key);
 			}
 		});
+		//数据链倒叙
+//		updates = updates.reverse();
+		//更新数据链
 		updates.forEach((keyLine) => {
 			this.update(keyLine);
 		});
@@ -124,6 +120,13 @@ class View {
 		ifUpdate.call(this, keys);
 		forUpdate.call(this, keys);
 		domUpdate.call(this, keys);
+	}
+	_update(){
+		watchUpdate.call(this);
+		attrUpdate.call(this);
+		showUpdate.call(this);
+		ifUpdate.call(this);
+		domUpdate.call(this);
 	}
 	_get(keyLink, element) {
 		//获取作用域内的值

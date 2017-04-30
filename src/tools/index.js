@@ -49,7 +49,6 @@ function trim(value) {
 /*
  *	isExpr是的为了返回解析表达式还是 
  * */
-
 class ResolveExpr {
 	constructor(expr) {
 		this.expr = expr;
@@ -72,6 +71,10 @@ class ResolveExpr {
 			});	
 		}
 		
+		//检查是够存在||与
+		this._expr = this._expr.replace(/\|{2}/,'______');
+		
+		
 		let splitExpr = this._expr.split('|');
 		//拆分过滤器
 		this._expr = splitExpr[0];
@@ -82,6 +85,8 @@ class ResolveExpr {
 				return filter;
 			});
 		}
+		
+		this._expr = this._expr.replace(/______/,'||');
 		
 		//是否存在函数处理
 		let exprFn = this._expr.match(/([^!][_$A-z\d]+\()/g)
@@ -94,7 +99,7 @@ class ResolveExpr {
 		}
 
 		//清空数组内项目的空格内的值
-		let trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!/g).map((data) => {
+		let trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!|&&|\|{2}/g).map((data) => {
 			return data.trim();
 		});
 

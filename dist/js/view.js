@@ -175,6 +175,9 @@ var ResolveExpr = function () {
 				});
 			}
 
+			//检查是够存在||与
+			this._expr = this._expr.replace(/\|{2}/, '______');
+
 			var splitExpr = this._expr.split('|');
 			//拆分过滤器
 			this._expr = splitExpr[0];
@@ -185,6 +188,8 @@ var ResolveExpr = function () {
 					return filter;
 				});
 			}
+
+			this._expr = this._expr.replace(/______/, '||');
 
 			//是否存在函数处理
 			var exprFn = this._expr.match(/([^!][_$A-z\d]+\()/g);
@@ -197,7 +202,7 @@ var ResolveExpr = function () {
 			}
 
 			//清空数组内项目的空格内的值
-			var trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!/g).map(function (data) {
+			var trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!|&&|\|{2}/g).map(function (data) {
 				return data.trim();
 			});
 
@@ -1104,20 +1109,16 @@ var View = function () {
 			var _this = this;
 
 			var updates = [];
-			//设置当前链上一级依赖
-			if (keys.indexOf('.') != -1) {
-				var newKeys = keys.split('.');
-				updates.push(newKeys[0]);
-			}
-			//当前的数据依赖
-			updates.push(keys);
-			//设置当前链下面的所有依赖数据
+			var mainKey = keys.split('.')[0];
 			Object.keys(this.__ob__.bind).forEach(function (index) {
 				var key = _this.__ob__.bind[index];
-				if (key.indexOf(keys + '.') != -1) {
+				if (new RegExp('^' + (0, _tools.initRegExp)(mainKey) + '\\.?').test(key)) {
 					updates.push(key);
 				}
 			});
+			//数据链倒叙
+			//		updates = updates.reverse();
+			//更新数据链
 			updates.forEach(function (keyLine) {
 				_this.update(keyLine);
 			});
@@ -1131,6 +1132,15 @@ var View = function () {
 			_if.ifUpdate.call(this, keys);
 			_for.forUpdate.call(this, keys);
 			_dom.domUpdate.call(this, keys);
+		}
+	}, {
+		key: '_update',
+		value: function _update() {
+			_watch.watchUpdate.call(this);
+			_attr.attrUpdate.call(this);
+			_show.showUpdate.call(this);
+			_if.ifUpdate.call(this);
+			_dom.domUpdate.call(this);
 		}
 	}, {
 		key: '_get',
@@ -1763,7 +1773,7 @@ function domUpdate(key) {
 			} else {
 				//检查是否存在过滤器或者数组插入的dom节点
 				isTextNodePrevSibline(element);
-				//直接为数据节点
+				//直接为数据节点			
 				element.textContent = data;
 			}
 		});
@@ -2034,6 +2044,7 @@ function forUpdate(key) {
 
 				//				this.dep(element.__forKey__);
 			} else if (dataLength > forElementGroupLength) {
+
 				var cloneNodeElements = [];
 				var getDataKeys = Object.keys(getData);
 				//先把原来隐藏的节点打开
@@ -2043,7 +2054,7 @@ function forUpdate(key) {
 						fragment.appendChild(forElementGroup[_index3]);
 					}
 				}
-
+				//增加数据数量更新数据流
 				for (var _index4 = forElementGroupLength, len = getDataKeys.length; _index4 < len; _index4++) {
 					var cloneNode = element.__self__.cloneNode(true);
 					cloneNode.__for__ = {
@@ -2057,23 +2068,6 @@ function forUpdate(key) {
 					fragment.appendChild(cloneNode);
 					cloneNodeElements.push(cloneNode);
 				}
-
-				//增加数据数量更新数据流
-				/*getDataKeys.forEach((_key, index) => {
-    	if(index >= forElementGroupLength) {
-    		let cloneNode = element.__self__.cloneNode(true);
-    		cloneNode.__for__ = {
-    			forKey: element.__forKey__,
-    			index: index,
-    			keyLine: key + '.' + getDataKeys[index],
-    			isAppend: true
-    		};
-    		cloneNode.$index = index;
-    		element.__forElementGroup__.push(cloneNode);
-    		fragment.appendChild(cloneNode);
-    		cloneNodeElements.push(cloneNode);
-    	}
-    });*/
 
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
@@ -2099,13 +2093,13 @@ function forUpdate(key) {
 				//新建和替换绑定的文本节点信息
 				_dom.replaceTextNode.call(_this3);
 				//更新当前键值链数据
-				_this3.update();
 			}
 		});
 
-		updateKeys.forEach(function (key) {
-			_this3.dep(key);
-		});
+		this._update();
+		//		updateKeys.forEach((key)=>{
+		//			this.dep(key);	
+		//		});
 	}
 }
 
@@ -2152,6 +2146,7 @@ function nextSibling(element, ifCount) {
 								key = (0, _tools.resolveKey)(key);
 								if (!(_this.__ob__.if[key] instanceof Array)) {
 									_this.__ob__.if[key] = [];
+									_tools.setBind.call(_this, key);
 								}
 								_this.__ob__.if[key].push(ifCount);
 							}

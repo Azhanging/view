@@ -86,6 +86,7 @@ function forUpdate(key) {
 				
 //				this.dep(element.__forKey__);
 			} else if(dataLength > forElementGroupLength) {
+				
 				let cloneNodeElements = [];
 				let getDataKeys = Object.keys(getData);
 				//先把原来隐藏的节点打开
@@ -95,7 +96,7 @@ function forUpdate(key) {
 						fragment.appendChild(forElementGroup[index]);
 					}
 				}
-				
+				//增加数据数量更新数据流
 				for(let index = forElementGroupLength,len = getDataKeys.length;index < len;index++){
 					let cloneNode = element.__self__.cloneNode(true);
 					cloneNode.__for__ = {
@@ -109,23 +110,6 @@ function forUpdate(key) {
 					fragment.appendChild(cloneNode);
 					cloneNodeElements.push(cloneNode);
 				}
-				
-				//增加数据数量更新数据流
-				/*getDataKeys.forEach((_key, index) => {
-					if(index >= forElementGroupLength) {
-						let cloneNode = element.__self__.cloneNode(true);
-						cloneNode.__for__ = {
-							forKey: element.__forKey__,
-							index: index,
-							keyLine: key + '.' + getDataKeys[index],
-							isAppend: true
-						};
-						cloneNode.$index = index;
-						element.__forElementGroup__.push(cloneNode);
-						fragment.appendChild(cloneNode);
-						cloneNodeElements.push(cloneNode);
-					}
-				});*/
 				
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
@@ -151,15 +135,17 @@ function forUpdate(key) {
 				//新建和替换绑定的文本节点信息
 				replaceTextNode.call(this);
 				//更新当前键值链数据
-				this.update();
 			}
 		});
 		
-		updateKeys.forEach((key)=>{
-			this.dep(key);	
-		});
+		this._update();
+//		updateKeys.forEach((key)=>{
+//			this.dep(key);	
+//		});
 	}
 }
+
+
 
 export {
 	forUpdate

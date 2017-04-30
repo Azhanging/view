@@ -19,13 +19,12 @@ function nextSibling(element, ifCount) {
 						let ifExpr = re.getExpr();
 						let filter = re.getFilter();
 						
-						
-						
 						ifKeys.forEach((key, index) => {
 							if(key) {
 								key = resolveKey(key);
 								if(!(this.__ob__.if[key] instanceof Array)) {
 									this.__ob__.if[key] = [];
+									setBind.call(this, key);
 								}
 								this.__ob__.if[key].push(ifCount);
 							}

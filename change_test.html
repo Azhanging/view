@@ -22,20 +22,30 @@
 				这是if状态2
 			</div>
 			
+			<div _v-if="!(ifStatus[0])">
+				这是if状态3
+			</div>
+			<div _v-elseif="!ifStatus[1]">
+				这是if状态4
+			</div>
+			<div _v-else="!(ifStatus[2])">
+				这是if状态5
+			</div>
+			
 			<div _v-show="!(ifStatus[3])">
 				这是show内容
 			</div>
-			<div _v-for='i in ifStatus[2]'>
+			<!--<div _v-for='i in ifStatus[2]'>
 				{{i}}
 				<div _v-for='m in ifStatus[2]'>
 					{{m}}
 				</div>
-			</div>
-			<div _v-for="i in 20">
-				<div _v-for='m in ifStatus[2]'>
+			</div>-->
+			<div _v-for="i in 10">
+				{{i}}
+				<div _v-for='m in ifStatus[2]' _v-if="m == 1 || m == 2">
 					{{m}}
 				</div>
-				{{i}}
 			</div>
 		</div>
 		
