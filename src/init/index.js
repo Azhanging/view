@@ -115,17 +115,17 @@ class View {
 	}
 	update(keys) {
 		watchUpdate.call(this, keys);
+		forUpdate.call(this, keys);
 		attrUpdate.call(this, keys);
 		showUpdate.call(this, keys);
 		ifUpdate.call(this, keys);
-		forUpdate.call(this, keys);
 		domUpdate.call(this, keys);
 	}
 	_update(){
 		watchUpdate.call(this);
+		ifUpdate.call(this);
 		attrUpdate.call(this);
 		showUpdate.call(this);
-		ifUpdate.call(this);
 		domUpdate.call(this);
 	}
 	_get(keyLink, element) {

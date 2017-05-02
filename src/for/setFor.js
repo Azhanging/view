@@ -18,7 +18,7 @@ function setFor(element, propValue, propIndex) {
 		for(let index = 0;index<num;index++){
 			newData.push(index);
 		}
-		filterForVal = '_array';
+		filterForVal = '_____array_____';
 		getForVal = newData;
 		element.isNumFor = true;
 		element.__forValue__ = getForVal;
@@ -87,7 +87,13 @@ function setFor(element, propValue, propIndex) {
 			get() {
 				let getData = _this._get(element.__for__.keyLine, element);
 				//这里是为了处理值对象为数字而建立
-				return getData !== null?getData:element.__for__.index + 1;
+				if(getData !== null){
+					return getData;
+				}else if(/^_____array_____/.test(element.__for__.keyLine)){
+					return element.__for__.index + 1;
+				}else{
+					return null;
+				}
 			}
 		});
 		//设置索引的作用域

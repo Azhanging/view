@@ -1,5 +1,5 @@
 /*拆解绑定的信息*/
-import { disassembly, getDisassemblyKey,setBind ,getIndex ,ResolveExpr,resolveKey} from './../tools';
+import { setBind ,getIndex ,ResolveExpr,resolveKey,setAttrWeight} from './../tools';
 import { setShow } from './../show';
 import { setIf } from './../if';
 import { setFor } from './../for';
@@ -7,6 +7,9 @@ import { setEventHandler } from './../event';
 import { setModel } from './../model';
 /*查找element对象中的属性*/
 function setAttr(element, vdom) {
+	//设置绑定对象的权重//因为for中，默认的节点是无效的
+	setAttrWeight.call(this,element);
+	let hasFor = false;
 	for(let _index = 0;_index<element.attributes.length;_index++) {
 		let prop = element.attributes,
 			propName = prop[_index]?prop[_index].name:'',
@@ -52,15 +55,19 @@ function setAttr(element, vdom) {
 			//获取到主Key的数组
 			switch(propName) {
 				case 'for':
+					hasFor = true;
 					setFor.call(this, element, propValue,_index);
-					break;
+					break;	
 				case 'show':
+					if(hasFor) {break;}
 					setShow.call(this, element, propValue);
 					break;
 				case 'if':
+					if(hasFor) {break;}
 					setIf.call(this, element, propName, propValue);
 					break;
 				case 'model':
+					if(hasFor) {break;}
 					setModel.call(this, element, propValue);
 				default:
 					;

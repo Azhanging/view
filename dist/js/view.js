@@ -202,7 +202,7 @@ var ResolveExpr = function () {
 			}
 
 			//清空数组内项目的空格内的值
-			var trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!|&&|\|{2}/g).map(function (data) {
+			var trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!|&&|\|{2}|=/g).map(function (data) {
 				return data.trim();
 			});
 
@@ -403,6 +403,37 @@ function getFirstElementChild(element) {
 	}
 }
 
+//排序属性
+function setAttrWeight(element) {
+	var attrs = [];
+	var hasFor = false;
+	var attributes = element.attributes;
+	for (var index = 0; index < attributes.length; index++) {
+		var propName = attributes[index] ? attributes[index].name : '';
+		var propValue = attributes[index] ? attributes[index].value : '';
+		//存在for
+		if (propName == '_v-for') {
+			hasFor = true;
+			attrs.unshift({
+				propName: propName,
+				propValue: propValue
+			});
+		} else {
+			attrs.push({
+				propName: propName,
+				propValue: propValue
+			});
+		}
+	}
+
+	if (hasFor) {
+		//删除所有的属性值
+		for (var _index2 = 0; _index2 < attrs.length; _index2++) {
+			element.setAttribute(attrs[_index2].propName, attrs[_index2].propValue);
+		}
+	}
+}
+
 exports.getEl = getEl;
 exports.disassembly = disassembly;
 exports.getDisassemblyKey = getDisassemblyKey;
@@ -416,6 +447,7 @@ exports.trim = trim;
 exports.getFirstElementChild = getFirstElementChild;
 exports.resolveKey = resolveKey;
 exports.initRegExp = initRegExp;
+exports.setAttrWeight = setAttrWeight;
 
 /***/ }),
 /* 1 */
@@ -1127,19 +1159,19 @@ var View = function () {
 		key: 'update',
 		value: function update(keys) {
 			_watch.watchUpdate.call(this, keys);
+			_for.forUpdate.call(this, keys);
 			_attr.attrUpdate.call(this, keys);
 			_show.showUpdate.call(this, keys);
 			_if.ifUpdate.call(this, keys);
-			_for.forUpdate.call(this, keys);
 			_dom.domUpdate.call(this, keys);
 		}
 	}, {
 		key: '_update',
 		value: function _update() {
 			_watch.watchUpdate.call(this);
+			_if.ifUpdate.call(this);
 			_attr.attrUpdate.call(this);
 			_show.showUpdate.call(this);
-			_if.ifUpdate.call(this);
 			_dom.domUpdate.call(this);
 		}
 	}, {
@@ -1471,6 +1503,10 @@ var _model = __webpack_require__(22);
 function setAttr(element, vdom) {
 	var _this = this;
 
+	//设置绑定对象的权重//因为for中，默认的节点是无效的
+	_tools.setAttrWeight.call(this, element);
+	var hasFor = false;
+
 	var _loop = function _loop(_index2) {
 		var prop = element.attributes,
 		    propName = prop[_index2] ? prop[_index2].name : '',
@@ -1516,15 +1552,25 @@ function setAttr(element, vdom) {
 			//获取到主Key的数组
 			switch (propName) {
 				case 'for':
+					hasFor = true;
 					_for.setFor.call(_this, element, propValue, _index2);
 					break;
 				case 'show':
+					if (hasFor) {
+						break;
+					}
 					_show.setShow.call(_this, element, propValue);
 					break;
 				case 'if':
+					if (hasFor) {
+						break;
+					}
 					_if.setIf.call(_this, element, propName, propValue);
 					break;
 				case 'model':
+					if (hasFor) {
+						break;
+					}
 					_model.setModel.call(_this, element, propValue);
 				default:
 					;
@@ -1852,7 +1898,7 @@ function setFor(element, propValue, propIndex) {
 		for (var index = 0; index < num; index++) {
 			newData.push(index);
 		}
-		filterForVal = '_array';
+		filterForVal = '_____array_____';
 		getForVal = newData;
 		element.isNumFor = true;
 		element.__forValue__ = getForVal;
@@ -1921,7 +1967,13 @@ function setFor(element, propValue, propIndex) {
 			get: function get() {
 				var getData = _this._get(element.__for__.keyLine, element);
 				//这里是为了处理值对象为数字而建立
-				return getData !== null ? getData : element.__for__.index + 1;
+				if (getData !== null) {
+					return getData;
+				} else if (/^_____array_____/.test(element.__for__.keyLine)) {
+					return element.__for__.index + 1;
+				} else {
+					return null;
+				}
 			}
 		});
 		//设置索引的作用域
