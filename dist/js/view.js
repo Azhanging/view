@@ -1638,9 +1638,60 @@ function attrUpdate(key) {
 			Object.keys(attrs).forEach(function (propName, index) {
 				var propValue = attrs[propName].__bind__;
 				var data = new _filter2.default(_this2.expr(propValue, element), attrs[propName].__filter__).runFilter();
-				element.setAttribute(propName, data);
+				//表单处理
+				if (/input|textarea|select/.test(element.tagName.toLocaleLowerCase()) && propName == 'value') {
+					formElements.apply(_this2, [element, keyLine, data]);
+				} else {
+					element.setAttribute(propName, data);
+				}
 			});
 		});
+	}
+}
+
+//表单的处理
+function formElements(element, keyLine, data) {
+	var _this3 = this;
+
+	//没有绑定正确的值跳出
+	if (!data) {
+		return;
+	}
+	var type = element.type;
+	//check类型
+	if (/checkbox|radio/.test(type)) {
+		var diffFormElement = [];
+		var checkboxName = element.name;
+		//查找不同的form对象
+		this.__ob__.attr[keyLine].forEach(function (element) {
+			if (diffFormElement.indexOf(element.form) === -1) {
+				diffFormElement.push(element.form);
+			}
+		});
+
+		//设置绑定的对象
+		diffFormElement.forEach(function (form) {
+			var index = 0;
+			_this3.__ob__.attr[keyLine].forEach(function (element) {
+				if (element.form == form) {
+					element.checked = data[index++];
+				}
+			});
+		});
+	} else if (/select-one|select-multiple/.test(type)) {
+		for (var index = 0; index < element.childNodes.length; index++) {
+			var children = element.childNodes;
+			for (var _index = 0; _index < data.length; _index++) {
+				if (children[index].nodeType === 1 && children[index].nodeName === 'OPTION' && children[index].value == data[_index]) {
+					children[index].selected = true;
+					break;
+				} else {
+					children[index].selected = false;
+				}
+			}
+		}
+	} else {
+		element.value = data;
 	}
 }
 
@@ -2427,17 +2478,41 @@ var _tools = __webpack_require__(0);
 function setModel(element, propValue) {
 	propValue = (0, _tools.trim)(propValue);
 	var _this = this;
-	var resolveVal = propValue.replace(/\{?\}?/g, '');
 	var elTagName = element.tagName.toLocaleLowerCase();
+	var type = element.type;
 	//初始化值
-	element.value = this._get(resolveVal, element);
+	element.value = this._get(propValue, element);
 	//绑定按键事件
 	if (elTagName === 'input' || elTagName === 'textarea') {
-		element.addEventListener('keyup', function (event) {
-			if (event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || event.keyCode >= 65 && event.keyCode <= 90 || event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode >= 96 && event.keyCode <= 99 || event.keyCode >= 101 && event.keyCode <= 103 || event.keyCode >= 186 && event.keyCode <= 222) {
-				var value = this.value;
-				_this._set(element, resolveVal, value);
+		if (/text|number|tel|email|url|search|textarea/.test(type)) {
+			element.addEventListener('keyup', function (event) {
+				if (event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || event.keyCode >= 65 && event.keyCode <= 90 || event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode >= 96 && event.keyCode <= 99 || event.keyCode >= 101 && event.keyCode <= 103 || event.keyCode >= 186 && event.keyCode <= 222) {
+					var value = this.value;
+					_this._set(element, propValue, value);
+				}
+			});
+		} else if (/checkbox|radio/.test(type)) {
+			element.addEventListener('change', function (event) {
+				var inputData = [];
+				var form = element.form;
+				_this.__ob__.attr[propValue].forEach(function (ele) {
+					if (ele.form == form) {
+						inputData.push(ele.checked);
+					}
+				});
+				_this._set(element, propValue, inputData);
+			});
+		}
+	} else if (elTagName === 'select') {
+		element.addEventListener('change', function (event) {
+			var inputData = [];
+			for (var index = 0; index < element.childNodes.length; index++) {
+				var children = element.childNodes;
+				if (children[index].nodeType === 1 && children[index].nodeName === 'OPTION' && children[index].selected) {
+					inputData.push(children[index].value);
+				}
 			}
+			_this._set(element, propValue, inputData);
 		});
 	}
 }
