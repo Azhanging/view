@@ -4,6 +4,7 @@
 		<meta charset="UTF-8">
 		<title></title>
 		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
 	</head>
 	<body>
 		<div id="app">
@@ -12,33 +13,43 @@
 			<div>
 				<form action="">
 					<label>
-						<input type="checkbox" :value="check" _v-model="check"/>
+						<input type="checkbox" value="1" _v-model="check"/>
 						1
 					</label>
-					
 					<label>
-						<input type="checkbox" :value="check" _v-model="check"/>
+						<input type="checkbox" value="2" _v-model="check"/>
 						2
 					</label>
-					
 					<label>
-						<input type="checkbox" :value="check" _v-model="check"/>
+						<input type="checkbox" value="3" _v-model="check"/>
 						3
 					</label>
 					<label>
-						<input type="radio" :value="radio.a" name="radio" _v-model="radio.a"/>
+						<input type="checkbox" value="4" _v-model="check"/>
+						4
+					</label>
+					
+					<label>
+						<input type="radio" value="1" name="radio" _v-model="radio.a"/>
 						11
 					</label>
 					<label>
-						<input type="radio" :value="radio.a" name="radio" _v-model="radio.a"/>
+						<input type="radio" value="2" name="radio" _v-model="radio.a"/>
 						22
 					</label>
 					<label>
-						<input type="radio" :value="radio.a" name="radio" _v-model="radio.a"/>
+						<input type="radio" value="3" name="radio" _v-model="radio.a"/>
 						33
 					</label>
 					
-					<select name="" :value="selected" multiple="multiple" _v-model="selected">
+					<select name="select[]" multiple="multiple" _v-model="selected">
+						<option value="0">0</option>
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+					</select>
+					
+					<select name="select_1[]" multiple="multiple" _v-model="selected">
 						<option value="0">0</option>
 						<option value="1">1</option>
 						<option value="2">2</option>
@@ -61,9 +72,9 @@
 					tempVal:'',
 					selected:false,
 					toDoList:[],
-					check:[false,true,false],
+					check:[1,2,3],
 					radio:{
-						a:[true,true,true]
+						a:2
 					},
 					selected:[3,2,1]
 				},

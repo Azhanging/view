@@ -72,7 +72,7 @@
 /******/ 	__webpack_require__.p = "./dist";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 20);
+/******/ 	return __webpack_require__(__webpack_require__.s = 21);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -505,7 +505,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _update = __webpack_require__(15);
+var _update = __webpack_require__(16);
 
 Object.defineProperty(exports, 'domUpdate', {
   enumerable: true,
@@ -514,7 +514,7 @@ Object.defineProperty(exports, 'domUpdate', {
   }
 });
 
-var _setDom = __webpack_require__(14);
+var _setDom = __webpack_require__(15);
 
 Object.keys(_setDom).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -623,26 +623,174 @@ exports.setEventHandler = setEventHandler;
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
+exports.modelUpdate = exports.formElements = exports.setModel = undefined;
 
-var _setAttr = __webpack_require__(11);
+var _tools = __webpack_require__(0);
 
-Object.defineProperty(exports, 'setAttr', {
-  enumerable: true,
-  get: function get() {
-    return _setAttr.setAttr;
-  }
-});
+function setModel(element, propValue) {
+	propValue = (0, _tools.trim)(propValue);
+	var _this = this;
+	var elTagName = element.tagName.toLocaleLowerCase();
+	var type = element.type;
+	//绑定按键事件
+	if (/input|textarea|select/.test(elTagName)) {
+		//设置model订阅者
+		setModelData.apply(this, [propValue, element]);
+		_tools.setBind.call(this, propValue);
 
-var _update = __webpack_require__(12);
+		if (/text|number|tel|email|url|search|textarea/.test(type)) {
+			element.addEventListener('keyup', function (event) {
+				if (event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || event.keyCode >= 65 && event.keyCode <= 90 || event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode >= 96 && event.keyCode <= 99 || event.keyCode >= 101 && event.keyCode <= 103 || event.keyCode >= 186 && event.keyCode <= 222) {
+					var value = this.value;
+					_this._set(element, propValue, value);
+				}
+			});
+		} else if (/checkbox|radio/.test(type)) {
+			element.addEventListener('change', function () {
+				if (/checkbox/.test(type)) {
+					return function (event) {
+						var inputData = [];
+						var form = element.form;
+						_this.__ob__.model[propValue].forEach(function (ele) {
+							if (ele.form == form && ele.checked) {
+								inputData.push(ele.value);
+							}
+						});
+						_this._set(element, propValue, inputData);
+					};
+				} else if (/radio/.test(type)) {
+					return function (event) {
+						var form = element.form;
+						var inputData = '';
+						_this.__ob__.model[propValue].forEach(function (ele) {
+							if (ele.form == form && ele.checked) {
+								inputData = ele.value;
+								return;
+							}
+						});
+						_this._set(element, propValue, inputData);
+					};
+				}
+			}());
+		} else if (/select-one|select-multiple/.test(type)) {
+			element.addEventListener('change', function (event) {
+				var inputData = [];
+				for (var index = 0; index < element.childNodes.length; index++) {
+					var children = element.childNodes;
+					if (children[index].nodeType === 1 && children[index].nodeName === 'OPTION' && children[index].selected) {
+						inputData.push(children[index].value);
+					}
+				}
+				_this._set(element, propValue, inputData);
+			});
+		}
+	}
+}
 
-Object.defineProperty(exports, 'attrUpdate', {
-  enumerable: true,
-  get: function get() {
-    return _update.attrUpdate;
-  }
-});
+//设置model观察者
+function setModelData(key, element) {
+	if (!(this.__ob__.model[key] instanceof Array)) {
+		this.__ob__.model[key] = [];
+	}
+	this.__ob__.model[key].push(element);
+}
+
+/*初始化绑定数据*/
+function modelUpdate(key) {
+	var _this2 = this;
+
+	//初始化
+	if (key === undefined || key === '') {
+		Object.keys(this.__ob__.model).forEach(function (keyLine, index) {
+			updateFn.call(_this2, keyLine);
+		});
+	} else {
+		//如果不存在键值，不执行更新
+		if (!this.__ob__.model[key]) {
+			return;
+		}
+		updateFn.call(this, key);
+	}
+
+	function updateFn(key) {
+		var _this3 = this;
+
+		var model = this.__ob__.model[key];
+		Object.keys(model).forEach(function (_key, index) {
+			var element = model[_key];
+			var data = _this3._get(key, element);
+			formElements.apply(_this3, [element, key, data]);
+		});
+	}
+}
+
+//表单的处理
+function formElements(element, keyLine, data) {
+	var _this4 = this;
+
+	//没有绑定正确的值跳出
+	if (data == null) {
+		return;
+	}
+	var type = element.type;
+	//check类型
+	if (/checkbox|radio/.test(type)) {
+		var diffFormElement = [];
+		var checkboxName = element.name;
+		//查找不同的form对象
+		this.__ob__.model[keyLine].forEach(function (element) {
+			if (diffFormElement.indexOf(element.form) === -1) {
+				diffFormElement.push(element.form);
+			}
+		});
+
+		//设置绑定的对象
+		diffFormElement.forEach(function (form) {
+			var index = 0;
+			_this4.__ob__.model[keyLine].forEach(function (element) {
+				if (element.form == form) {
+					data = !isNaN(data) ? data.toString() : data;
+					//当前的对象值是否等于
+					var keys = Object.keys(data);
+					for (var _index2 = 0; _index2 < keys.length; _index2++) {
+						if (element.value == data[keys[_index2]]) {
+							element.checked = true;
+							break;
+						} else {
+							element.checked = false;
+						}
+					}
+				}
+			});
+		});
+	} else if (/select-one|select-multiple/.test(type)) {
+		for (var index = 0; index < element.childNodes.length; index++) {
+			var children = element.childNodes;
+			if (data.length > 0) {
+				for (var _index = 0; _index < data.length; _index++) {
+					if (children[index].nodeType === 1 && children[index].nodeName === 'OPTION' && children[index].value == data[_index]) {
+						children[index].selected = true;
+						break;
+					} else {
+						children[index].selected = false;
+					}
+				}
+			} else {
+				for (var _index3 = 0; _index3 < children.length; _index3++) {
+					children[_index3].selected = false;
+				}
+			}
+		}
+	} else {
+		element.value = data;
+	}
+}
+
+exports.setModel = setModel;
+exports.formElements = formElements;
+exports.modelUpdate = modelUpdate;
 
 /***/ }),
 /* 5 */
@@ -655,24 +803,21 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setFor = __webpack_require__(16);
+var _setAttr = __webpack_require__(12);
 
-Object.keys(_setFor).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _setFor[key];
-    }
-  });
-});
-
-var _update = __webpack_require__(17);
-
-Object.defineProperty(exports, 'forUpdate', {
+Object.defineProperty(exports, 'setAttr', {
   enumerable: true,
   get: function get() {
-    return _update.forUpdate;
+    return _setAttr.setAttr;
+  }
+});
+
+var _update = __webpack_require__(13);
+
+Object.defineProperty(exports, 'attrUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.attrUpdate;
   }
 });
 
@@ -687,7 +832,39 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setIf = __webpack_require__(18);
+var _setFor = __webpack_require__(17);
+
+Object.keys(_setFor).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _setFor[key];
+    }
+  });
+});
+
+var _update = __webpack_require__(18);
+
+Object.defineProperty(exports, 'forUpdate', {
+  enumerable: true,
+  get: function get() {
+    return _update.forUpdate;
+  }
+});
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _setIf = __webpack_require__(19);
 
 Object.defineProperty(exports, 'setIf', {
   enumerable: true,
@@ -696,7 +873,7 @@ Object.defineProperty(exports, 'setIf', {
   }
 });
 
-var _update = __webpack_require__(19);
+var _update = __webpack_require__(20);
 
 Object.defineProperty(exports, 'ifUpdate', {
   enumerable: true,
@@ -706,7 +883,7 @@ Object.defineProperty(exports, 'ifUpdate', {
 });
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -741,7 +918,7 @@ Object.keys(_update).forEach(function (key) {
 });
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -755,11 +932,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _dom = __webpack_require__(2);
 
-var _component = __webpack_require__(13);
+var _component = __webpack_require__(14);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _attr = __webpack_require__(4);
+var _attr = __webpack_require__(5);
 
 var _event = __webpack_require__(3);
 
@@ -955,7 +1132,7 @@ var _Element = function () {
 exports.default = _Element;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -985,7 +1162,7 @@ try {
 module.exports = g;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1003,11 +1180,11 @@ var _observer = __webpack_require__(23);
 
 var _observer2 = _interopRequireDefault(_observer);
 
-var _method = __webpack_require__(21);
+var _method = __webpack_require__(22);
 
 var _method2 = _interopRequireDefault(_method);
 
-var _vdom = __webpack_require__(8);
+var _vdom = __webpack_require__(9);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
@@ -1015,17 +1192,19 @@ var _tools = __webpack_require__(0);
 
 var _dom = __webpack_require__(2);
 
-var _attr = __webpack_require__(4);
+var _attr = __webpack_require__(5);
 
-var _show = __webpack_require__(7);
+var _show = __webpack_require__(8);
 
-var _if = __webpack_require__(6);
+var _if = __webpack_require__(7);
 
-var _for = __webpack_require__(5);
+var _for = __webpack_require__(6);
 
 var _watch = __webpack_require__(26);
 
 var _event = __webpack_require__(3);
+
+var _model = __webpack_require__(4);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1126,6 +1305,7 @@ var View = function () {
 				show: {},
 				if: {},
 				for: {},
+				model: {},
 				bind: []
 			};
 
@@ -1160,6 +1340,7 @@ var View = function () {
 		value: function update(keys) {
 			_watch.watchUpdate.call(this, keys);
 			_for.forUpdate.call(this, keys);
+			_model.modelUpdate.call(this, keys);
 			_attr.attrUpdate.call(this, keys);
 			_show.showUpdate.call(this, keys);
 			_if.ifUpdate.call(this, keys);
@@ -1170,6 +1351,7 @@ var View = function () {
 		value: function _update() {
 			_watch.watchUpdate.call(this);
 			_if.ifUpdate.call(this);
+			_model.modelUpdate.call(this);
 			_attr.attrUpdate.call(this);
 			_show.showUpdate.call(this);
 			_dom.domUpdate.call(this);
@@ -1475,7 +1657,7 @@ View.filter = {
 exports.default = View;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1488,15 +1670,15 @@ exports.setAttr = undefined;
 
 var _tools = __webpack_require__(0);
 
-var _show = __webpack_require__(7);
+var _show = __webpack_require__(8);
 
-var _if = __webpack_require__(6);
+var _if = __webpack_require__(7);
 
-var _for = __webpack_require__(5);
+var _for = __webpack_require__(6);
 
 var _event = __webpack_require__(3);
 
-var _model = __webpack_require__(22);
+var _model = __webpack_require__(4);
 
 /*查找element对象中的属性*/
 /*拆解绑定的信息*/
@@ -1595,7 +1777,7 @@ function setAttr(element, vdom) {
 exports.setAttr = setAttr;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1609,6 +1791,8 @@ exports.attrUpdate = undefined;
 var _filter = __webpack_require__(1);
 
 var _filter2 = _interopRequireDefault(_filter);
+
+var _model = __webpack_require__(4);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1638,67 +1822,16 @@ function attrUpdate(key) {
 			Object.keys(attrs).forEach(function (propName, index) {
 				var propValue = attrs[propName].__bind__;
 				var data = new _filter2.default(_this2.expr(propValue, element), attrs[propName].__filter__).runFilter();
-				//表单处理
-				if (/input|textarea|select/.test(element.tagName.toLocaleLowerCase()) && propName == 'value') {
-					formElements.apply(_this2, [element, keyLine, data]);
-				} else {
-					element.setAttribute(propName, data);
-				}
+				element.setAttribute(propName, data);
 			});
 		});
-	}
-}
-
-//表单的处理
-function formElements(element, keyLine, data) {
-	var _this3 = this;
-
-	//没有绑定正确的值跳出
-	if (!data) {
-		return;
-	}
-	var type = element.type;
-	//check类型
-	if (/checkbox|radio/.test(type)) {
-		var diffFormElement = [];
-		var checkboxName = element.name;
-		//查找不同的form对象
-		this.__ob__.attr[keyLine].forEach(function (element) {
-			if (diffFormElement.indexOf(element.form) === -1) {
-				diffFormElement.push(element.form);
-			}
-		});
-
-		//设置绑定的对象
-		diffFormElement.forEach(function (form) {
-			var index = 0;
-			_this3.__ob__.attr[keyLine].forEach(function (element) {
-				if (element.form == form) {
-					element.checked = data[index++];
-				}
-			});
-		});
-	} else if (/select-one|select-multiple/.test(type)) {
-		for (var index = 0; index < element.childNodes.length; index++) {
-			var children = element.childNodes;
-			for (var _index = 0; _index < data.length; _index++) {
-				if (children[index].nodeType === 1 && children[index].nodeName === 'OPTION' && children[index].value == data[_index]) {
-					children[index].selected = true;
-					break;
-				} else {
-					children[index].selected = false;
-				}
-			}
-		}
-	} else {
-		element.value = data;
 	}
 }
 
 exports.attrUpdate = attrUpdate;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1729,7 +1862,7 @@ function componentHandler(node) {
 exports.default = componentHandler;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1824,7 +1957,7 @@ exports.createTextNodes = createTextNodes;
 exports.replaceTextNode = replaceTextNode;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1916,7 +2049,7 @@ function isTextNodePrevSibline(item) {
 exports.domUpdate = domUpdate;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2039,7 +2172,7 @@ function setFor(element, propValue, propIndex) {
 exports.setFor = setFor;
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2052,7 +2185,7 @@ exports.forUpdate = undefined;
 
 var _dom = __webpack_require__(2);
 
-var _vdom = __webpack_require__(8);
+var _vdom = __webpack_require__(9);
 
 var _vdom2 = _interopRequireDefault(_vdom);
 
@@ -2209,7 +2342,7 @@ function forUpdate(key) {
 exports.forUpdate = forUpdate;
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2333,7 +2466,7 @@ function setIf(element, propName, propValue) {
 exports.setIf = setIf;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2401,13 +2534,13 @@ function ifUpdate(key) {
 exports.ifUpdate = ifUpdate;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
-var _init = __webpack_require__(10);
+var _init = __webpack_require__(11);
 
 var _init2 = _interopRequireDefault(_init);
 
@@ -2435,10 +2568,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 	return _init2.default;
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2460,64 +2593,6 @@ function method() {
 }
 
 exports.default = method;
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.setModel = undefined;
-
-var _tools = __webpack_require__(0);
-
-function setModel(element, propValue) {
-	propValue = (0, _tools.trim)(propValue);
-	var _this = this;
-	var elTagName = element.tagName.toLocaleLowerCase();
-	var type = element.type;
-	//初始化值
-	element.value = this._get(propValue, element);
-	//绑定按键事件
-	if (elTagName === 'input' || elTagName === 'textarea') {
-		if (/text|number|tel|email|url|search|textarea/.test(type)) {
-			element.addEventListener('keyup', function (event) {
-				if (event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || event.keyCode >= 65 && event.keyCode <= 90 || event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode >= 96 && event.keyCode <= 99 || event.keyCode >= 101 && event.keyCode <= 103 || event.keyCode >= 186 && event.keyCode <= 222) {
-					var value = this.value;
-					_this._set(element, propValue, value);
-				}
-			});
-		} else if (/checkbox|radio/.test(type)) {
-			element.addEventListener('change', function (event) {
-				var inputData = [];
-				var form = element.form;
-				_this.__ob__.attr[propValue].forEach(function (ele) {
-					if (ele.form == form) {
-						inputData.push(ele.checked);
-					}
-				});
-				_this._set(element, propValue, inputData);
-			});
-		}
-	} else if (elTagName === 'select') {
-		element.addEventListener('change', function (event) {
-			var inputData = [];
-			for (var index = 0; index < element.childNodes.length; index++) {
-				var children = element.childNodes;
-				if (children[index].nodeType === 1 && children[index].nodeName === 'OPTION' && children[index].selected) {
-					inputData.push(children[index].value);
-				}
-			}
-			_this._set(element, propValue, inputData);
-		});
-	}
-}
-
-exports.setModel = setModel;
 
 /***/ }),
 /* 23 */

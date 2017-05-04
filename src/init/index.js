@@ -9,6 +9,8 @@ import { ifUpdate } from './../if';
 import { forUpdate } from './../for';
 import { watchUpdate } from './../watch';
 import { setEvent, setChildTemplateEvent } from './../event';
+import { modelUpdate ,formElements} from './../model';
+
 
 class View {
 	constructor({
@@ -88,6 +90,7 @@ class View {
 			show: {},
 			if: {},
 			for: {},
+			model:{},
 			bind: []
 		};
 
@@ -116,6 +119,7 @@ class View {
 	update(keys) {
 		watchUpdate.call(this, keys);
 		forUpdate.call(this, keys);
+		modelUpdate.call(this,keys);
 		attrUpdate.call(this, keys);
 		showUpdate.call(this, keys);
 		ifUpdate.call(this, keys);
@@ -124,6 +128,7 @@ class View {
 	_update(){
 		watchUpdate.call(this);
 		ifUpdate.call(this);
+		modelUpdate.call(this);
 		attrUpdate.call(this);
 		showUpdate.call(this);
 		domUpdate.call(this);
