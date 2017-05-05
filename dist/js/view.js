@@ -1,13 +1,21 @@
 /*!
  * 
- * 			create by blue (2017-4-3 11:09:02)
- * 			更新时间:2017-4-24 18:18:29	
- * 			修复手机端上获取attr时存在null属性报错
- * 			优化事件处理代码
- * 			属性过滤器，优化事件代码，添加template模板中的$index的支持
+ * 			View.js v1.1.2
+ * 			(c) 2016-2017 Blue
+ * 			Released under the MIT License.
  * 		
  */
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(this, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -72,7 +80,7 @@
 /******/ 	__webpack_require__.p = "./dist";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 21);
+/******/ 	return __webpack_require__(__webpack_require__.s = 20);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -484,7 +492,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _update = __webpack_require__(16);
+var _update = __webpack_require__(15);
 
 Object.defineProperty(exports, 'domUpdate', {
   enumerable: true,
@@ -493,7 +501,7 @@ Object.defineProperty(exports, 'domUpdate', {
   }
 });
 
-var _setDom = __webpack_require__(15);
+var _setDom = __webpack_require__(14);
 
 Object.keys(_setDom).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -782,7 +790,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setAttr = __webpack_require__(12);
+var _setAttr = __webpack_require__(11);
 
 Object.defineProperty(exports, 'setAttr', {
   enumerable: true,
@@ -791,7 +799,7 @@ Object.defineProperty(exports, 'setAttr', {
   }
 });
 
-var _update = __webpack_require__(13);
+var _update = __webpack_require__(12);
 
 Object.defineProperty(exports, 'attrUpdate', {
   enumerable: true,
@@ -811,7 +819,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setFor = __webpack_require__(17);
+var _setFor = __webpack_require__(16);
 
 Object.keys(_setFor).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -823,7 +831,7 @@ Object.keys(_setFor).forEach(function (key) {
   });
 });
 
-var _update = __webpack_require__(18);
+var _update = __webpack_require__(17);
 
 Object.defineProperty(exports, 'forUpdate', {
   enumerable: true,
@@ -843,7 +851,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setIf = __webpack_require__(19);
+var _setIf = __webpack_require__(18);
 
 Object.defineProperty(exports, 'setIf', {
   enumerable: true,
@@ -852,7 +860,7 @@ Object.defineProperty(exports, 'setIf', {
   }
 });
 
-var _update = __webpack_require__(20);
+var _update = __webpack_require__(19);
 
 Object.defineProperty(exports, 'ifUpdate', {
   enumerable: true,
@@ -872,7 +880,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _setShow = __webpack_require__(24);
+var _setShow = __webpack_require__(23);
 
 Object.keys(_setShow).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -884,7 +892,7 @@ Object.keys(_setShow).forEach(function (key) {
   });
 });
 
-var _update = __webpack_require__(25);
+var _update = __webpack_require__(24);
 
 Object.keys(_update).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -911,7 +919,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _dom = __webpack_require__(2);
 
-var _component = __webpack_require__(14);
+var _component = __webpack_require__(13);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -1117,36 +1125,6 @@ exports.default = _Element;
 "use strict";
 
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var g;
-
-// This works in non-strict mode
-g = function () {
-	return this;
-}();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1, eval)("this");
-} catch (e) {
-	// This works if the window reference is available
-	if ((typeof window === "undefined" ? "undefined" : _typeof(window)) === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
@@ -1155,11 +1133,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _observer = __webpack_require__(23);
+var _observer = __webpack_require__(22);
 
 var _observer2 = _interopRequireDefault(_observer);
 
-var _method = __webpack_require__(22);
+var _method = __webpack_require__(21);
 
 var _method2 = _interopRequireDefault(_method);
 
@@ -1179,7 +1157,7 @@ var _if = __webpack_require__(7);
 
 var _for = __webpack_require__(6);
 
-var _watch = __webpack_require__(26);
+var _watch = __webpack_require__(25);
 
 var _event = __webpack_require__(3);
 
@@ -1636,7 +1614,7 @@ View.filter = {
 exports.default = View;
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1754,7 +1732,7 @@ function setAttr(element, vdom) {
 exports.setAttr = setAttr;
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1808,7 +1786,7 @@ function attrUpdate(key) {
 exports.attrUpdate = attrUpdate;
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1839,7 +1817,7 @@ function componentHandler(node) {
 exports.default = componentHandler;
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1934,7 +1912,7 @@ exports.createTextNodes = createTextNodes;
 exports.replaceTextNode = replaceTextNode;
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2026,7 +2004,7 @@ function isTextNodePrevSibline(item) {
 exports.domUpdate = domUpdate;
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2149,7 +2127,7 @@ function setFor(element, propValue, propIndex) {
 exports.setFor = setFor;
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2319,7 +2297,7 @@ function forUpdate(key) {
 exports.forUpdate = forUpdate;
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2443,7 +2421,7 @@ function setIf(element, propName, propValue) {
 exports.setIf = setIf;
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2511,44 +2489,37 @@ function ifUpdate(key) {
 exports.ifUpdate = ifUpdate;
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(global) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
-var _init = __webpack_require__(11);
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _init = __webpack_require__(10);
 
 var _init2 = _interopRequireDefault(_init);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 (function (global, factory) {
-	//封装在模块加载器中
-	typeof _require === 'function' ? _require.define('View', factory) : global.View = factory();
+	( false ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory() :  true ? !(__WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) :
+				__WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)) : typeof _require === 'function' ? _require.define('View', factory) : global ? global.View = factory() : {};
 })(typeof window !== 'undefined' ? window : undefined, function () {
 
-	_init2.default.version = "v1.0.1";
+	_init2.default.version = "v1.1.2";
 
-	_init2.default.versionDescription = "属性过滤器，优化事件代码，添加template模板中的$index的支持";
-
-	//全局调用过滤器
-	global.$F = _init2.default.$F.bind(_init2.default);
-
-	//AMD module
-	if (true) {
-		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
-			return _init2.default;
-		}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}
+	_init2.default.versionDescription = "";
 
 	return _init2.default;
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2572,7 +2543,7 @@ function method() {
 exports.default = method;
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2667,7 +2638,7 @@ var Observer = function () {
 exports.default = Observer;
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2707,7 +2678,7 @@ function setShow(element, propValue) {
 exports.setShow = setShow;
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2759,7 +2730,7 @@ function showUpdate(key) {
 exports.showUpdate = showUpdate;
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2779,3 +2750,4 @@ exports.watchUpdate = watchUpdate;
 
 /***/ })
 /******/ ]);
+});

@@ -18,7 +18,9 @@ module.exports = {
 	output: {
 		path: path.resolve(__dirname, './dist'),
 		filename: './js/[name].js',
-		publicPath: './dist' //公共打包的默认路径
+		publicPath: './dist',//公共打包的默认路径
+        libraryTarget: 'umd',
+        umdNamedDefine: true
 	},
 	//模块处理器
 	module: {
@@ -45,11 +47,9 @@ module.exports = {
 	//	devtool: 'source-map',
 	plugins: [
 		new webpack.BannerPlugin(`
-			create by blue (2017-4-3 11:09:02)
-			更新时间:2017-4-24 18:18:29	
-			修复手机端上获取attr时存在null属性报错
-			优化事件处理代码
-			属性过滤器，优化事件代码，添加template模板中的$index的支持
+			View.js v1.1.2
+			(c) 2016-2017 Blue
+			Released under the MIT License.
 		`),
 		new ExtractTextPlugin({
 			filename:'./css/[name].css',

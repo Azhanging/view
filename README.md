@@ -1,6 +1,8 @@
 # View
-文档更新时间：2017年4月24日19:56:16
+文档更新时间：2017-5-5 22:20:51
+
 ### 创建实例对象
+
 `new View(options);`
 
 ####options参数:
@@ -111,7 +113,7 @@ var app = new View({
 ```
 **methods**:为实例对象上的方法,methods中的this永远指向的都是View的实例对象
 ```js
-<div id="app" @click='{{hello}}'> 	<!--这里通过@加事件名可以绑定事件,对应的val为methods中的方法-->
+<div id="app" @click='hello'> 	<!--这里通过@加事件名可以绑定事件,对应的val为methods中的方法-->
 	{{msg.someMsg}}    <!--这里通过数据绑定变为 hello View -->
 </div>
 var app = new View({
@@ -223,7 +225,7 @@ PS:$index是当前循环中的索引值
 ```html
 <div id="app">
 	<!--for操作只允许有一个绑定值存在:-->
-	<div View-for="key in {{forData}}">{{key.id}}</div>
+	<div View-for="key in forData">{{key.id}}</div>
 	<!--遍历直接量的数值:-->
 	<div View-for="key in 5">{{key}}</div>
 </div>
@@ -253,13 +255,13 @@ PS:$index是当前循环中的索引值
 同时也支持_v-elseif语法，如果_v-if为false，则判定_v-elseif的值，如果也是false，则不显示，再来页支持_v-else，只有一个_v-else存在，如果_v-if和_v-elseif都不是true则显示_v-else的内容，页支持修改data中的值，更新状态。
 ```html
 <div id="app">
-	<div View-if="{{ifData.0}}">1</div>
-	<div View-elseif="{{ifData.1}}">2</div>
-	<div View-else>3</div>
+	<div _v-if="ifData[0]">1</div>
+	<div _v-elseif="ifData[1]">2</div>
+	<div _v-else>3</div>
 	
-	<div View-if="{{ifData_1.0}} == 2">1</div>
-	<div View-elseif="{{ifData.1}} === 1">2</div>
-	<div View-else>3</div>
+	<div _v-if="ifData_1[0] == 2">1</div>
+	<div _v-elseif="ifData[1] === 1">2</div>
+	<div _v-else>3</div>
 </div>
 
 <script>
@@ -297,9 +299,9 @@ var app = new View({
 'block',true,'ok'为显示；
 ```html
 <div id="app">
-	<div View-show="status.0">1</div>
-	<div View-show="status.1">2</div>
-	<div View-show="status.2">3</div>
+	<div _v-show="status.0">1</div>
+	<div _v-show="status.1">2</div>
+	<div _v-show="status.2">3</div>
 </div>
 
 <script>
