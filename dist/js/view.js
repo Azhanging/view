@@ -403,35 +403,14 @@ function getFirstElementChild(element) {
 	}
 }
 
-//排序属性
-function setAttrWeight(element) {
-	var attrs = [];
-	var hasFor = false;
-	var attributes = element.attributes;
-	for (var index = 0; index < attributes.length; index++) {
-		var propName = attributes[index] ? attributes[index].name : '';
-		var propValue = attributes[index] ? attributes[index].value : '';
-		//存在for
-		if (propName == '_v-for') {
-			hasFor = true;
-			attrs.unshift({
-				propName: propName,
-				propValue: propValue
-			});
-		} else {
-			attrs.push({
-				propName: propName,
-				propValue: propValue
-			});
+//判断是否存在for属性循环
+function hasForAttr(element) {
+	for (var index = 0; index < element.attributes.length; index++) {
+		if (/_v-for/.test(element.attributes[index])) {
+			return true;
 		}
 	}
-
-	if (hasFor) {
-		//删除所有的属性值
-		for (var _index2 = 0; _index2 < attrs.length; _index2++) {
-			element.setAttribute(attrs[_index2].propName, attrs[_index2].propValue);
-		}
-	}
+	return false;
 }
 
 exports.getEl = getEl;
@@ -447,7 +426,7 @@ exports.trim = trim;
 exports.getFirstElementChild = getFirstElementChild;
 exports.resolveKey = resolveKey;
 exports.initRegExp = initRegExp;
-exports.setAttrWeight = setAttrWeight;
+exports.hasForAttr = hasForAttr;
 
 /***/ }),
 /* 1 */
@@ -1685,9 +1664,7 @@ var _model = __webpack_require__(4);
 function setAttr(element, vdom) {
 	var _this = this;
 
-	//设置绑定对象的权重//因为for中，默认的节点是无效的
-	_tools.setAttrWeight.call(this, element);
-	var hasFor = false;
+	var hasFor = (0, _tools.hasForAttr)(element);
 
 	var _loop = function _loop(_index2) {
 		var prop = element.attributes,

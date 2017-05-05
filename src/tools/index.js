@@ -286,35 +286,14 @@ function getFirstElementChild(element) {
 	}
 }
 
-//排序属性
-function setAttrWeight(element){
-	let attrs = [];
-	let hasFor = false;
-	let attributes = element.attributes;
-	for(let index = 0;index<attributes.length;index++){
-		let propName = (attributes[index]?attributes[index].name:'');
-		let propValue = (attributes[index]?attributes[index].value:'');
-		//存在for
-		if(propName == '_v-for'){
-			hasFor = true;
-			attrs.unshift({
-				propName:propName,
-				propValue:propValue
-			});
-		}else{
-			attrs.push({
-				propName:propName,
-				propValue:propValue
-			});	
+//判断是否存在for属性循环
+function hasForAttr(element){
+	for(let index = 0; index < element.attributes.length;index++){
+		if(/_v-for/.test(element.attributes[index])){
+			return true;
 		}
 	}
-	
-	if(hasFor){
-		//删除所有的属性值
-		for(let index = 0;index < attrs.length;index++){
-			element.setAttribute(attrs[index].propName,attrs[index].propValue);
-		}
-	}
+	return false;
 }
 
 export {
@@ -331,5 +310,5 @@ export {
 	getFirstElementChild,
 	resolveKey,
 	initRegExp,
-	setAttrWeight
+	hasForAttr
 }

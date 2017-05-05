@@ -1,5 +1,5 @@
 /*拆解绑定的信息*/
-import { setBind ,getIndex ,ResolveExpr,resolveKey,setAttrWeight} from './../tools';
+import { setBind ,getIndex ,ResolveExpr,resolveKey,hasForAttr} from './../tools';
 import { setShow } from './../show';
 import { setIf } from './../if';
 import { setFor } from './../for';
@@ -7,9 +7,7 @@ import { setEventHandler } from './../event';
 import { setModel } from './../model';
 /*查找element对象中的属性*/
 function setAttr(element, vdom) {
-	//设置绑定对象的权重//因为for中，默认的节点是无效的
-	setAttrWeight.call(this,element);
-	let hasFor = false;
+	let hasFor = hasForAttr(element);
 	for(let _index = 0;_index<element.attributes.length;_index++) {
 		let prop = element.attributes,
 			propName = prop[_index]?prop[_index].name:'',
