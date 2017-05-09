@@ -20,7 +20,8 @@ module.exports = {
 		filename: './js/[name].js',
 		publicPath: './dist',//公共打包的默认路径
         libraryTarget: 'umd',
-        umdNamedDefine: true
+        umdNamedDefine: true,
+        library: "View"
 	},
 	//模块处理器
 	module: {
