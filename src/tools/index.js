@@ -107,7 +107,13 @@ class ResolveExpr {
 		this.unique(trimData).forEach((bindData) => {
 			if(bindData !== "" && !/^\$fn\.|^\$scope\.|^_____string_____\S*?/g.test(bindData) && !(/^\d*$/.test(bindData)) && this.keyword.indexOf(bindData) === -1) {
 				this.bindKeys.push(this.getBindHasStringIndex(this.unique(trimData),bindData));
-				this._expr = this._expr.replace(new RegExp(initRegExp(bindData), 'g'), '$scope.' + bindData);
+				if(new RegExp('\\('+initRegExp(bindData), 'g').test(this._expr)){
+					this._expr = this._expr.replace(new RegExp('\\('+initRegExp(bindData), 'g'), '($scope.' + bindData);
+				}else if(new RegExp('\\['+initRegExp(bindData), 'g').test(this._expr)){
+					this._expr = this._expr.replace(new RegExp('\\['+initRegExp(bindData), 'g'), '[$scope.' + bindData);
+				}else{					
+					this._expr = this._expr.replace(new RegExp('(\\+|-|\\*|\\!|:|\\?|=|\\s*)'+initRegExp(bindData), 'g'), '$scope.' + bindData);
+				}
 			}
 		});
 

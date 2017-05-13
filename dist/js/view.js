@@ -218,7 +218,13 @@ var ResolveExpr = function () {
 			this.unique(trimData).forEach(function (bindData) {
 				if (bindData !== "" && !/^\$fn\.|^\$scope\.|^_____string_____\S*?/g.test(bindData) && !/^\d*$/.test(bindData) && _this.keyword.indexOf(bindData) === -1) {
 					_this.bindKeys.push(_this.getBindHasStringIndex(_this.unique(trimData), bindData));
-					_this._expr = _this._expr.replace(new RegExp(initRegExp(bindData), 'g'), '$scope.' + bindData);
+					if (new RegExp('\\(' + initRegExp(bindData), 'g').test(_this._expr)) {
+						_this._expr = _this._expr.replace(new RegExp('\\(' + initRegExp(bindData), 'g'), '($scope.' + bindData);
+					} else if (new RegExp('\\[' + initRegExp(bindData), 'g').test(_this._expr)) {
+						_this._expr = _this._expr.replace(new RegExp('\\[' + initRegExp(bindData), 'g'), '[$scope.' + bindData);
+					} else {
+						_this._expr = _this._expr.replace(new RegExp('(\\+|-|\\*|\\!|:|\\?|=|\\s*)' + initRegExp(bindData), 'g'), '$scope.' + bindData);
+					}
 				}
 			});
 
@@ -2121,7 +2127,12 @@ function setFor(element, propValue, propIndex) {
 				}
 			}
 		});
-
+		//设置索引的作用域
+		Object.defineProperty(element.$scope, '$index', {
+			get: function get() {
+				return element.__for__.index;
+			}
+		});
 		//设置索引的作用域
 		if (forKey) {
 			Object.defineProperty(element.$scope, forKey, {
@@ -2130,13 +2141,6 @@ function setFor(element, propValue, propIndex) {
 				}
 			});
 		}
-
-		//设置索引的作用域
-		Object.defineProperty(element.$scope, '$index', {
-			get: function get() {
-				return element.__for__.index;
-			}
-		});
 	});
 };
 
@@ -2306,7 +2310,6 @@ function forUpdate(key) {
 				_dom.createTextNodes.call(_this3);
 				//新建和替换绑定的文本节点信息
 				_dom.replaceTextNode.call(_this3);
-				//更新当前键值链数据
 			}
 		});
 

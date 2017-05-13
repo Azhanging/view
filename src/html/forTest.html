@@ -10,7 +10,7 @@
 	<body>
 		<div id="app">
 			<div _v-show="isShow">
-				<div :class="i" _v-show="isShow">
+				<!--<div :class="i" _v-show="isShow">
 					{{ i * 2}} - {{ i }}
 					<span>
 						{{ i }} - {{  i   }}
@@ -21,23 +21,23 @@
 				<a href="" _v-else="ifStatus[2]">3</a>
 				<div>{{val}}</div>
 				
-				<div _v-for="m,n in obj" :class="$index">
-					{{obj[n] + n}} --- {{$index}}
-				</div>
+				<div _v-for="m,n in input.val" :class="$index">
+					{{        input.val[n] + 1 + 'aa'        }} --- {{                   $index               }}
+				</div>-->
 
 				<div _v-for="m,n in input.val" :class="$index">
-					{{m + n}} --- {{$index}}
+					{{input.val[n] + 1 + 'aa'}} --- {{$index}}
 					<!--<div>111</div>-->
 				</div>
-				<div>{{input.val}}</div>
+				<!--<div>{{input.val}}</div>
 				<input type="text" _v-model="input.val" :value="input.val"/>
 				<div _v-for="i in 5" :class="$index" @click="getIndex($index)">
 					{{   i+1+2+3*4-(2+1)    }} --- {{       $index       }}
-					<div _v-for="n in 2" :class="$index">
-						{{        n         }} --- {{                   $index               }}
+					<div _v-for="m,n in input.val" :class="$index">
+						{{        input.val[n] + 1 + 'aa'        }} --- {{                   $index               }}
 					</div>
 				</div>
-				{{element | html}} -- <my-comp></my-comp>
+				{{element | html}} -- <my-comp></my-comp>-->
 			</div>
 		</div>
 		
@@ -113,7 +113,7 @@
 					],
 					testFor: 5,
 					input: {
-						val: '123456'
+						val: '1'
 					},
 					val: '测试过滤器',
 					element: "<div>123123456465798798</div>",

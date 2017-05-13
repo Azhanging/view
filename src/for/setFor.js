@@ -103,7 +103,12 @@ function setFor(element, propValue, propIndex) {
 				}
 			}
 		});
-		
+		//设置索引的作用域
+		Object.defineProperty(element.$scope, '$index', {
+			get() {
+				return element.__for__.index;
+			}
+		});
 		//设置索引的作用域
 		if(forKey){
 			Object.defineProperty(element.$scope,forKey, {
@@ -112,13 +117,6 @@ function setFor(element, propValue, propIndex) {
 				}
 			});	
 		}
-		
-		//设置索引的作用域
-		Object.defineProperty(element.$scope, '$index', {
-			get() {
-				return element.__for__.index;
-			}
-		});
 	});
 };
 

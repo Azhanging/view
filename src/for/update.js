@@ -144,7 +144,6 @@ function forUpdate(key) {
 				createTextNodes.call(this);
 				//新建和替换绑定的文本节点信息
 				replaceTextNode.call(this);
-				//更新当前键值链数据
 			}
 		});
 		
