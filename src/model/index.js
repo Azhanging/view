@@ -14,7 +14,7 @@ function setModel(element, propValue) {
 		
 		if(/text|number|tel|email|url|search|textarea/.test(type)){			
 			element.addEventListener('keyup', function(event) {
-				if(event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || (event.keyCode >= 65 && event.keyCode <= 90) || (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 99) || (event.keyCode >= 101 && event.keyCode <= 103) || (event.keyCode >= 186 && event.keyCode <= 222)) {
+				if(event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || (event.keyCode >= 65 && event.keyCode <= 90) || (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105) || (event.keyCode >= 186 && event.keyCode <= 222)) {
 					let value = this.value;
 					_this._set(element,propValue, value);
 				}

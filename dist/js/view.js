@@ -210,7 +210,7 @@ var ResolveExpr = function () {
 			}
 
 			//清空数组内项目的空格内的值
-			var trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!|&&|\|{2}|=/g).map(function (data) {
+			var trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!|&{2}|\|{2}|\[|\]|=/g).map(function (data) {
 				return data.trim();
 			});
 
@@ -629,7 +629,7 @@ function setModel(element, propValue) {
 
 		if (/text|number|tel|email|url|search|textarea/.test(type)) {
 			element.addEventListener('keyup', function (event) {
-				if (event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || event.keyCode >= 65 && event.keyCode <= 90 || event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode >= 96 && event.keyCode <= 99 || event.keyCode >= 101 && event.keyCode <= 103 || event.keyCode >= 186 && event.keyCode <= 222) {
+				if (event.keyCode == 32 || event.keyCode == 34 || event.keyCode == 8 || event.keyCode >= 65 && event.keyCode <= 90 || event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode >= 96 && event.keyCode <= 105 || event.keyCode >= 186 && event.keyCode <= 222) {
 					var value = this.value;
 					_this._set(element, propValue, value);
 				}
@@ -1689,7 +1689,6 @@ function setAttr(element, vdom) {
 			//获取到主Key的数组
 			switch (propName) {
 				case 'for':
-					hasFor = true;
 					_for.setFor.call(_this, element, propValue, _index2);
 					break;
 				case 'show':
@@ -2022,8 +2021,12 @@ function setFor(element, propValue, propIndex) {
 
 	var _this = this;
 	//拆解数据
-	var forKey = propValue.split(' in ')[0];
+	var bindIden = propValue.split(' in ')[0];
 	var forVal = propValue.split(' in ')[1];
+
+	//拆分键值
+	var forItem = bindIden.split(',')[0];
+	var forKey = bindIden.split(',')[1];
 
 	//整理空字符
 	forVal = (0, _tools.trim)(forVal);
@@ -2065,7 +2068,9 @@ function setFor(element, propValue, propIndex) {
 	element.__parentNode__ = parentNode;
 	//存储循环组的占位节点
 	element.__presentSeize__ = presentSeize;
-	//储存当前for中的循环键
+	//储存当前for中的item
+	element.__forItem__ = forItem;
+	//储存当前for中的key
 	element.__forKey__ = forKey;
 	//存储自己节点
 	element.__self__ = element.cloneNode(true);
@@ -2085,7 +2090,8 @@ function setFor(element, propValue, propIndex) {
 	getKeys.forEach(function (key, index) {
 		var cloneNode = element.cloneNode(true);
 		cloneNode.__for__ = {
-			forKey: forKey,
+			forItem: forItem,
+			forKey: key,
 			index: index,
 			keyLine: filterForVal + '.' + getKeys[index],
 			isAppend: true
@@ -2102,7 +2108,7 @@ function setFor(element, propValue, propIndex) {
 	element.__forElementGroup__.forEach(function (element) {
 		_tools.setScope.call(_this2, element);
 		//设置键值的作用域
-		Object.defineProperty(element.$scope, element.__for__.forKey, {
+		Object.defineProperty(element.$scope, element.__for__.forItem, {
 			get: function get() {
 				var getData = _this._get(element.__for__.keyLine, element);
 				//这里是为了处理值对象为数字而建立
@@ -2115,6 +2121,16 @@ function setFor(element, propValue, propIndex) {
 				}
 			}
 		});
+
+		//设置索引的作用域
+		if (forKey) {
+			Object.defineProperty(element.$scope, forKey, {
+				get: function get() {
+					return element.__for__.forKey;
+				}
+			});
+		}
+
 		//设置索引的作用域
 		Object.defineProperty(element.$scope, '$index', {
 			get: function get() {
@@ -2205,11 +2221,9 @@ function forUpdate(key) {
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
 				//更新数据
 
-				if (updateKeys.indexOf(element.__forKey__) === -1) {
-					updateKeys.push(element.__forKey__);
+				if (updateKeys.indexOf(element.__forItem__) === -1) {
+					updateKeys.push(element.__forItem__);
 				}
-
-				//				this.dep(element.__forKey__);
 			} else if (dataLength < forElementGroupLength) {
 				var _fragment = document.createDocumentFragment();
 				//移除已添加的节点
@@ -2229,15 +2243,15 @@ function forUpdate(key) {
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
 
-				if (updateKeys.indexOf(element.__forKey__) === -1) {
-					updateKeys.push(element.__forKey__);
+				if (updateKeys.indexOf(element.__forItem__) === -1) {
+					updateKeys.push(element.__forItem__);
 				}
-
-				//				this.dep(element.__forKey__);
 			} else if (dataLength > forElementGroupLength) {
 
 				var cloneNodeElements = [];
 				var getDataKeys = Object.keys(getData);
+				var _element = element;
+
 				//先把原来隐藏的节点打开
 				for (var _index3 = 0; _index3 < forElementGroupLength; _index3++) {
 					if (forElementGroup[_index3].__for__.isAppend == false) {
@@ -2249,7 +2263,8 @@ function forUpdate(key) {
 				for (var _index4 = forElementGroupLength, len = getDataKeys.length; _index4 < len; _index4++) {
 					var cloneNode = element.__self__.cloneNode(true);
 					cloneNode.__for__ = {
-						forKey: element.__forKey__,
+						forItem: element.__forItem__,
+						forKey: getDataKeys[_index4],
 						index: _index4,
 						keyLine: key + '.' + getDataKeys[_index4],
 						isAppend: true
@@ -2267,7 +2282,7 @@ function forUpdate(key) {
 					//解析节点
 					vdom.resolve(element, _this3);
 					//设置键值的作用域
-					Object.defineProperty(element.$scope, element.__for__.forKey, {
+					Object.defineProperty(element.$scope, element.__for__.forItem, {
 						get: function get() {
 							return _this._get(element.__for__.keyLine, element);
 						}
@@ -2278,6 +2293,14 @@ function forUpdate(key) {
 							return element.__for__.index;
 						}
 					});
+					//设置key的作用域
+					if (_element.__forKey__) {
+						Object.defineProperty(element.$scope, _element.__forKey__, {
+							get: function get() {
+								return element.__for__.forKey;
+							}
+						});
+					}
 				});
 				//创建存在绑定的文本节点
 				_dom.createTextNodes.call(_this3);
@@ -2288,9 +2311,6 @@ function forUpdate(key) {
 		});
 
 		this._update();
-		//		updateKeys.forEach((key)=>{
-		//			this.dep(key);	
-		//		});
 	}
 }
 

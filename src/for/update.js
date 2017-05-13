@@ -56,11 +56,10 @@ function forUpdate(key) {
 				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
 				//更新数据
 				
-				if(updateKeys.indexOf(element.__forKey__) === -1){
-					updateKeys.push(element.__forKey__);
+				if(updateKeys.indexOf(element.__forItem__) === -1){
+					updateKeys.push(element.__forItem__);
 				}
 				
-//				this.dep(element.__forKey__);
 			} else if(dataLength < forElementGroupLength) {
 				let _fragment = document.createDocumentFragment();
 				//移除已添加的节点
@@ -80,15 +79,16 @@ function forUpdate(key) {
 				//添加到实际的dom中
 				element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
 				
-				if(updateKeys.indexOf(element.__forKey__) === -1){
-					updateKeys.push(element.__forKey__);
+				if(updateKeys.indexOf(element.__forItem__) === -1){
+					updateKeys.push(element.__forItem__);
 				}
 				
-//				this.dep(element.__forKey__);
 			} else if(dataLength > forElementGroupLength) {
 				
 				let cloneNodeElements = [];
 				let getDataKeys = Object.keys(getData);
+				let _element = element;
+				
 				//先把原来隐藏的节点打开
 				for(let index = 0; index < forElementGroupLength; index++) {
 					if(forElementGroup[index].__for__.isAppend == false) {
@@ -100,7 +100,8 @@ function forUpdate(key) {
 				for(let index = forElementGroupLength,len = getDataKeys.length;index < len;index++){
 					let cloneNode = element.__self__.cloneNode(true);
 					cloneNode.__for__ = {
-						forKey: element.__forKey__,
+						forItem: element.__forItem__,
+						forKey:getDataKeys[index],
 						index: index,
 						keyLine: key + '.' + getDataKeys[index],
 						isAppend: true
@@ -118,7 +119,7 @@ function forUpdate(key) {
 					//解析节点
 					vdom.resolve(element, this);
 					//设置键值的作用域
-					Object.defineProperty(element.$scope, element.__for__.forKey, {
+					Object.defineProperty(element.$scope, element.__for__.forItem, {
 						get() {
 							return _this._get(element.__for__.keyLine, element);
 						}
@@ -129,6 +130,15 @@ function forUpdate(key) {
 							return element.__for__.index;
 						}
 					});
+					//设置key的作用域
+					if(_element.__forKey__){
+						Object.defineProperty(element.$scope,_element.__forKey__, {
+							get() {
+								return element.__for__.forKey;
+							}
+						});	
+					}
+					
 				});
 				//创建存在绑定的文本节点
 				createTextNodes.call(this);
@@ -139,9 +149,6 @@ function forUpdate(key) {
 		});
 		
 		this._update();
-//		updateKeys.forEach((key)=>{
-//			this.dep(key);	
-//		});
 	}
 }
 

@@ -53,7 +53,6 @@ function setAttr(element, vdom) {
 			//获取到主Key的数组
 			switch(propName) {
 				case 'for':
-					hasFor = true;
 					setFor.call(this, element, propValue,_index);
 					break;	
 				case 'show':

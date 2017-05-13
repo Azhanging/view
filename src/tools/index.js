@@ -99,7 +99,7 @@ class ResolveExpr {
 		}
 
 		//清空数组内项目的空格内的值
-		let trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!|&&|\|{2}|=/g).map((data) => {
+		let trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!|&{2}|\|{2}|\[|\]|=/g).map((data) => {
 			return data.trim();
 		});
 

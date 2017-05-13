@@ -3,8 +3,12 @@ import { setBind, setScope, trim,resolveKey} from './../tools';
 function setFor(element, propValue, propIndex) {
 	let _this = this;
 	//拆解数据
-	let forKey = propValue.split(' in ')[0];
+	let bindIden = propValue.split(' in ')[0];
 	let forVal = propValue.split(' in ')[1];
+	
+	//拆分键值
+	let forItem = bindIden.split(',')[0];
+	let forKey = bindIden.split(',')[1];
 	
 	//整理空字符
 	forVal = trim(forVal);
@@ -46,7 +50,9 @@ function setFor(element, propValue, propIndex) {
 	element.__parentNode__ = parentNode;
 	//存储循环组的占位节点
 	element.__presentSeize__ = presentSeize;
-	//储存当前for中的循环键
+	//储存当前for中的item
+	element.__forItem__ = forItem;
+	//储存当前for中的key
 	element.__forKey__ = forKey;
 	//存储自己节点
 	element.__self__ = element.cloneNode(true);
@@ -66,7 +72,8 @@ function setFor(element, propValue, propIndex) {
 	getKeys.forEach((key, index) => {
 		let cloneNode = element.cloneNode(true);
 		cloneNode.__for__ = {
-			forKey: forKey,
+			forItem: forItem,
+			forKey: key,
 			index: index,
 			keyLine: filterForVal + '.' + getKeys[index],
 			isAppend: true
@@ -83,7 +90,7 @@ function setFor(element, propValue, propIndex) {
 	element.__forElementGroup__.forEach((element) => {
 		setScope.call(this, element);
 		//设置键值的作用域
-		Object.defineProperty(element.$scope, element.__for__.forKey, {
+		Object.defineProperty(element.$scope, element.__for__.forItem, {
 			get() {
 				let getData = _this._get(element.__for__.keyLine, element);
 				//这里是为了处理值对象为数字而建立
@@ -96,6 +103,16 @@ function setFor(element, propValue, propIndex) {
 				}
 			}
 		});
+		
+		//设置索引的作用域
+		if(forKey){
+			Object.defineProperty(element.$scope,forKey, {
+				get() {
+					return element.__for__.forKey;
+				}
+			});	
+		}
+		
 		//设置索引的作用域
 		Object.defineProperty(element.$scope, '$index', {
 			get() {

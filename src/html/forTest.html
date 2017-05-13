@@ -20,9 +20,13 @@
 				<a href="" _v-elseif="ifStatus[1]">2</a>
 				<a href="" _v-else="ifStatus[2]">3</a>
 				<div>{{val}}</div>
+				
+				<div _v-for="m,n in obj" :class="$index">
+					{{obj[n] + n}} --- {{$index}}
+				</div>
 
-				<div _v-for="m in input.val" :class="$index">
-					{{m}} --- {{$index}}
+				<div _v-for="m,n in input.val" :class="$index">
+					{{m + n}} --- {{$index}}
 					<!--<div>111</div>-->
 				</div>
 				<div>{{input.val}}</div>
@@ -33,7 +37,7 @@
 						{{        n         }} --- {{                   $index               }}
 					</div>
 				</div>
-				{{element}} -- <my-comp></my-comp>
+				{{element | html}} -- <my-comp></my-comp>
 			</div>
 		</div>
 		
@@ -50,7 +54,7 @@
 			<span>{{parseInt(i)+parseInt(i)}}</span>
 		</template>
 		
-		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
+		<script src="./../../dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
 			var time = new Date();
 			
@@ -109,10 +113,15 @@
 					],
 					testFor: 5,
 					input: {
-						val: ''
+						val: '123456'
 					},
 					val: '测试过滤器',
-					element: "<div>123123456465798798</div>"
+					element: "<div>123123456465798798</div>",
+					obj:{
+						a:1,
+						b:2,
+						c:3
+					}
 				},
 				ready: function() {
 					this.data.isShow = true;
