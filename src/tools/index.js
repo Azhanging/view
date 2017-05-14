@@ -113,13 +113,17 @@ class ResolveExpr {
 				//初始化字符串转化为正则适配
 				let initExp =  initRegExp(bindData);
 				//绑定的正则
-				let regexpBind = new RegExp('(\\+|-|\\*|\\/|\\(|\\!|:|\\?|=|\\[|\\s{1,}|,|&{2}|\\|{2})'+initExp+'|^'+initExp, 'g');
+				let regexpBind = new RegExp('(\\+|-|\\*|\\/|\\(|\\!|:|\\?|=|\\[|\\s{1,}|,|&{2}|\\|{2})'+initExp, 'g');
+				let _regexpBind = new RegExp('^'+initExp, 'g');
 				//绑定键值
 				this.bindKeys.push(this.getBindHasStringIndex(this.unique(sortData),bindData));
 				//加上作用域对象
+				if(_regexpBind.test(this._expr)){
+					this._expr = this._expr.replace(_regexpBind, RegExp.$1+'$scope.' + bindData);
+				}
 				if(regexpBind.test(this._expr)){
 					this._expr = this._expr.replace(regexpBind, RegExp.$1+'$scope.' + bindData);
-				}
+				} 
 			}
 		});
 

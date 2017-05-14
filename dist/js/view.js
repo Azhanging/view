@@ -224,10 +224,14 @@ var ResolveExpr = function () {
 					//初始化字符串转化为正则适配
 					var initExp = initRegExp(bindData);
 					//绑定的正则
-					var regexpBind = new RegExp('(\\+|-|\\*|\\/|\\(|\\!|:|\\?|=|\\[|\\s{1,}|,|&{2}|\\|{2})' + initExp + '|^' + initExp, 'g');
+					var regexpBind = new RegExp('(\\+|-|\\*|\\/|\\(|\\!|:|\\?|=|\\[|\\s{1,}|,|&{2}|\\|{2})' + initExp, 'g');
+					var _regexpBind = new RegExp('^' + initExp, 'g');
 					//绑定键值
 					_this.bindKeys.push(_this.getBindHasStringIndex(_this.unique(sortData), bindData));
 					//加上作用域对象
+					if (_regexpBind.test(_this._expr)) {
+						_this._expr = _this._expr.replace(_regexpBind, RegExp.$1 + '$scope.' + bindData);
+					}
 					if (regexpBind.test(_this._expr)) {
 						_this._expr = _this._expr.replace(regexpBind, RegExp.$1 + '$scope.' + bindData);
 					}
