@@ -109,8 +109,6 @@ class View {
 				updates.push(key);
 			}
 		});
-		//数据链倒叙
-//		updates = updates.reverse();
 		//更新数据链
 		updates.forEach((keyLine) => {
 			this.update(keyLine);

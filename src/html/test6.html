@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<!--<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>-->
+	</head>
+	<body>
+		<div id="app">
+			<div _v-for="i in arr">
+				<div _v-for="n in i">
+					{{n + 1}}
+				</div>
+			</div>
+		</div>
+		<script src="./../../dist/js/view.js" type="text/javascript" charset="utf-8"></script>
+		<!--<script src="./../../dist/js/vue.js" type="text/javascript" charset="utf-8"></script>-->
+		<script type="text/javascript">
+			var time = new Date();
+			var arr = [];
+			for(var i = 0;i<1000;i++){
+				arr.push([
+					Math.random(),
+					Math.random(),
+					Math.random(),
+					Math.random(),
+					Math.random()
+				]);
+			}
+			
+			var app = new View({
+				el:"app",
+				data:{
+					arr:arr
+				}
+			});
+			
+//			alert(new Date()-time);
+		</script>
+	</body>
+</html>

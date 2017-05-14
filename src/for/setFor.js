@@ -92,8 +92,8 @@ function setFor(element, propValue, propIndex) {
 		//设置键值的作用域
 		Object.defineProperty(element.$scope, element.__for__.forItem, {
 			get() {
-				let getData = _this._get(element.__for__.keyLine, element);
 				//这里是为了处理值对象为数字而建立
+				let getData = _this._get(element.__for__.keyLine, element);
 				if(getData !== null){
 					return getData;
 				}else if(/^_____array_____/.test(element.__for__.keyLine)){

@@ -1297,8 +1297,6 @@ var View = function () {
 					updates.push(key);
 				}
 			});
-			//数据链倒叙
-			//		updates = updates.reverse();
 			//更新数据链
 			updates.forEach(function (keyLine) {
 				_this.update(keyLine);
@@ -1328,6 +1326,7 @@ var View = function () {
 	}, {
 		key: '_get',
 		value: function _get(keyLink, element) {
+			console.log(keyLink);
 			//获取作用域内的值
 			var getVal = void 0;
 			if (element) {
@@ -2122,8 +2121,8 @@ function setFor(element, propValue, propIndex) {
 		//设置键值的作用域
 		Object.defineProperty(element.$scope, element.__for__.forItem, {
 			get: function get() {
-				var getData = _this._get(element.__for__.keyLine, element);
 				//这里是为了处理值对象为数字而建立
+				var getData = _this._get(element.__for__.keyLine, element);
 				if (getData !== null) {
 					return getData;
 				} else if (/^_____array_____/.test(element.__for__.keyLine)) {
@@ -2318,7 +2317,6 @@ function forUpdate(key) {
 				_dom.replaceTextNode.call(_this3);
 			}
 		});
-
 		this._update();
 	}
 }

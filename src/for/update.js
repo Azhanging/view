@@ -146,7 +146,6 @@ function forUpdate(key) {
 				replaceTextNode.call(this);
 			}
 		});
-		
 		this._update();
 	}
 }
