@@ -1179,6 +1179,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var ___index = 0;
+
 var View = function () {
 	function View() {
 		var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : options,
@@ -1315,18 +1317,18 @@ var View = function () {
 		}
 	}, {
 		key: '_update',
-		value: function _update() {
-			_watch.watchUpdate.call(this);
-			_if.ifUpdate.call(this);
-			_model.modelUpdate.call(this);
-			_attr.attrUpdate.call(this);
-			_show.showUpdate.call(this);
-			_dom.domUpdate.call(this);
+		value: function _update(keys) {
+			_watch.watchUpdate.call(this, keys);
+			_if.ifUpdate.call(this, keys);
+			_model.modelUpdate.call(this, keys);
+			_attr.attrUpdate.call(this, keys);
+			_show.showUpdate.call(this, keys);
+			_dom.domUpdate.call(this, keys);
 		}
 	}, {
 		key: '_get',
 		value: function _get(keyLink, element) {
-			console.log(keyLink);
+			//		console.log(___index++,keyLink);
 			//获取作用域内的值
 			var getVal = void 0;
 			if (element) {
@@ -1334,15 +1336,19 @@ var View = function () {
 			} else {
 				getVal = this.data;
 			}
+
+			var data = getVal[keyLink];
+
 			//存在实例屬性對象
 			if (/\./g.test(keyLink)) {
 				var keys = keyLink.split('.');
 				//存在值
-				if (getVal[keys[0]]) {
+				if (getVal) {
 					for (var i = 0; i < keys.length; i++) {
 						var key = keys[i];
+						var _data = getVal[key];
 						try {
-							getVal = getVal !== null && getVal[key] !== undefined ? getVal[key] : null;
+							getVal = getVal !== null && _data !== undefined ? _data : null;
 						} catch (error) {
 							return null;
 						}
@@ -1351,8 +1357,8 @@ var View = function () {
 				} else {
 					return null;
 				}
-			} else if (getVal[keyLink] != undefined) {
-				return getVal[keyLink];
+			} else if (data != undefined) {
+				return data;
 			} else {
 				return null;
 			}
@@ -1954,25 +1960,27 @@ function domUpdate(key) {
 		}
 		updateFn.call(this, key);
 	}
+}
 
-	function updateFn(keyLine) {
-		var _this2 = this;
+function updateFn(keyLine) {
+	var _this2 = this;
 
-		var textNodes = this.__ob__.dom[keyLine];
-		textNodes.forEach(function (element) {
-			var data = new _filter2.default(_this2.expr(element.__dom__.__bind__, element), element.__dom__.__filter__).runFilter();
+	var textNodes = this.__ob__.dom[keyLine];
+	textNodes.forEach(function (element) {
+		var data = new _filter2.default(_this2.expr(element.__dom__.__bind__, element), element.__dom__.__filter__).runFilter();
 
-			if (data instanceof Array && data.length > 0 && hasElement(data)) {
-				//走接点过滤处理
-				htmlNode(data, element);
-			} else {
-				//检查是否存在过滤器或者数组插入的dom节点
-				isTextNodePrevSibline(element);
-				//直接为数据节点			
+		if (data instanceof Array && data.length > 0 && hasElement(data)) {
+			//走接点过滤处理
+			htmlNode(data, element);
+		} else {
+			//检查是否存在过滤器或者数组插入的dom节点
+			isTextNodePrevSibline(element);
+			//直接为数据节点		
+			if (element.textContent != data) {
 				element.textContent = data;
 			}
-		});
-	}
+		}
+	});
 }
 
 //查看是否存在element
@@ -2187,138 +2195,142 @@ function forUpdate(key) {
 		}
 		updateFn.call(this, key);
 	}
+}
 
-	function updateFn(key) {
-		var _this3 = this;
+function updateFn(key) {
+	var _this3 = this;
 
-		var _this = this;
-		var updateKeys = [];
-		//获取element节点
-		var elements = this.__ob__.for[key];
-		elements.forEach(function (element) {
-			//获取当前的作用域链数据
-			var getData = _this3._get(key, element);
-			//如果当前值是null，返回空数组循环
-			if (getData === null || getData === '' || getData === undefined) {
-				getData = [];
-				//判断是否通过数字来循环的
-				if (element.isNumFor) {
-					getData = element.__forValue__;
+	var _this = this;
+	var updateKeys = [];
+	//获取element节点
+	var elements = this.__ob__.for[key];
+	var forItem = '';
+
+	elements.forEach(function (element) {
+		forItem = element.__forItem__;
+		//获取当前的作用域链数据
+		var getData = _this3._get(key, element);
+		//如果当前值是null，返回空数组循环
+		if (getData === null || getData === '' || getData === undefined) {
+			getData = [];
+			//判断是否通过数字来循环的
+			if (element.isNumFor) {
+				getData = element.__forValue__;
+			}
+		}
+
+		//IE下Object.keys不识别字符串
+		if (typeof getData === 'string') {
+			getData = getData.split('');
+		}
+
+		var dataLength = Object.keys(getData).length;
+		//当前循环组内的append的循环节点
+		var forElementGroup = element.__forElementGroup__;
+		var forElementGroupLength = forElementGroup.length;
+		//存储移除数据的节点文档片段
+		var fragment = document.createDocumentFragment();
+		//相同数据数量更新数据流
+		if (dataLength == forElementGroupLength) {
+			for (var index = 0; index < forElementGroupLength; index++) {
+				if (forElementGroup[index].__for__.isAppend == false) {
+					forElementGroup[index].__for__.isAppend = true;
+					fragment.appendChild(forElementGroup[index]);
+				}
+			}
+			//添加到实际的dom中
+			element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
+		} else if (dataLength < forElementGroupLength) {
+			var _fragment = document.createDocumentFragment();
+			//移除已添加的节点
+			for (var _index = dataLength; _index < forElementGroupLength; _index++) {
+				if (forElementGroup[_index].__for__.isAppend == true) {
+					forElementGroup[_index].__for__.isAppend = false;
+					fragment.appendChild(forElementGroup[_index]);
 				}
 			}
 
-			//IE下Object.keys不识别字符串
-			if (typeof getData === 'string') {
-				getData = getData.split('');
+			for (var _index2 = 0; _index2 < dataLength; _index2++) {
+				if (forElementGroup[_index2].__for__.isAppend == false) {
+					forElementGroup[_index2].__for__.isAppend = true;
+					_fragment.appendChild(forElementGroup[_index2]);
+				}
+			}
+			//添加到实际的dom中
+			element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
+
+			if (updateKeys.indexOf(element.__forItem__) === -1) {
+				updateKeys.push(element.__forItem__);
+			}
+		} else if (dataLength > forElementGroupLength) {
+
+			var cloneNodeElements = [];
+			var getDataKeys = Object.keys(getData);
+			var _element = element;
+
+			//先把原来隐藏的节点打开
+			for (var _index3 = 0; _index3 < forElementGroupLength; _index3++) {
+				if (forElementGroup[_index3].__for__.isAppend == false) {
+					forElementGroup[_index3].__for__.isAppend = true;
+					fragment.appendChild(forElementGroup[_index3]);
+				}
+			}
+			//增加数据数量更新数据流
+			for (var _index4 = forElementGroupLength, len = getDataKeys.length; _index4 < len; _index4++) {
+				var cloneNode = element.__self__.cloneNode(true);
+				cloneNode.__for__ = {
+					forItem: element.__forItem__,
+					forKey: getDataKeys[_index4],
+					index: _index4,
+					keyLine: key + '.' + getDataKeys[_index4],
+					isAppend: true
+				};
+				cloneNode.$index = _index4;
+				element.__forElementGroup__.push(cloneNode);
+				fragment.appendChild(cloneNode);
+				cloneNodeElements.push(cloneNode);
 			}
 
-			var dataLength = Object.keys(getData).length;
-			//当前循环组内的append的循环节点
-			var forElementGroup = element.__forElementGroup__;
-			var forElementGroupLength = forElementGroup.length;
-			//存储移除数据的节点文档片段
-			var fragment = document.createDocumentFragment();
-			//相同数据数量更新数据流
-			if (dataLength == forElementGroupLength) {
-				for (var index = 0; index < forElementGroupLength; index++) {
-					if (forElementGroup[index].__for__.isAppend == false) {
-						forElementGroup[index].__for__.isAppend = true;
-						fragment.appendChild(forElementGroup[index]);
-					}
-				}
-				//添加到实际的dom中
-				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
-				//更新数据
-
-				if (updateKeys.indexOf(element.__forItem__) === -1) {
-					updateKeys.push(element.__forItem__);
-				}
-			} else if (dataLength < forElementGroupLength) {
-				var _fragment = document.createDocumentFragment();
-				//移除已添加的节点
-				for (var _index = dataLength; _index < forElementGroupLength; _index++) {
-					if (forElementGroup[_index].__for__.isAppend == true) {
-						forElementGroup[_index].__for__.isAppend = false;
-						fragment.appendChild(forElementGroup[_index]);
-					}
-				}
-
-				for (var _index2 = 0; _index2 < dataLength; _index2++) {
-					if (forElementGroup[_index2].__for__.isAppend == false) {
-						forElementGroup[_index2].__for__.isAppend = true;
-						_fragment.appendChild(forElementGroup[_index2]);
-					}
-				}
-				//添加到实际的dom中
-				element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
-
-				if (updateKeys.indexOf(element.__forItem__) === -1) {
-					updateKeys.push(element.__forItem__);
-				}
-			} else if (dataLength > forElementGroupLength) {
-
-				var cloneNodeElements = [];
-				var getDataKeys = Object.keys(getData);
-				var _element = element;
-
-				//先把原来隐藏的节点打开
-				for (var _index3 = 0; _index3 < forElementGroupLength; _index3++) {
-					if (forElementGroup[_index3].__for__.isAppend == false) {
-						forElementGroup[_index3].__for__.isAppend = true;
-						fragment.appendChild(forElementGroup[_index3]);
-					}
-				}
-				//增加数据数量更新数据流
-				for (var _index4 = forElementGroupLength, len = getDataKeys.length; _index4 < len; _index4++) {
-					var cloneNode = element.__self__.cloneNode(true);
-					cloneNode.__for__ = {
-						forItem: element.__forItem__,
-						forKey: getDataKeys[_index4],
-						index: _index4,
-						keyLine: key + '.' + getDataKeys[_index4],
-						isAppend: true
-					};
-					cloneNode.$index = _index4;
-					element.__forElementGroup__.push(cloneNode);
-					fragment.appendChild(cloneNode);
-					cloneNodeElements.push(cloneNode);
-				}
-
-				//添加到实际的dom中
-				element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
-				//解析新添加的节点
-				cloneNodeElements.forEach(function (element) {
-					//解析节点
-					vdom.resolve(element, _this3);
-					//设置键值的作用域
-					Object.defineProperty(element.$scope, element.__for__.forItem, {
-						get: function get() {
-							return _this._get(element.__for__.keyLine, element);
-						}
-					});
-					//设置索引的作用域
-					Object.defineProperty(element.$scope, '$index', {
-						get: function get() {
-							return element.__for__.index;
-						}
-					});
-					//设置key的作用域
-					if (_element.__forKey__) {
-						Object.defineProperty(element.$scope, _element.__forKey__, {
-							get: function get() {
-								return element.__for__.forKey;
-							}
-						});
+			//添加到实际的dom中
+			element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
+			//解析新添加的节点
+			cloneNodeElements.forEach(function (element) {
+				//解析节点
+				vdom.resolve(element, _this3);
+				//设置键值的作用域
+				Object.defineProperty(element.$scope, element.__for__.forItem, {
+					get: function get() {
+						return _this._get(element.__for__.keyLine, element);
 					}
 				});
-				//创建存在绑定的文本节点
-				_dom.createTextNodes.call(_this3);
-				//新建和替换绑定的文本节点信息
-				_dom.replaceTextNode.call(_this3);
+				//设置索引的作用域
+				Object.defineProperty(element.$scope, '$index', {
+					get: function get() {
+						return element.__for__.index;
+					}
+				});
+				//设置key的作用域
+				if (_element.__forKey__) {
+					Object.defineProperty(element.$scope, _element.__forKey__, {
+						get: function get() {
+							return element.__for__.forKey;
+						}
+					});
+				}
+			});
+
+			if (updateKeys.indexOf(element.__forItem__) === -1) {
+				updateKeys.push(element.__forItem__);
 			}
-		});
-		this._update();
-	}
+
+			//创建存在绑定的文本节点
+			_dom.createTextNodes.call(_this3);
+			//新建和替换绑定的文本节点信息
+			_dom.replaceTextNode.call(_this3);
+		}
+	});
+
+	this._update();
 }
 
 exports.forUpdate = forUpdate;

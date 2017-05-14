@@ -12,25 +12,27 @@ function domUpdate(key) {
 			return;
 		}
 		updateFn.call(this,key);
-	}
+	}	
+}
+
+function updateFn(keyLine){
+	let textNodes = this.__ob__.dom[keyLine];
+	textNodes.forEach((element) => {
+		let data = new Filter(this.expr(element.__dom__.__bind__,element),element.__dom__.__filter__).runFilter();
 	
-	function updateFn(keyLine){
-		let textNodes = this.__ob__.dom[keyLine];
-		textNodes.forEach((element) => {
-			let data = new Filter(this.expr(element.__dom__.__bind__,element),element.__dom__.__filter__).runFilter();
-	
-			if(data instanceof Array && data.length > 0 && hasElement(data)) {
-				//走接点过滤处理
-				htmlNode(data, element);
-			} else {
-				//检查是否存在过滤器或者数组插入的dom节点
-				isTextNodePrevSibline(element);
-				//直接为数据节点			
+		if(data instanceof Array && data.length > 0 && hasElement(data)) {
+			//走接点过滤处理
+			htmlNode(data, element);
+		} else {
+			//检查是否存在过滤器或者数组插入的dom节点
+			isTextNodePrevSibline(element);
+			//直接为数据节点		
+			if(element.textContent != data){				
 				element.textContent = data;
 			}
+		}
 			
-		});
-	}
+	});
 }
 
 

@@ -11,6 +11,7 @@ import { watchUpdate } from './../watch';
 import { setEvent, setChildTemplateEvent } from './../event';
 import { modelUpdate ,formElements} from './../model';
 
+let ___index = 0;
 
 class View {
 	constructor({
@@ -98,7 +99,7 @@ class View {
 			textNodeLists: [],
 			tempFragmentElements: [],
 			templateIndex: 0
-		}
+		};
 	}
 	dep(keys) {
 		let updates = [];
@@ -123,15 +124,16 @@ class View {
 		ifUpdate.call(this, keys);
 		domUpdate.call(this, keys);
 	}
-	_update(){
-		watchUpdate.call(this);
-		ifUpdate.call(this);
-		modelUpdate.call(this);
-		attrUpdate.call(this);
-		showUpdate.call(this);
-		domUpdate.call(this);
+	_update(keys){
+		watchUpdate.call(this,keys);
+		ifUpdate.call(this,keys);
+		modelUpdate.call(this,keys);
+		attrUpdate.call(this,keys);
+		showUpdate.call(this,keys);
+		domUpdate.call(this,keys);
 	}
 	_get(keyLink, element) {
+//		console.log(___index++,keyLink);
 		//获取作用域内的值
 		let getVal;
 		if(element) {
@@ -139,15 +141,19 @@ class View {
 		} else {
 			getVal = this.data;
 		}
+		
+		let data = getVal[keyLink];
+		
 		//存在实例屬性對象
 		if(/\./g.test(keyLink)) {
 			let keys = keyLink.split('.');
 			//存在值
-			if(getVal[keys[0]]) {
+			if(getVal) {
 				for(let i = 0; i < keys.length; i++) {
 					let key = keys[i];
+					let data = getVal[key];
 					try {
-						getVal = getVal !== null && getVal[key] !== undefined ? getVal[key] : null;
+						getVal = (getVal !== null && data !== undefined) ? data : null;
 					} catch(error) {
 						return null;
 					}
@@ -156,8 +162,8 @@ class View {
 			} else {
 				return null;
 			}
-		} else if(getVal[keyLink] != undefined) {
-			return getVal[keyLink];
+		} else if(data != undefined) {
+			return data;
 		} else {
 			return null;
 		}
