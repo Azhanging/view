@@ -1,8 +1,10 @@
 import { createTextNodes, replaceTextNode } from './../dom';
 import Vdom from './../vdom';
 
+let vdom;
+
 function forUpdate(key) {
-	let vdom = new Vdom();
+	vdom = new Vdom();
 	//初始化
 	if(key === undefined || key === '') {
 		Object.keys(this.__ob__.for).forEach((keyLine, index) => {

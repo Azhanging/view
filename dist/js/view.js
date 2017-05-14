@@ -2183,10 +2183,12 @@ var _vdom2 = _interopRequireDefault(_vdom);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var vdom = void 0;
+
 function forUpdate(key) {
 	var _this2 = this;
 
-	var vdom = new _vdom2.default();
+	vdom = new _vdom2.default();
 	//初始化
 	if (key === undefined || key === '') {
 		Object.keys(this.__ob__.for).forEach(function (keyLine, index) {
