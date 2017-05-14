@@ -57,6 +57,7 @@ class ResolveExpr {
 		this.bindKeys = [];
 		this.keyword = ["undefined","null","true","false"];
 		this.filter = [];
+//		this.regexpBind = ;
 		this._init();
 	}
 	_init() {
@@ -102,17 +103,22 @@ class ResolveExpr {
 		let trimData = this._expr.split(/\+|-|\*|\/|:|\?|\(|\)|,|!|&{2}|\|{2}|\[|\]|=/g).map((data) => {
 			return data.trim();
 		});
+		
+		//倒叙绑定链
+		let sortData = trimData.sort().reverse();
 
 		//判断绑定值
-		this.unique(trimData).forEach((bindData) => {
+		this.unique(sortData).forEach((bindData) => {
 			if(bindData !== "" && !/^\$fn\.|^\$scope\.|^_____string_____\S*?/g.test(bindData) && !(/^\d*$/.test(bindData)) && this.keyword.indexOf(bindData) === -1) {
-				this.bindKeys.push(this.getBindHasStringIndex(this.unique(trimData),bindData));
-				if(new RegExp('\\('+initRegExp(bindData), 'g').test(this._expr)){
-					this._expr = this._expr.replace(new RegExp('\\('+initRegExp(bindData), 'g'), '($scope.' + bindData);
-				}else if(new RegExp('\\['+initRegExp(bindData), 'g').test(this._expr)){
-					this._expr = this._expr.replace(new RegExp('\\['+initRegExp(bindData), 'g'), '[$scope.' + bindData);
-				}else{					
-					this._expr = this._expr.replace(new RegExp('(\\+|-|\\*|\\!|:|\\?|=|\\s*)'+initRegExp(bindData), 'g'), '$scope.' + bindData);
+				//初始化字符串转化为正则适配
+				let initExp =  initRegExp(bindData);
+				//绑定的正则
+				let regexpBind = new RegExp('(\\+|-|\\*|\\/|\\(|\\!|:|\\?|=|\\[|\\s{1,}|,|&{2}|\\|{2})'+initExp+'|^'+initExp, 'g');
+				//绑定键值
+				this.bindKeys.push(this.getBindHasStringIndex(this.unique(sortData),bindData));
+				//加上作用域对象
+				if(regexpBind.test(this._expr)){
+					this._expr = this._expr.replace(regexpBind, RegExp.$1+'$scope.' + bindData);
 				}
 			}
 		});

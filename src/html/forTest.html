@@ -10,7 +10,7 @@
 	<body>
 		<div id="app">
 			<div _v-show="isShow">
-				<!--<div :class="i" _v-show="isShow">
+				<div :class="i" _v-show="isShow">
 					{{ i * 2}} - {{ i }}
 					<span>
 						{{ i }} - {{  i   }}
@@ -23,21 +23,21 @@
 				
 				<div _v-for="m,n in input.val" :class="$index">
 					{{        input.val[n] + 1 + 'aa'        }} --- {{                   $index               }}
-				</div>-->
+				</div>
 
 				<div _v-for="m,n in input.val" :class="$index">
-					{{input.val[n] + 1 + 'aa'}} --- {{$index}}
+					{{na + input.val[n] + 1 + 'aa' + u}} - {{$index}} - {{   input.val[n] - 2 * na +  u }}
 					<!--<div>111</div>-->
 				</div>
-				<!--<div>{{input.val}}</div>
+				<div>{{input.val}}</div>
 				<input type="text" _v-model="input.val" :value="input.val"/>
 				<div _v-for="i in 5" :class="$index" @click="getIndex($index)">
-					{{   i+1+2+3*4-(2+1)    }} --- {{       $index       }}
+					{{   i+1+2+3*4-(2+1)+1    }} --- {{       $index       }}
 					<div _v-for="m,n in input.val" :class="$index">
 						{{        input.val[n] + 1 + 'aa'        }} --- {{                   $index               }}
 					</div>
 				</div>
-				{{element | html}} -- <my-comp></my-comp>-->
+				{{element | html}} -- <my-comp></my-comp>
 			</div>
 		</div>
 		
@@ -57,40 +57,6 @@
 		<script src="./../../dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
 			var time = new Date();
-			
-			data = [
-				{val:1},
-				{val:2},
-				{val:3},
-				{val:4},
-				{val:5}
-			];
-			data_1 ={
-				0:{val:1},
-				1:{val:2},
-				2:{val:3},
-				3:{val:4},
-				4:{val:5}
-			}
-			
-			var _v = new View({
-				el:"temp",
-				data:{
-					i:1
-				},
-				methods:{
-					getIndex:function(index){
-						console.log(index);
-					}
-				},
-				components:{
-					'my-comp':'app--1'
-				}
-			});
-			
-			_v.createTemplate(data_1,document.getElementById('app-1'));
-			var el = document.createElement('div');
-			el.innerHTML = '123123';
 			
 			var v = new View({
 				el: "app",
@@ -113,7 +79,7 @@
 					],
 					testFor: 5,
 					input: {
-						val: '1'
+						val: '123456789123456789123456789'
 					},
 					val: '测试过滤器',
 					element: "<div>123123456465798798</div>",
@@ -121,7 +87,9 @@
 						a:1,
 						b:2,
 						c:3
-					}
+					},
+					na:123,
+					u:'asdasdsadasdasdasd'
 				},
 				ready: function() {
 					this.data.isShow = true;
@@ -135,6 +103,44 @@
 					'my-comp':'app--1'
 				}
 			});
+			
+			data = [
+				{val:1},
+				{val:2},
+				{val:3},
+				{val:4},
+				{val:5}
+			];
+			data_1 ={
+				0:{val:1},
+				1:{val:2},
+				2:{val:3},
+				3:{val:4},
+				4:{val:5},
+				5:{val:2},
+				6:{val:2},
+			}
+			
+			var _v = new View({
+				el:"temp",
+				data:{
+					i:1
+				},
+				methods:{
+					getIndex:function(index){
+						console.log(index);
+					}
+				},
+				components:{
+					'my-comp':'app--1'
+				}
+			});
+			
+			_v.createTemplate(data_1,document.getElementById('app-1'));
+			var el = document.createElement('div');
+			el.innerHTML = '123123';
+			
+			
 			
 			console.log(v);
 

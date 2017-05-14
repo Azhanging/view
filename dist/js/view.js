@@ -164,6 +164,7 @@ var ResolveExpr = function () {
 		this.bindKeys = [];
 		this.keyword = ["undefined", "null", "true", "false"];
 		this.filter = [];
+		//		this.regexpBind = ;
 		this._init();
 	}
 
@@ -214,16 +215,21 @@ var ResolveExpr = function () {
 				return data.trim();
 			});
 
+			//倒叙绑定链
+			var sortData = trimData.sort().reverse();
+
 			//判断绑定值
-			this.unique(trimData).forEach(function (bindData) {
+			this.unique(sortData).forEach(function (bindData) {
 				if (bindData !== "" && !/^\$fn\.|^\$scope\.|^_____string_____\S*?/g.test(bindData) && !/^\d*$/.test(bindData) && _this.keyword.indexOf(bindData) === -1) {
-					_this.bindKeys.push(_this.getBindHasStringIndex(_this.unique(trimData), bindData));
-					if (new RegExp('\\(' + initRegExp(bindData), 'g').test(_this._expr)) {
-						_this._expr = _this._expr.replace(new RegExp('\\(' + initRegExp(bindData), 'g'), '($scope.' + bindData);
-					} else if (new RegExp('\\[' + initRegExp(bindData), 'g').test(_this._expr)) {
-						_this._expr = _this._expr.replace(new RegExp('\\[' + initRegExp(bindData), 'g'), '[$scope.' + bindData);
-					} else {
-						_this._expr = _this._expr.replace(new RegExp('(\\+|-|\\*|\\!|:|\\?|=|\\s*)' + initRegExp(bindData), 'g'), '$scope.' + bindData);
+					//初始化字符串转化为正则适配
+					var initExp = initRegExp(bindData);
+					//绑定的正则
+					var regexpBind = new RegExp('(\\+|-|\\*|\\/|\\(|\\!|:|\\?|=|\\[|\\s{1,}|,|&{2}|\\|{2})' + initExp + '|^' + initExp, 'g');
+					//绑定键值
+					_this.bindKeys.push(_this.getBindHasStringIndex(_this.unique(sortData), bindData));
+					//加上作用域对象
+					if (regexpBind.test(_this._expr)) {
+						_this._expr = _this._expr.replace(regexpBind, RegExp.$1 + '$scope.' + bindData);
 					}
 				}
 			});
