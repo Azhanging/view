@@ -2183,12 +2183,9 @@ var _vdom2 = _interopRequireDefault(_vdom);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var vdom = void 0;
-
 function forUpdate(key) {
 	var _this2 = this;
 
-	vdom = new _vdom2.default();
 	//初始化
 	if (key === undefined || key === '') {
 		Object.keys(this.__ob__.for).forEach(function (keyLine, index) {
@@ -2206,6 +2203,7 @@ function forUpdate(key) {
 function updateFn(key) {
 	var _this3 = this;
 
+	var vdom = new _vdom2.default();
 	var _this = this;
 	var updateKeys = [];
 	//获取element节点

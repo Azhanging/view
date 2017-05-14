@@ -1,10 +1,7 @@
 import { createTextNodes, replaceTextNode } from './../dom';
 import Vdom from './../vdom';
 
-let vdom;
-
 function forUpdate(key) {
-	vdom = new Vdom();
 	//初始化
 	if(key === undefined || key === '') {
 		Object.keys(this.__ob__.for).forEach((keyLine, index) => {
@@ -20,6 +17,7 @@ function forUpdate(key) {
 }
 
 function updateFn(key) {
+	let vdom = new Vdom();
 	let _this = this;
 	let updateKeys = [];
 	//获取element节点
