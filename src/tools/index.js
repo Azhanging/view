@@ -83,7 +83,7 @@ class ResolveExpr {
 		if(splitExpr.length>1){			
 			//设置过滤器
 			this.filter = splitExpr[1].split(' ').filter((filter)=>{
-				return filter;
+				return filter.trim();
 			});
 		}
 		

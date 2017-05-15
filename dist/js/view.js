@@ -194,7 +194,7 @@ var ResolveExpr = function () {
 			if (splitExpr.length > 1) {
 				//设置过滤器
 				this.filter = splitExpr[1].split(' ').filter(function (filter) {
-					return filter;
+					return filter.trim();
 				});
 			}
 
