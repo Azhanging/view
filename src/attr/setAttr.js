@@ -79,6 +79,7 @@ function setAttr(element, vdom) {
 			setEventHandler.apply(this,[element,propName,propValue]);
 		}
 	}
+	return hasFor;
 }
 
 export { setAttr };

@@ -430,7 +430,7 @@ function getFirstElementChild(element) {
 //判断是否存在for属性循环
 function hasForAttr(element) {
 	for (var index = 0; index < element.attributes.length; index++) {
-		if (/_v-for/.test(element.attributes[index])) {
+		if (/_v-for/.test(element.attributes[index].name)) {
 			return true;
 		}
 	}
@@ -1016,13 +1016,15 @@ var _Element = function () {
 				_tools.setScope.call(_this, element);
 
 				//设置属性的绑定
-				_attr.setAttr.call(_this, element, vdom);
+				var hasInitFor = _attr.setAttr.call(_this, element, vdom);
 
-				for (var index = 0; index < element.childNodes.length; index++) {
-					var el = element.childNodes[index];
-					if (el.nodeType === 1 || el.nodeType === 3) {
-						this.id++;
-						vdom.childrens.push(this.resolve(el, _this));
+				if (!hasInitFor) {
+					for (var index = 0; index < element.childNodes.length; index++) {
+						var el = element.childNodes[index];
+						if (el.nodeType === 1 || el.nodeType === 3) {
+							this.id++;
+							vdom.childrens.push(this.resolve(el, _this));
+						}
 					}
 				}
 			} else if (element.nodeType === 3) {
@@ -1727,6 +1729,7 @@ function setAttr(element, vdom) {
 	for (var _index = 0; _index < element.attributes.length; _index++) {
 		_loop(_index);
 	}
+	return hasFor;
 }
 
 exports.setAttr = setAttr;
@@ -2103,6 +2106,7 @@ function setFor(element, propValue, propIndex) {
 		element.__forElementGroup__.push(cloneNode);
 		fragment.appendChild(cloneNode);
 	});
+
 	//使用占位节点替换掉原本的dom节点信息
 	parentNode.replaceChild(oldElementReplace, element);
 	parentNode.insertBefore(fragment, presentSeize);

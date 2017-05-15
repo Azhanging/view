@@ -21,30 +21,30 @@
 
 	<body>
 		<div class="class1" id="id1">
-			<span :class="{{active.a}}+' '+{{active1}}+' '+{{active2}}">{{span.a | upper}}{{span1.b}} {{span2.c}} - {{span3.d}}</span>
-			<div :class="{{active.a}}" _v-show="{{isShow}}">
+			<span :class="active.a+' '+active1+' '+active2">{{span.a | upper}}{{span1.b}} {{span2.c}} - {{span3.d}}</span>
+			<div :class="active.a" _v-show="isShow">
 				<span @click="event($event,1)">{{span3.c | html}}</span> 123
 			</div>
 			<my-com></my-com>
 			<my-com2></my-com2>
-			<ul _v-show="{{isShow}}">
-				<li _v-if="{{ifStatus.if1}}">111</li>
+			<ul _v-show="isShow">
+				<li _v-if="ifStatus.if1">111</li>
 				<li>true</li>
-				<li _v-elseif="{{ifStatus.if2}}">222</li>
-				<li _v-elseif="{{ifStatus.if3}}">333</li>
+				<li _v-elseif="ifStatus.if2">222</li>
+				<li _v-elseif="ifStatus.if3">333</li>
 				<li _v-else>444</li>
 			</ul>
 			<div>{{input.val2}}</div>
 			<div>{{input.val.b}}</div>
 			<div>{{input.val.a}}</div>
-			<input type="text" _v-model="{{input.val}}" :value="{{input.val}}" />
-			<div>{{arr.1.a}}</div>
-			<div _v-for="i in {{arr}}" _v-if="{{isShow}}">
-				<div _v-for="m in {{i.a}}">
+			<input type="text" _v-model="input.val" :value="input.val" />
+			<div>{{arr[1].a}}</div>
+			<div _v-for="i in arr" _v-if="isShow">
+				<div _v-for="m in i.a">
 					{{m}}
 				</div>
 			</div>
-			<div _v-for="i in {{arr1}}">
+			<div _v-for="i in arr1">
 				{{i}}-{{isShow}}
 			</div>
 		</div>
@@ -60,7 +60,7 @@
 		</template>
 
 		<template id="temp">
-			<div :class="{{templateData.class}}" @click="event($event,1)">
+			<div :class="templateData.class" @click="event($event,1)">
 				{{templateData.data}}
 				<!--<div _v-for="i in {{arr}}">
 					<div _v-for="n in {{i}}">
@@ -72,7 +72,7 @@
 			</div>
 		</template>
 
-		<script id="sc" src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
+		<script id="sc" src="./../../dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script>
 			/*var ul = {
 																tagName: "div",

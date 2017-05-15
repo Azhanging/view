@@ -82,6 +82,7 @@ function setFor(element, propValue, propIndex) {
 		element.__forElementGroup__.push(cloneNode);
 		fragment.appendChild(cloneNode);
 	});
+	
 	//使用占位节点替换掉原本的dom节点信息
 	parentNode.replaceChild(oldElementReplace, element);
 	parentNode.insertBefore(fragment, presentSeize);

@@ -62,13 +62,15 @@ class _Element {
 			setScope.call(_this,element);
 			
 			//设置属性的绑定
-			setAttr.call(_this, element, vdom);
+			let hasInitFor = setAttr.call(_this, element, vdom);
 			
-			for(let index = 0;index<element.childNodes.length;index++){
-				let el = element.childNodes[index];
-				if(el.nodeType === 1 || el.nodeType === 3){
-					this.id++;
-					vdom.childrens.push(this.resolve(el, _this));		
+			if(!hasInitFor){				
+				for(let index = 0;index<element.childNodes.length;index++){
+					let el = element.childNodes[index];
+					if(el.nodeType === 1 || el.nodeType === 3){
+						this.id++;
+						vdom.childrens.push(this.resolve(el, _this));		
+					}
 				}
 			}
 		} else if(element.nodeType === 3){

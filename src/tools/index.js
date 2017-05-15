@@ -305,7 +305,7 @@ function getFirstElementChild(element) {
 //判断是否存在for属性循环
 function hasForAttr(element){
 	for(let index = 0; index < element.attributes.length;index++){
-		if(/_v-for/.test(element.attributes[index])){
+		if(/_v-for/.test(element.attributes[index].name)){
 			return true;
 		}
 	}

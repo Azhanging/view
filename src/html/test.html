@@ -6,20 +6,20 @@
 	</head>
 	<body>
 		<div id="vdom">
-			<div _v-for="i in {{arr}}">
+			<div _v-for="i in arr">
 				<h3>{{i.b}}</h3>
 				<ul>
-					<li _v-for="m in {{i.a}}" :class="{{i.class}}"  @click="alert($event,$index)">
+					<li _v-for="m in i.a" :class="i.class"  @click="alert($event,$index)">
 						{{m}}-{{mid}}
-						<div _v-for="n in {{i.a}}" @click="alert($event,$index)">
+						<div _v-for="n in i.a" @click="alert($event,$index)">
 							{{n}}-{{mid}}
-							<div _v-for="o in {{i.a}}" @click="alert($event,$index)">
+							<div _v-for="o in i.a" @click="alert($event,$index)">
 								{{o}}-{{mid}}
 							</div>
 						</div>
 					</li>
 				</ul>
-				<div _v-for="m in {{arr1}}">{{m}}</div>
+				<div _v-for="m in arr1">{{m}}</div>
 			</div>
 		</div>
 		<button id="test1">空数据</button>
@@ -27,7 +27,7 @@
 		<button id="test3">减数据</button>
 		<button id="test4">再加数据数据</button>
 		<button id="test5">显示</button>
-		<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>
+		<script src="./../../dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">
 			var v = new View({
 				el:"vdom",
