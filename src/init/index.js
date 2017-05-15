@@ -1,7 +1,7 @@
 import Observer from './../observer';
 import method from './../method';
 import vdom from './../vdom';
-import { getEl, getKeyLink, deepCopy, getScope, getFirstElementChild, initRegExp } from './../tools';
+import { getEl, getKeyLink, deepCopy, getScope, getFirstElementChild, initRegExp} from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
@@ -133,7 +133,6 @@ class View {
 		domUpdate.call(this,keys);
 	}
 	_get(keyLink, element) {
-//		console.log(___index++,keyLink);
 		//获取作用域内的值
 		let getVal;
 		if(element) {
@@ -141,9 +140,6 @@ class View {
 		} else {
 			getVal = this.data;
 		}
-		
-		let data = getVal[keyLink];
-		
 		//存在实例屬性對象
 		if(/\./g.test(keyLink)) {
 			let keys = keyLink.split('.');
@@ -162,11 +158,14 @@ class View {
 			} else {
 				return null;
 			}
-		} else if(data != undefined) {
-			return data;
-		} else {
-			return null;
-		}
+		} else{
+			let data = getVal[keyLink];
+			if(data != undefined) {
+				return data;
+			} else {
+				return null;
+			}
+		} 
 	}
 	_set(element, obj, val, key) {
 		let data = this['data'],
@@ -227,7 +226,9 @@ class View {
 		//方法
 		let $fn = this.methods;
 		//返回值
-		let data = new Function('$scope', '$fn', 'return ' + expr).apply(this, [$scope, $fn]);
+		let data = new Function('$scope', '$fn', `
+			return ${expr};	
+		`).apply(this, [$scope, $fn]);
 		return data;
 	}
 
@@ -271,17 +272,6 @@ class View {
 	/*设置过滤器*/
 	static setFilter(filterName, handler) {
 		this.filter[filterName] = handler;
-	}
-	/*新增属性过滤器*/
-	static $F(val, filter) {
-		if(filter instanceof Array) {
-			filter.forEach((filterName, index) => {
-				val = this.filter[filterName](val);
-			});
-			return val;
-		} else if(typeof filter === 'string') {
-			return this.filter[filter](val);
-		}
 	}
 	/*----------------------数组操作---------------------------*/
 	/*
@@ -376,9 +366,6 @@ View.filter = {
 	},
 	'length': function(data) {
 		return data.length;
-	},
-	'sequence': function(sequence) {
-		return parseFloat(sequence) + 1;
 	},
 	'html': function(data) {
 		let fragment = document.createDocumentFragment(),

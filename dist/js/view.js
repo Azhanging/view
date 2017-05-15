@@ -1332,7 +1332,6 @@ var View = function () {
 	}, {
 		key: '_get',
 		value: function _get(keyLink, element) {
-			//		console.log(___index++,keyLink);
 			//获取作用域内的值
 			var getVal = void 0;
 			if (element) {
@@ -1340,9 +1339,6 @@ var View = function () {
 			} else {
 				getVal = this.data;
 			}
-
-			var data = getVal[keyLink];
-
 			//存在实例屬性對象
 			if (/\./g.test(keyLink)) {
 				var keys = keyLink.split('.');
@@ -1350,9 +1346,9 @@ var View = function () {
 				if (getVal) {
 					for (var i = 0; i < keys.length; i++) {
 						var key = keys[i];
-						var _data = getVal[key];
+						var data = getVal[key];
 						try {
-							getVal = getVal !== null && _data !== undefined ? _data : null;
+							getVal = getVal !== null && data !== undefined ? data : null;
 						} catch (error) {
 							return null;
 						}
@@ -1361,10 +1357,13 @@ var View = function () {
 				} else {
 					return null;
 				}
-			} else if (data != undefined) {
-				return data;
 			} else {
-				return null;
+				var _data = getVal[keyLink];
+				if (_data != undefined) {
+					return _data;
+				} else {
+					return null;
+				}
 			}
 		}
 	}, {
@@ -1431,7 +1430,7 @@ var View = function () {
 			//方法
 			var $fn = this.methods;
 			//返回值
-			var data = new Function('$scope', '$fn', 'return ' + _expr).apply(this, [$scope, $fn]);
+			var data = new Function('$scope', '$fn', '\n\t\t\treturn ' + _expr + ';\t\n\t\t').apply(this, [$scope, $fn]);
 			return data;
 		}
 	}, {
@@ -1575,22 +1574,6 @@ var View = function () {
 		value: function setFilter(filterName, handler) {
 			this.filter[filterName] = handler;
 		}
-		/*新增属性过滤器*/
-
-	}, {
-		key: '$F',
-		value: function $F(val, filter) {
-			var _this3 = this;
-
-			if (filter instanceof Array) {
-				filter.forEach(function (filterName, index) {
-					val = _this3.filter[filterName](val);
-				});
-				return val;
-			} else if (typeof filter === 'string') {
-				return this.filter[filter](val);
-			}
-		}
 	}]);
 
 	return View;
@@ -1611,9 +1594,6 @@ View.filter = {
 	},
 	'length': function length(data) {
 		return data.length;
-	},
-	'sequence': function sequence(_sequence) {
-		return parseFloat(_sequence) + 1;
 	},
 	'html': function html(data) {
 		var fragment = document.createDocumentFragment(),
@@ -2262,10 +2242,6 @@ function updateFn(key) {
 			}
 			//添加到实际的dom中
 			element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
-
-			if (updateKeys.indexOf(element.__forItem__) === -1) {
-				updateKeys.push(element.__forItem__);
-			}
 		} else if (dataLength > forElementGroupLength) {
 
 			var cloneNodeElements = [];
@@ -2322,10 +2298,6 @@ function updateFn(key) {
 					});
 				}
 			});
-
-			if (updateKeys.indexOf(element.__forItem__) === -1) {
-				updateKeys.push(element.__forItem__);
-			}
 
 			//创建存在绑定的文本节点
 			_dom.createTextNodes.call(_this3);

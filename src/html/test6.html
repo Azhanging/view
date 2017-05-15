@@ -10,7 +10,7 @@
 		<div id="app">
 			<div _v-for="i in arr" _v-show="show" style="display: none;">
 				<div _v-for="n in i">
-					{{n*n*n*n*n*n}} 
+					{{n*n + '123' < 2?'老司机':'123'}}
 				</div>
 			</div>
 		</div>
@@ -19,8 +19,10 @@
 		<script type="text/javascript">
 			var time = new Date();
 			var arr = [];
-			for(var i = 0;i<2;i++){
+			for(var i = 0;i<2000;i++){
 				arr.push([
+					Math.random(),
+					Math.random(),
 					Math.random(),
 					Math.random(),
 					Math.random(),

@@ -78,10 +78,6 @@ function updateFn(key) {
 			//添加到实际的dom中
 			element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
 
-			if(updateKeys.indexOf(element.__forItem__) === -1) {
-				updateKeys.push(element.__forItem__);
-			}
-
 		} else if(dataLength > forElementGroupLength) {
 
 			let cloneNodeElements = [];
@@ -138,10 +134,6 @@ function updateFn(key) {
 					});
 				}
 			});
-
-			if(updateKeys.indexOf(element.__forItem__) === -1) {
-				updateKeys.push(element.__forItem__);
-			}
 
 			//创建存在绑定的文本节点
 			createTextNodes.call(this);
