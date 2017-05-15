@@ -16,6 +16,7 @@ function setEvent(element) {
 
 //事件处理函数
 function setEventHandler(element, propName, propValue) {
+	let _this = this;
 	let filterpropValue = propValue.replace(/\(+\S+\)+/g, '');
 	propName = propName.replace('@', '');
 	//存在这个方法
@@ -24,21 +25,21 @@ function setEventHandler(element, propName, propValue) {
 		if(propValue.match(/\(\S+\)/) instanceof Array) {
 			let args = propValue.match(/\(\S+\)/)[0].replace(/\(?\)?/g, '').split(',');
 			//绑定事件
-			element.addEventListener(propName, (event) => {
+			element.addEventListener(propName,function(event){
 				//对数组内的数据查看是否存在的数据流进行过滤
 				let filterArgs = args.map((item, index) => {
 					//如果传入的对象是$index,获取当前父级中所在的索引
 					if(item === '$index') {
-						return getIndex.call(this, element);
+						return getIndex.call(_this, element);
 					} else if(item === '$event') {
 						return event;
 					} else {
 						//解析data中的值
-						return this.expr(item).toString();
+						return _this.expr(item,this).toString();
 					}
 				});
 				//运行绑定的event
-				this[filterpropValue].apply(this, filterArgs);
+				_this[filterpropValue].apply(_this, filterArgs);
 			}, false);
 		} else {
 			//不存在参数值过滤掉空的括号

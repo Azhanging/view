@@ -12,22 +12,22 @@
 				<button @click="add(2)">单选</button>
 				<button @click="add(3)">多选</button>
 			</div>
-			<div _v-for="i in {{formData}}">
-				<div _v-if="{{i.type}} == 1">					
+			<div _v-for="i in formData">
+				<div _v-if="i.type == 1">					
 					<span>文本</span>
 					<input type="text" />
 				</div>
-				<div  _v-elseif="{{i.type}} == 2">					
+				<div  _v-elseif="i.type == 2">					
 					<span>单选</span>
 					<input type="radio" />
 				</div>
-				<div _v-else="{{i.type}} == 3">					
+				<div _v-else="i.type == 3">					
 					<span>多选</span>
 					<input type="checkbox" />
 				</div>
 			</div>
 		</div>
-		<script src="dist/js/view.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="./../../dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<script>
 			var app = new View({
 				el:'app',

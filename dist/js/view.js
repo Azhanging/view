@@ -559,8 +559,9 @@ function setEvent(element) {
 
 //事件处理函数
 function setEventHandler(element, propName, propValue) {
-	var _this = this;
+	var _this3 = this;
 
+	var _this = this;
 	var filterpropValue = propValue.replace(/\(+\S+\)+/g, '');
 	propName = propName.replace('@', '');
 	//存在这个方法
@@ -570,6 +571,8 @@ function setEventHandler(element, propName, propValue) {
 			var args = propValue.match(/\(\S+\)/)[0].replace(/\(?\)?/g, '').split(',');
 			//绑定事件
 			element.addEventListener(propName, function (event) {
+				var _this2 = this;
+
 				//对数组内的数据查看是否存在的数据流进行过滤
 				var filterArgs = args.map(function (item, index) {
 					//如果传入的对象是$index,获取当前父级中所在的索引
@@ -579,7 +582,7 @@ function setEventHandler(element, propName, propValue) {
 						return event;
 					} else {
 						//解析data中的值
-						return _this.expr(item).toString();
+						return _this.expr(item, _this2).toString();
 					}
 				});
 				//运行绑定的event
@@ -588,7 +591,7 @@ function setEventHandler(element, propName, propValue) {
 		} else {
 			//不存在参数值过滤掉空的括号
 			element.addEventListener(propName, function (event) {
-				_this[filterpropValue].call(_this, event);
+				_this3[filterpropValue].call(_this3, event);
 			}, false);
 		}
 	}
@@ -600,16 +603,16 @@ function setEventHandler(element, propName, propValue) {
  */
 
 function setChildTemplateEvent(el) {
-	var _this2 = this;
+	var _this4 = this;
 
 	var childEls = el.childNodes;
 	Object.keys(childEls).forEach(function (index) {
 		var el = childEls[index];
 		if (el.nodeType == 1) {
 			if (el.childNodes.length > 0) {
-				setChildTemplateEvent.call(_this2, el);
+				setChildTemplateEvent.call(_this4, el);
 			}
-			setEvent.call(_this2, el);
+			setEvent.call(_this4, el);
 		}
 	});
 }
