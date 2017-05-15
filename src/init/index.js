@@ -147,8 +147,8 @@ class View {
 			if(getVal) {
 				for(let i = 0; i < keys.length; i++) {
 					let key = keys[i];
-					let data = getVal[key];
 					try {
+						let data = getVal[key];
 						getVal = (getVal !== null && data !== undefined) ? data : null;
 					} catch(error) {
 						return null;

@@ -1346,8 +1346,8 @@ var View = function () {
 				if (getVal) {
 					for (var i = 0; i < keys.length; i++) {
 						var key = keys[i];
-						var data = getVal[key];
 						try {
+							var data = getVal[key];
 							getVal = getVal !== null && data !== undefined ? data : null;
 						} catch (error) {
 							return null;
