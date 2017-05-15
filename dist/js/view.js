@@ -1652,7 +1652,7 @@ function setAttr(element, vdom) {
 		    propName = prop[_index2] ? prop[_index2].name : '',
 		    propValue = prop[_index2] ? prop[_index2].value : '';
 
-		if (/:.?/.test(propName)) {
+		if (/:.?/.test(propName) && !hasFor) {
 			//解析表达式
 			var re = new _tools.ResolveExpr(propValue);
 			var attrExpr = re.getExpr();

@@ -13,7 +13,7 @@ function setAttr(element, vdom) {
 			propName = prop[_index]?prop[_index].name:'',
 			propValue = prop[_index]?prop[_index].value:'';
 
-		if(/:.?/.test(propName)) {
+		if(/:.?/.test(propName) && !hasFor) {
 			//解析表达式
 			let re = new ResolveExpr(propValue);
 			let attrExpr = re.getExpr(); 

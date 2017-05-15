@@ -6,7 +6,7 @@
 	</head>
 	<body>
 		<div id="vdom">
-			<div _v-for="i in arr">
+			<div _v-for="i in arr" :class="i.a">
 				<h3>{{i.b}}</h3>
 				<ul>
 					<li _v-for="m in i.a" :class="i.class"  @click="alert($event,$index)">
