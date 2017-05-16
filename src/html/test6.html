@@ -8,10 +8,11 @@
 	</head>
 	<body>
 		<div id="app">
+			{{show}}
 			<div _v-for="i in arr" _v-show="show" style="display: none;">
-				<span _v-for="n in i">
-					{{n}}-{{n}}-{{n}}-{{n}}-{{n}}-{{n}}
-				</span>
+				<div _v-for="n,k in i">
+					{{n}}-{{k}}-{{n}}-{{k}}-{{n}}-{{k}}
+				</div>
 			</div>
 		</div>
 		<script src="./../../dist/js/view.js" type="text/javascript" charset="utf-8"></script>

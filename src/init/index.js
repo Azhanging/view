@@ -119,12 +119,16 @@ class View {
 	}
 	update(keys) {
 		watchUpdate.call(this, keys);
-		forUpdate.call(this, keys);
-		modelUpdate.call(this,keys);
-		attrUpdate.call(this, keys);
-		showUpdate.call(this, keys);
-		ifUpdate.call(this, keys);
-		domUpdate.call(this, keys);
+		let hasForUpdate = forUpdate.call(this, keys);
+		if(!hasForUpdate){			
+			modelUpdate.call(this,keys);
+			attrUpdate.call(this, keys);
+			showUpdate.call(this, keys);
+			ifUpdate.call(this, keys);
+			domUpdate.call(this, keys);
+		}else{
+			this.update();
+		}
 		//清楚节点中的缓存
 		new ELementCache(this).removeCache();
 	}
@@ -140,7 +144,7 @@ class View {
 	}
 	_get(keyLink, element) {
 		//是否存在缓存节点信息
-		if(!element || element.__cache__[keyLink] === undefined){
+		if(element == undefined || element.__cache__[keyLink] === undefined){
 			//获取作用域内的值
 			let getVal;
 			if(element) {

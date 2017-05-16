@@ -1069,6 +1069,8 @@ var _Element = function () {
 			} else if (element.nodeType === 3) {
 				//设置文本节点绑定的更新
 				_dom.setDom.call(_this, element);
+				//设置节点缓存
+				new _tools.ELementCache(_this, element).setCache();
 				//文本节点
 				vdom = {
 					textContent: element.textContent,
@@ -1355,12 +1357,16 @@ var View = function () {
 		key: 'update',
 		value: function update(keys) {
 			_watch.watchUpdate.call(this, keys);
-			_for.forUpdate.call(this, keys);
-			_model.modelUpdate.call(this, keys);
-			_attr.attrUpdate.call(this, keys);
-			_show.showUpdate.call(this, keys);
-			_if.ifUpdate.call(this, keys);
-			_dom.domUpdate.call(this, keys);
+			var hasForUpdate = _for.forUpdate.call(this, keys);
+			if (!hasForUpdate) {
+				_model.modelUpdate.call(this, keys);
+				_attr.attrUpdate.call(this, keys);
+				_show.showUpdate.call(this, keys);
+				_if.ifUpdate.call(this, keys);
+				_dom.domUpdate.call(this, keys);
+			} else {
+				this.update();
+			}
 			//清楚节点中的缓存
 			new _tools.ELementCache(this).removeCache();
 		}
@@ -1380,7 +1386,7 @@ var View = function () {
 		key: '_get',
 		value: function _get(keyLink, element) {
 			//是否存在缓存节点信息
-			if (!element || element.__cache__[keyLink] === undefined) {
+			if (element == undefined || element.__cache__[keyLink] === undefined) {
 				//获取作用域内的值
 				var getVal = void 0;
 				if (element) {
@@ -1929,6 +1935,7 @@ function createTextNodeElements(textNodes, el) {
 					var re = new _tools.ResolveExpr(expr, element);
 					re.getKeys().forEach(function (key) {
 						key = (0, _tools.resolveKey)(key);
+
 						if (!(_this2.__ob__.dom[key] instanceof Array)) {
 							_this2.__ob__.dom[key] = [];
 							_tools.setBind.call(_this2, key);
@@ -2236,8 +2243,9 @@ function forUpdate(key) {
 			return;
 		}
 		updateFn.call(this, key);
+		return true;
 	}
-	this._update();
+	//	this._update();
 }
 
 function updateFn(key) {

@@ -79,6 +79,8 @@ class _Element {
 		} else if(element.nodeType === 3){
 			//设置文本节点绑定的更新
 			setDom.call(_this, element);
+			//设置节点缓存
+			new ELementCache(_this,element).setCache();
 			//文本节点
 			vdom = {
 				textContent: element.textContent,

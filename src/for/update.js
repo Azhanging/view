@@ -13,8 +13,9 @@ function forUpdate(key) {
 			return;
 		}
 		updateFn.call(this, key);
+		return true;
 	}
-	this._update();
+//	this._update();
 }
 
 function updateFn(key) {

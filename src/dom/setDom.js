@@ -1,4 +1,4 @@
-import {disassembly,setBind , ResolveExpr,resolveKey} from './../tools';
+import {disassembly,setBind , ResolveExpr,resolveKey,getScope} from './../tools';
 
 
 function setDom(element) {
@@ -26,12 +26,13 @@ function createTextNodeElements(textNodes, el) {
 	for(let i = 0; i < textNodes.length; i++) {
 		if(textNodes[i].trim() !== "") {
 			//查看是否为数据绑定
-			let element = document.createTextNode(textNodes[i]);
+			let element = document.createTextNode(textNodes[i]);			
 			if(/\{\{.*?\}\}/.test(textNodes[i]) == true) {
 				let expr = textNodes[i].replace(/(\{)?(\})?/g, '');
 				let re = new ResolveExpr(expr,element);
 				re.getKeys().forEach((key)=>{
 					key = resolveKey(key);
+					
 					if(!(this.__ob__.dom[key] instanceof Array)) {
 						this.__ob__.dom[key] = [];
 						setBind.call(this,key);
@@ -46,7 +47,6 @@ function createTextNodeElements(textNodes, el) {
 					
 					this.__ob__.dom[key].push(element);
 				});
-				
 			}
 			fragment.appendChild(element);
 		}
