@@ -164,7 +164,6 @@ var ResolveExpr = function () {
 		this.bindKeys = [];
 		this.keyword = ["undefined", "null", "true", "false"];
 		this.filter = [];
-		//		this.regexpBind = ;
 		this._init();
 	}
 
@@ -174,7 +173,6 @@ var ResolveExpr = function () {
 			var _this = this;
 
 			//抽离字符串
-
 			var pullString = this.expr.match(/\'(.*?)\'|\"(.*?)\"/g);
 
 			if (pullString) {
@@ -437,6 +435,40 @@ function hasForAttr(element) {
 	return false;
 }
 
+//节点获取的缓存
+
+var ELementCache = function () {
+	function ELementCache(context, element) {
+		_classCallCheck(this, ELementCache);
+
+		this.element = element;
+		this.context = context;
+	}
+
+	_createClass(ELementCache, [{
+		key: 'setCache',
+		value: function setCache() {
+			if (!(this.element.cache instanceof Object)) {
+				this.element.__cache__ = {};
+				this.context.cache.push(this.element);
+			}
+		}
+	}, {
+		key: 'removeCache',
+		value: function removeCache() {
+			this.context.cache.forEach(function (element) {
+				if (!(element.__cache__ instanceof Object) && element.parentNode !== null) {
+					element.parentNode.__cache__ = {};
+				} else {
+					element.__cache__ = {};
+				}
+			});
+		}
+	}]);
+
+	return ELementCache;
+}();
+
 exports.getEl = getEl;
 exports.disassembly = disassembly;
 exports.getDisassemblyKey = getDisassemblyKey;
@@ -451,6 +483,7 @@ exports.getFirstElementChild = getFirstElementChild;
 exports.resolveKey = resolveKey;
 exports.initRegExp = initRegExp;
 exports.hasForAttr = hasForAttr;
+exports.ELementCache = ELementCache;
 
 /***/ }),
 /* 1 */
@@ -1018,6 +1051,9 @@ var _Element = function () {
 				//设置作用域
 				_tools.setScope.call(_this, element);
 
+				//设置节点缓存
+				new _tools.ELementCache(_this, element).setCache();
+
 				//设置属性的绑定
 				var hasInitFor = _attr.setAttr.call(_this, element, vdom);
 
@@ -1294,6 +1330,8 @@ var View = function () {
 				tempFragmentElements: [],
 				templateIndex: 0
 			};
+
+			this.cache = [];
 		}
 	}, {
 		key: 'dep',
@@ -1323,6 +1361,8 @@ var View = function () {
 			_show.showUpdate.call(this, keys);
 			_if.ifUpdate.call(this, keys);
 			_dom.domUpdate.call(this, keys);
+			//清楚节点中的缓存
+			new _tools.ELementCache(this).removeCache();
 		}
 	}, {
 		key: '_update',
@@ -1333,42 +1373,54 @@ var View = function () {
 			_attr.attrUpdate.call(this, keys);
 			_show.showUpdate.call(this, keys);
 			_dom.domUpdate.call(this, keys);
+			//清楚节点中的缓存
+			new _tools.ELementCache(this).removeCache();
 		}
 	}, {
 		key: '_get',
 		value: function _get(keyLink, element) {
-			//获取作用域内的值
-			var getVal = void 0;
-			if (element) {
-				getVal = _tools.getScope.call(this, element);
-			} else {
-				getVal = this.data;
-			}
-			//存在实例屬性對象
-			if (/\./g.test(keyLink)) {
-				var keys = keyLink.split('.');
-				//存在值
-				if (getVal) {
-					for (var i = 0; i < keys.length; i++) {
-						var key = keys[i];
-						try {
-							var data = getVal[key];
-							getVal = getVal !== null && data !== undefined ? data : null;
-						} catch (error) {
-							return null;
+			//是否存在缓存节点信息
+			if (!element || element.__cache__[keyLink] === undefined) {
+				//获取作用域内的值
+				var getVal = void 0;
+				if (element) {
+					getVal = _tools.getScope.call(this, element);
+				} else {
+					getVal = this.data;
+				}
+				//存在实例屬性對象
+				if (/\./g.test(keyLink)) {
+					var keys = keyLink.split('.');
+					//存在值
+					if (getVal) {
+						for (var i = 0; i < keys.length; i++) {
+							var key = keys[i];
+							try {
+								var data = getVal[key];
+								getVal = getVal !== null && data !== undefined ? data : null;
+							} catch (error) {
+								return null;
+							}
 						}
+						element ? element.__cache__[keyLink] = getVal : null;
+						return getVal;
+					} else {
+						element ? element.__cache__[keyLink] = null : null;
+						return null;
 					}
-					return getVal;
 				} else {
-					return null;
+					var _data = getVal[keyLink];
+					if (_data != undefined) {
+						element ? element.__cache__[keyLink] = _data : null;
+						return _data;
+					} else {
+						element ? element.__cache__[keyLink] = null : null;
+						return null;
+					}
 				}
 			} else {
-				var _data = getVal[keyLink];
-				if (_data != undefined) {
-					return _data;
-				} else {
-					return null;
-				}
+				//直接返回缓存数据
+				return element.__cache__[keyLink];
 			}
 		}
 	}, {
@@ -1874,7 +1926,7 @@ function createTextNodeElements(textNodes, el) {
 				var element = document.createTextNode(textNodes[i]);
 				if (/\{\{.*?\}\}/.test(textNodes[i]) == true) {
 					var expr = textNodes[i].replace(/(\{)?(\})?/g, '');
-					var re = new _tools.ResolveExpr(expr);
+					var re = new _tools.ResolveExpr(expr, element);
 					re.getKeys().forEach(function (key) {
 						key = (0, _tools.resolveKey)(key);
 						if (!(_this2.__ob__.dom[key] instanceof Array)) {
@@ -2185,6 +2237,7 @@ function forUpdate(key) {
 		}
 		updateFn.call(this, key);
 	}
+	this._update();
 }
 
 function updateFn(key) {
@@ -2312,8 +2365,7 @@ function updateFn(key) {
 			_dom.replaceTextNode.call(_this3);
 		}
 	});
-
-	this._update();
+	//	this._update();	
 }
 
 exports.forUpdate = forUpdate;

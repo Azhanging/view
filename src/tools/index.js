@@ -57,12 +57,10 @@ class ResolveExpr {
 		this.bindKeys = [];
 		this.keyword = ["undefined","null","true","false"];
 		this.filter = [];
-//		this.regexpBind = ;
 		this._init();
 	}
 	_init() {
 		//抽离字符串
-		
 		let pullString = this.expr.match(/\'(.*?)\'|\"(.*?)\"/g);
 		
 		if(pullString){
@@ -74,7 +72,6 @@ class ResolveExpr {
 		
 		//检查是够存在||与
 		this._expr = this._expr.replace(/\|{2}/,'______');
-		
 		
 		let splitExpr = this._expr.split('|');
 		//拆分过滤器
@@ -312,6 +309,29 @@ function hasForAttr(element){
 	return false;
 }
 
+//节点获取的缓存
+class ELementCache{
+	constructor(context,element){
+		this.element = element; 
+		this.context = context; 
+	}
+	setCache(){
+		if(!(this.element.cache instanceof Object)){
+			this.element.__cache__ = {};
+			this.context.cache.push(this.element);
+		}
+	}
+	removeCache(){
+		this.context.cache.forEach((element)=>{
+			if(!(element.__cache__ instanceof Object) && element.parentNode !== null){
+				element.parentNode.__cache__ = {};
+			}else{
+				element.__cache__ = {};				
+			}
+		});
+	}
+}
+
 export {
 	getEl,
 	disassembly,
@@ -326,5 +346,6 @@ export {
 	getFirstElementChild,
 	resolveKey,
 	initRegExp,
-	hasForAttr
+	hasForAttr,
+	ELementCache
 }

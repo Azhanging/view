@@ -29,7 +29,7 @@ function createTextNodeElements(textNodes, el) {
 			let element = document.createTextNode(textNodes[i]);
 			if(/\{\{.*?\}\}/.test(textNodes[i]) == true) {
 				let expr = textNodes[i].replace(/(\{)?(\})?/g, '');
-				let re = new ResolveExpr(expr);
+				let re = new ResolveExpr(expr,element);
 				re.getKeys().forEach((key)=>{
 					key = resolveKey(key);
 					if(!(this.__ob__.dom[key] instanceof Array)) {

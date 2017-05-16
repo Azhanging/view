@@ -1,7 +1,7 @@
 import Observer from './../observer';
 import method from './../method';
 import vdom from './../vdom';
-import { getEl, getKeyLink, deepCopy, getScope, getFirstElementChild, initRegExp} from './../tools';
+import { getEl, getKeyLink, deepCopy, getScope, getFirstElementChild, initRegExp,ELementCache} from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
@@ -100,6 +100,8 @@ class View {
 			tempFragmentElements: [],
 			templateIndex: 0
 		};
+		
+		this.cache = [];
 	}
 	dep(keys) {
 		let updates = [];
@@ -123,6 +125,8 @@ class View {
 		showUpdate.call(this, keys);
 		ifUpdate.call(this, keys);
 		domUpdate.call(this, keys);
+		//清楚节点中的缓存
+		new ELementCache(this).removeCache();
 	}
 	_update(keys){
 		watchUpdate.call(this,keys);
@@ -131,41 +135,53 @@ class View {
 		attrUpdate.call(this,keys);
 		showUpdate.call(this,keys);
 		domUpdate.call(this,keys);
+		//清楚节点中的缓存
+		new ELementCache(this).removeCache();
 	}
 	_get(keyLink, element) {
-		//获取作用域内的值
-		let getVal;
-		if(element) {
-			getVal = getScope.call(this, element);
-		} else {
-			getVal = this.data;
-		}
-		//存在实例屬性對象
-		if(/\./g.test(keyLink)) {
-			let keys = keyLink.split('.');
-			//存在值
-			if(getVal) {
-				for(let i = 0; i < keys.length; i++) {
-					let key = keys[i];
-					try {
-						let data = getVal[key];
-						getVal = (getVal !== null && data !== undefined) ? data : null;
-					} catch(error) {
-						return null;
+		//是否存在缓存节点信息
+		if(!element || element.__cache__[keyLink] === undefined){
+			//获取作用域内的值
+			let getVal;
+			if(element) {
+				getVal = getScope.call(this, element);
+			} else {
+				getVal = this.data;
+			}
+			//存在实例屬性對象
+			if(/\./g.test(keyLink)) {
+				let keys = keyLink.split('.');
+				//存在值
+				if(getVal) {
+					for(let i = 0; i < keys.length; i++) {
+						let key = keys[i];
+						try {
+							let data = getVal[key];
+							getVal = (getVal !== null && data !== undefined) ? data : null;
+						} catch(error) {
+							return null;
+						}
 					}
+					element?(element.__cache__[keyLink] = getVal):null;
+					return getVal;
+				} else {
+					element?(element.__cache__[keyLink] = null):null;
+					return null;
 				}
-				return getVal;
-			} else {
-				return null;
+			} else{
+				let data = getVal[keyLink];
+				if(data != undefined) {
+					element?(element.__cache__[keyLink] = data):null;
+					return data;
+				} else {
+					element?(element.__cache__[keyLink] = null):null;
+					return null;
+				}
 			}
-		} else{
-			let data = getVal[keyLink];
-			if(data != undefined) {
-				return data;
-			} else {
-				return null;
-			}
-		} 
+		}else{
+			//直接返回缓存数据
+			return element.__cache__[keyLink];
+		}
 	}
 	_set(element, obj, val, key) {
 		let data = this['data'],

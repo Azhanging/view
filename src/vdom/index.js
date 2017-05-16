@@ -2,7 +2,7 @@ import { setDom } from './../dom';
 import component from './../component';
 import { setAttr } from './../attr';
 import { setEvent } from './../event';
-import { getIndex ,setScope} from './../tools';
+import { getIndex ,setScope,ELementCache} from './../tools';
 
 //状态
 const REPLACE = 0;
@@ -60,6 +60,9 @@ class _Element {
 			};
 			//设置作用域
 			setScope.call(_this,element);
+			
+			//设置节点缓存
+			new ELementCache(_this,element).setCache();
 			
 			//设置属性的绑定
 			let hasInitFor = setAttr.call(_this, element, vdom);

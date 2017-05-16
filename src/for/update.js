@@ -6,7 +6,7 @@ function forUpdate(key) {
 	if(key === undefined || key === '') {
 		Object.keys(this.__ob__.for).forEach((keyLine, index) => {
 			updateFn.call(this, keyLine);
-		});
+		});	
 	} else {
 		//如果不存在键值，不执行更新
 		if(!this.__ob__.for[key]) {
@@ -14,6 +14,7 @@ function forUpdate(key) {
 		}
 		updateFn.call(this, key);
 	}
+	this._update();
 }
 
 function updateFn(key) {
@@ -141,8 +142,7 @@ function updateFn(key) {
 			replaceTextNode.call(this);
 		}
 	});
-
-	this._update();
+//	this._update();	
 }
 
 export {

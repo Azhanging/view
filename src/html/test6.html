@@ -9,33 +9,22 @@
 	<body>
 		<div id="app">
 			<div _v-for="i in arr" _v-show="show" style="display: none;">
-				<div _v-for="n in i">
-					{{n*n + '123' < 2?'老司机':'123'}}-{{n*n + '123' < 2?'老司机':'123' | length  }}-{{n*n + '123' < 2?'老司机':'123'}}-{{n*n + '123' < 2?'老司机':'123'}}
-				</div>
+				<span _v-for="n in i">
+					{{n}}-{{n}}-{{n}}-{{n}}-{{n}}-{{n}}
+				</span>
 			</div>
 		</div>
 		<script src="./../../dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<!--<script src="./../../dist/js/vue.js" type="text/javascript" charset="utf-8"></script>-->
 		<script type="text/javascript">
 			var time = new Date();
-			var arr = [];
-			for(var i = 0;i<200;i++){
-				arr.push([
+			var arr = {};
+			for(var i = 0;i<1000;i++){
+				arr[i] = [
 					Math.random(),
 					Math.random(),
 					Math.random(),
-					Math.random(),
-					Math.random(),
-					Math.random(),
-					Math.random(),
-					Math.random(),
-					Math.random(),
-					Math.random(),
-					Math.random(),
-					Math.random(),
-					Math.random(),
-					Math.random()
-				]);
+				]
 			}
 			
 			var app = new View({
