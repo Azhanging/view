@@ -78,6 +78,13 @@ function setFor(element, propValue, propIndex) {
 			keyLine: filterForVal + '.' + getKeys[index],
 			isAppend: true
 		}
+		
+		if(!(cloneNode.__keyLine__ instanceof Object)){
+			cloneNode.__keyLine__ = {};
+		}
+		
+		cloneNode.__keyLine__[forItem] = getForVal.__keyLine__+'.'+getKeys[index];
+		
 		cloneNode.$index = index;
 		element.__forElementGroup__.push(cloneNode);
 		fragment.appendChild(cloneNode);

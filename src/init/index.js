@@ -1,7 +1,7 @@
 import Observer from './../observer';
 import method from './../method';
 import vdom from './../vdom';
-import { getEl, getKeyLink, deepCopy, getScope, getFirstElementChild, initRegExp,ELementCache} from './../tools';
+import { getEl, getKeyLink, deepCopy, getScope, getFirstElementChild, initRegExp,ElementCache} from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
@@ -105,43 +105,52 @@ class View {
 	}
 	dep(keys) {
 		let updates = [];
-		let mainKey = keys.split('.')[0];
+		//设置当前链上一级依赖
+		if(keys.indexOf('.') != -1) {
+			let newKeys = keys.split('.');
+			for(let index = 0,len = newKeys.length;index < len;index++){
+				updates.push(newKeys.join('.'));
+				newKeys.pop();
+			}
+		}else{			
+			//当前的数据依赖
+			updates.push(keys);
+		}
+		
+		
+		//设置当前链下面的所有依赖数据
 		Object.keys(this.__ob__.bind).forEach((index) => {
 			let key = this.__ob__.bind[index];
-			if(new RegExp('^'+initRegExp(mainKey)+'\\.?').test(key)) {
+			if(key.indexOf(keys + '.') != -1) {
 				updates.push(key);
 			}
 		});
-		//更新数据链
+		
 		updates.forEach((keyLine) => {
 			this.update(keyLine);
 		});
 	}
 	update(keys) {
 		watchUpdate.call(this, keys);
-		let hasForUpdate = forUpdate.call(this, keys);
-		if(!hasForUpdate){			
-			modelUpdate.call(this,keys);
-			attrUpdate.call(this, keys);
-			showUpdate.call(this, keys);
-			ifUpdate.call(this, keys);
-			domUpdate.call(this, keys);
-		}else{
-			this.update();
-		}
-		//清楚节点中的缓存
-		new ELementCache(this).removeCache();
-	}
-	_update(keys){
-		watchUpdate.call(this,keys);
-		ifUpdate.call(this,keys);
+		forUpdate.call(this, keys);			
 		modelUpdate.call(this,keys);
-		attrUpdate.call(this,keys);
-		showUpdate.call(this,keys);
-		domUpdate.call(this,keys);
+		attrUpdate.call(this, keys);
+		showUpdate.call(this, keys);
+		ifUpdate.call(this, keys);
+		domUpdate.call(this, keys);
 		//清楚节点中的缓存
-		new ELementCache(this).removeCache();
+		new ElementCache(this).removeCache();
 	}
+//	_update(keys){
+//		watchUpdate.call(this,keys);
+//		ifUpdate.call(this,keys);
+//		modelUpdate.call(this,keys);
+//		attrUpdate.call(this,keys);
+//		showUpdate.call(this,keys);
+//		domUpdate.call(this,keys);
+//		//清楚节点中的缓存
+//		new ElementCache(this).removeCache();
+//	}
 	_get(keyLink, element) {
 		//是否存在缓存节点信息
 		if(element == undefined || element.__cache__[keyLink] === undefined){

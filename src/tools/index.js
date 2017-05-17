@@ -310,7 +310,7 @@ function hasForAttr(element){
 }
 
 //节点获取的缓存
-class ELementCache{
+class ElementCache{
 	constructor(context,element){
 		this.element = element; 
 		this.context = context; 
@@ -332,6 +332,18 @@ class ELementCache{
 	}
 }
 
+//查找key链
+function findKeyLine(element,key){
+	if(this.el === element){
+		return key; 
+	}
+	if(element.__keyLine__ && element.__keyLine__[key] !== undefined){
+		return element.__keyLine__[key];
+	}else{
+		return findKeyLine.apply(this,[element.parentNode,key]);
+	}
+}
+
 export {
 	getEl,
 	disassembly,
@@ -347,5 +359,6 @@ export {
 	resolveKey,
 	initRegExp,
 	hasForAttr,
-	ELementCache
+	ElementCache,
+	findKeyLine
 }

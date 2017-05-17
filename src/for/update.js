@@ -13,9 +13,7 @@ function forUpdate(key) {
 			return;
 		}
 		updateFn.call(this, key);
-		return true;
 	}
-//	this._update();
 }
 
 function updateFn(key) {
@@ -60,6 +58,10 @@ function updateFn(key) {
 			}
 			//添加到实际的dom中
 			element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
+			
+			if(updateKeys.indexOf(element.__forKey__) === -1){
+				updateKeys.push(element.__forKey__);
+			}
 
 		} else if(dataLength < forElementGroupLength) {
 			let _fragment = document.createDocumentFragment();
@@ -79,6 +81,10 @@ function updateFn(key) {
 			}
 			//添加到实际的dom中
 			element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
+			
+			if(updateKeys.indexOf(element.__forKey__) === -1){
+				updateKeys.push(element.__forKey__);
+			}
 
 		} else if(dataLength > forElementGroupLength) {
 
@@ -143,7 +149,10 @@ function updateFn(key) {
 			replaceTextNode.call(this);
 		}
 	});
-//	this._update();	
+	
+	updateKeys.forEach((key)=>{
+		this.dep(key);	
+	});
 }
 
 export {

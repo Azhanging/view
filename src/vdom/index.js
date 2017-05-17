@@ -2,7 +2,7 @@ import { setDom } from './../dom';
 import component from './../component';
 import { setAttr } from './../attr';
 import { setEvent } from './../event';
-import { getIndex ,setScope,ELementCache} from './../tools';
+import { getIndex ,setScope,ElementCache} from './../tools';
 
 //状态
 const REPLACE = 0;
@@ -62,7 +62,7 @@ class _Element {
 			setScope.call(_this,element);
 			
 			//设置节点缓存
-			new ELementCache(_this,element).setCache();
+			new ElementCache(_this,element).setCache();
 			
 			//设置属性的绑定
 			let hasInitFor = setAttr.call(_this, element, vdom);
@@ -80,7 +80,7 @@ class _Element {
 			//设置文本节点绑定的更新
 			setDom.call(_this, element);
 			//设置节点缓存
-			new ELementCache(_this,element).setCache();
+			new ElementCache(_this,element).setCache();
 			//文本节点
 			vdom = {
 				textContent: element.textContent,

@@ -1,4 +1,4 @@
-import {setBind,ResolveExpr,resolveKey} from './../tools';
+import {setBind,ResolveExpr,resolveKey,findKeyLine} from './../tools';
 
 function setShow(element,propValue){
 	let re = new ResolveExpr(propValue);
@@ -7,6 +7,7 @@ function setShow(element,propValue){
 	let filter = re.getFilter();
 	
 	showKeys.forEach((key, index) => {
+		key = findKeyLine.apply(this,[element,key]);
 		key = resolveKey(key);
 		if(!(this.__ob__.show[key] instanceof Array)) {
 			this.__ob__.show[key] = [];

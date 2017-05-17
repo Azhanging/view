@@ -1,5 +1,5 @@
 /*拆解绑定的信息*/
-import { setBind ,getIndex ,ResolveExpr,resolveKey,hasForAttr} from './../tools';
+import { setBind ,getIndex ,ResolveExpr,resolveKey,hasForAttr,findKeyLine} from './../tools';
 import { setShow } from './../show';
 import { setIf } from './../if';
 import { setFor } from './../for';
@@ -29,6 +29,7 @@ function setAttr(element, vdom) {
 			vdom.props[propName] = attrExpr;
 			
 			attrKeys.forEach((key, index) => {
+				key = findKeyLine.apply(this,[element,key]);
 				key = resolveKey(key);
 				if(!this.__ob__.attr[key]) {
 					this.__ob__.attr[key] = [];	

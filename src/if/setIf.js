@@ -1,4 +1,4 @@
-import { setBind ,ResolveExpr,resolveKey} from './../tools';
+import { setBind ,ResolveExpr,resolveKey,findKeyLine} from './../tools';
 function nextSibling(element, ifCount) {
 	if(element.nodeType === 1) {
 		let attributes = element.attributes;
@@ -21,6 +21,7 @@ function nextSibling(element, ifCount) {
 						
 						ifKeys.forEach((key, index) => {
 							if(key) {
+								key = findKeyLine.apply(this,[element,key]);
 								key = resolveKey(key);
 								if(!(this.__ob__.if[key] instanceof Array)) {
 									this.__ob__.if[key] = [];

@@ -437,15 +437,15 @@ function hasForAttr(element) {
 
 //节点获取的缓存
 
-var ELementCache = function () {
-	function ELementCache(context, element) {
-		_classCallCheck(this, ELementCache);
+var ElementCache = function () {
+	function ElementCache(context, element) {
+		_classCallCheck(this, ElementCache);
 
 		this.element = element;
 		this.context = context;
 	}
 
-	_createClass(ELementCache, [{
+	_createClass(ElementCache, [{
 		key: 'setCache',
 		value: function setCache() {
 			if (!(this.element.cache instanceof Object)) {
@@ -466,8 +466,22 @@ var ELementCache = function () {
 		}
 	}]);
 
-	return ELementCache;
+	return ElementCache;
 }();
+
+//查找key链
+
+
+function findKeyLine(element, key) {
+	if (this.el === element) {
+		return key;
+	}
+	if (element.__keyLine__ && element.__keyLine__[key] !== undefined) {
+		return element.__keyLine__[key];
+	} else {
+		return findKeyLine.apply(this, [element.parentNode, key]);
+	}
+}
 
 exports.getEl = getEl;
 exports.disassembly = disassembly;
@@ -483,7 +497,8 @@ exports.getFirstElementChild = getFirstElementChild;
 exports.resolveKey = resolveKey;
 exports.initRegExp = initRegExp;
 exports.hasForAttr = hasForAttr;
-exports.ELementCache = ELementCache;
+exports.ElementCache = ElementCache;
+exports.findKeyLine = findKeyLine;
 
 /***/ }),
 /* 1 */
@@ -1052,7 +1067,7 @@ var _Element = function () {
 				_tools.setScope.call(_this, element);
 
 				//设置节点缓存
-				new _tools.ELementCache(_this, element).setCache();
+				new _tools.ElementCache(_this, element).setCache();
 
 				//设置属性的绑定
 				var hasInitFor = _attr.setAttr.call(_this, element, vdom);
@@ -1070,7 +1085,7 @@ var _Element = function () {
 				//设置文本节点绑定的更新
 				_dom.setDom.call(_this, element);
 				//设置节点缓存
-				new _tools.ELementCache(_this, element).setCache();
+				new _tools.ElementCache(_this, element).setCache();
 				//文本节点
 				vdom = {
 					textContent: element.textContent,
@@ -1341,14 +1356,26 @@ var View = function () {
 			var _this = this;
 
 			var updates = [];
-			var mainKey = keys.split('.')[0];
+			//设置当前链上一级依赖
+			if (keys.indexOf('.') != -1) {
+				var newKeys = keys.split('.');
+				for (var index = 0, len = newKeys.length; index < len; index++) {
+					updates.push(newKeys.join('.'));
+					newKeys.pop();
+				}
+			} else {
+				//当前的数据依赖
+				updates.push(keys);
+			}
+
+			//设置当前链下面的所有依赖数据
 			Object.keys(this.__ob__.bind).forEach(function (index) {
 				var key = _this.__ob__.bind[index];
-				if (new RegExp('^' + (0, _tools.initRegExp)(mainKey) + '\\.?').test(key)) {
+				if (key.indexOf(keys + '.') != -1) {
 					updates.push(key);
 				}
 			});
-			//更新数据链
+
 			updates.forEach(function (keyLine) {
 				_this.update(keyLine);
 			});
@@ -1357,31 +1384,26 @@ var View = function () {
 		key: 'update',
 		value: function update(keys) {
 			_watch.watchUpdate.call(this, keys);
-			var hasForUpdate = _for.forUpdate.call(this, keys);
-			if (!hasForUpdate) {
-				_model.modelUpdate.call(this, keys);
-				_attr.attrUpdate.call(this, keys);
-				_show.showUpdate.call(this, keys);
-				_if.ifUpdate.call(this, keys);
-				_dom.domUpdate.call(this, keys);
-			} else {
-				this.update();
-			}
-			//清楚节点中的缓存
-			new _tools.ELementCache(this).removeCache();
-		}
-	}, {
-		key: '_update',
-		value: function _update(keys) {
-			_watch.watchUpdate.call(this, keys);
-			_if.ifUpdate.call(this, keys);
+			_for.forUpdate.call(this, keys);
 			_model.modelUpdate.call(this, keys);
 			_attr.attrUpdate.call(this, keys);
 			_show.showUpdate.call(this, keys);
+			_if.ifUpdate.call(this, keys);
 			_dom.domUpdate.call(this, keys);
 			//清楚节点中的缓存
-			new _tools.ELementCache(this).removeCache();
+			new _tools.ElementCache(this).removeCache();
 		}
+		//	_update(keys){
+		//		watchUpdate.call(this,keys);
+		//		ifUpdate.call(this,keys);
+		//		modelUpdate.call(this,keys);
+		//		attrUpdate.call(this,keys);
+		//		showUpdate.call(this,keys);
+		//		domUpdate.call(this,keys);
+		//		//清楚节点中的缓存
+		//		new ElementCache(this).removeCache();
+		//	}
+
 	}, {
 		key: '_get',
 		value: function _get(keyLink, element) {
@@ -1729,6 +1751,7 @@ function setAttr(element, vdom) {
 			vdom.props[propName] = attrExpr;
 
 			attrKeys.forEach(function (key, index) {
+				key = _tools.findKeyLine.apply(_this, [element, key]);
 				key = (0, _tools.resolveKey)(key);
 				if (!_this.__ob__.attr[key]) {
 					_this.__ob__.attr[key] = [];
@@ -1934,8 +1957,8 @@ function createTextNodeElements(textNodes, el) {
 					var expr = textNodes[i].replace(/(\{)?(\})?/g, '');
 					var re = new _tools.ResolveExpr(expr, element);
 					re.getKeys().forEach(function (key) {
+						key = _tools.findKeyLine.apply(_this2, [el, key]);
 						key = (0, _tools.resolveKey)(key);
-
 						if (!(_this2.__ob__.dom[key] instanceof Array)) {
 							_this2.__ob__.dom[key] = [];
 							_tools.setBind.call(_this2, key);
@@ -2164,6 +2187,13 @@ function setFor(element, propValue, propIndex) {
 			keyLine: filterForVal + '.' + getKeys[index],
 			isAppend: true
 		};
+
+		if (!(cloneNode.__keyLine__ instanceof Object)) {
+			cloneNode.__keyLine__ = {};
+		}
+
+		cloneNode.__keyLine__[forItem] = getForVal.__keyLine__ + '.' + getKeys[index];
+
 		cloneNode.$index = index;
 		element.__forElementGroup__.push(cloneNode);
 		fragment.appendChild(cloneNode);
@@ -2243,9 +2273,7 @@ function forUpdate(key) {
 			return;
 		}
 		updateFn.call(this, key);
-		return true;
 	}
-	//	this._update();
 }
 
 function updateFn(key) {
@@ -2292,6 +2320,10 @@ function updateFn(key) {
 			}
 			//添加到实际的dom中
 			element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
+
+			if (updateKeys.indexOf(element.__forKey__) === -1) {
+				updateKeys.push(element.__forKey__);
+			}
 		} else if (dataLength < forElementGroupLength) {
 			var _fragment = document.createDocumentFragment();
 			//移除已添加的节点
@@ -2310,6 +2342,10 @@ function updateFn(key) {
 			}
 			//添加到实际的dom中
 			element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
+
+			if (updateKeys.indexOf(element.__forKey__) === -1) {
+				updateKeys.push(element.__forKey__);
+			}
 		} else if (dataLength > forElementGroupLength) {
 
 			var cloneNodeElements = [];
@@ -2373,7 +2409,10 @@ function updateFn(key) {
 			_dom.replaceTextNode.call(_this3);
 		}
 	});
-	//	this._update();	
+
+	updateKeys.forEach(function (key) {
+		_this3.dep(key);
+	});
 }
 
 exports.forUpdate = forUpdate;
@@ -2416,6 +2455,7 @@ function nextSibling(element, ifCount) {
 
 						ifKeys.forEach(function (key, index) {
 							if (key) {
+								key = _tools.findKeyLine.apply(_this, [element, key]);
 								key = (0, _tools.resolveKey)(key);
 								if (!(_this.__ob__.if[key] instanceof Array)) {
 									_this.__ob__.if[key] = [];
@@ -2750,6 +2790,7 @@ function setShow(element, propValue) {
 	var filter = re.getFilter();
 
 	showKeys.forEach(function (key, index) {
+		key = _tools.findKeyLine.apply(_this, [element, key]);
 		key = (0, _tools.resolveKey)(key);
 		if (!(_this.__ob__.show[key] instanceof Array)) {
 			_this.__ob__.show[key] = [];
