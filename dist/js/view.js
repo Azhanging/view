@@ -489,12 +489,20 @@ function setDep(keys) {
 	var _this2 = this;
 
 	//undefineed依赖for中的一些键值
+	//	this.updateList.push('undefined');
 	//设置当前链上一级依赖
-	var newKeys = keys.split('.');
-	for (var index = 0, len = newKeys.length; index < len; index++) {
-		if (hasItem(this.updateList, newKeys.join('.'))) {
-			this.updateList.push(newKeys.join('.'));
-			newKeys.pop();
+	if (keys.indexOf('.') != -1) {
+		var newKeys = keys.split('.');
+		for (var index = 0, len = newKeys.length; index < len; index++) {
+			if (hasItem(this.updateList, newKeys.join('.'))) {
+				this.updateList.push(newKeys.join('.'));
+				newKeys.pop();
+			}
+		}
+	} else {
+		//当前的数据依赖
+		if (hasItem(this.updateList, keys)) {
+			this.updateList.push(keys);
 		}
 	}
 
