@@ -2160,15 +2160,15 @@ function setFor(element, propValue, propIndex) {
 	var parentNode = element.parentNode;
 	parentNode.insertBefore(presentSeize, element.nextSibling);
 
-	/*let keyLine = findKeyLine.apply(this,[element,forVal]);
- //设置键值 
- if(!this.__ob__.for[keyLine]) {
- 	this.__ob__.for[keyLine] = [];
- 	setBind.call(this, keyLine);
- }
- 
- //写进观察者
- this.__ob__.for[keyLine].push(element);*/
+	var keyLine = _tools.findKeyLine.apply(this, [element, forVal]);
+	//设置键值 
+	if (!this.__ob__.for[keyLine]) {
+		this.__ob__.for[keyLine] = [];
+		_tools.setBind.call(this, keyLine);
+	}
+
+	//写进观察者
+	this.__ob__.for[keyLine].push(element);
 
 	//设置键值 
 	if (!this.__ob__.for[filterForVal]) {

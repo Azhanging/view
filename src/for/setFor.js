@@ -36,7 +36,7 @@ function setFor(element, propValue, propIndex) {
 	let parentNode = element.parentNode;
 	parentNode.insertBefore(presentSeize, element.nextSibling);
 
-	/*let keyLine = findKeyLine.apply(this,[element,forVal]);
+	let keyLine = findKeyLine.apply(this,[element,forVal]);
 	//设置键值 
 	if(!this.__ob__.for[keyLine]) {
 		this.__ob__.for[keyLine] = [];
@@ -44,7 +44,7 @@ function setFor(element, propValue, propIndex) {
 	}
 
 	//写进观察者
-	this.__ob__.for[keyLine].push(element);*/
+	this.__ob__.for[keyLine].push(element);
 	
 	
 	//设置键值 
