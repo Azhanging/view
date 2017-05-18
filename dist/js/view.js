@@ -376,7 +376,7 @@ function getIndex(el) {
 
 //设置绑定的依赖
 function setBind(keyLine) {
-	if (this.__ob__.bind.indexOf(keyLine) == -1) {
+	if (this.__ob__.bind.indexOf(keyLine) == -1 && keyLine !== undefined) {
 		this.__ob__.bind.push(keyLine);
 	}
 }
@@ -477,12 +477,42 @@ function findKeyLine(element, key) {
 		if (this.data[key] !== undefined) {
 			return key;
 		}
-	}
-	if (element.__keyLine__ && element.__keyLine__[key] !== undefined) {
+	} else if (element.__keyLine__ && element.__keyLine__[key] !== undefined) {
 		return element.__keyLine__[key];
 	} else {
 		return findKeyLine.apply(this, [element.parentNode, key]);
 	}
+}
+
+//放回dep依赖链
+function setDep(keys) {
+	var _this2 = this;
+
+	//undefineed依赖for中的一些键值
+	//设置当前链上一级依赖
+	var newKeys = keys.split('.');
+	for (var index = 0, len = newKeys.length; index < len; index++) {
+		if (hasItem(this.updateList, newKeys.join('.'))) {
+			this.updateList.push(newKeys.join('.'));
+			newKeys.pop();
+		}
+	}
+
+	//设置当前链下面的所有依赖数据
+	Object.keys(this.__ob__.bind).forEach(function (index) {
+		var key = _this2.__ob__.bind[index];
+		if (key.indexOf(keys + '.') != -1 && hasItem(_this2.updateList, key)) {
+			_this2.updateList.push(key);
+		}
+	});
+}
+
+//indexOf的封装
+function hasItem(arr, item) {
+	if (arr.indexOf(item) !== -1) {
+		return false;
+	}
+	return true;
 }
 
 exports.getEl = getEl;
@@ -501,6 +531,7 @@ exports.initRegExp = initRegExp;
 exports.hasForAttr = hasForAttr;
 exports.ElementCache = ElementCache;
 exports.findKeyLine = findKeyLine;
+exports.setDep = setDep;
 
 /***/ }),
 /* 1 */
@@ -1351,36 +1382,22 @@ var View = function () {
 			};
 
 			this.cache = [];
+			//更新列表
+			this.updateList = [];
 		}
 	}, {
 		key: 'dep',
 		value: function dep(keys) {
-			var _this = this;
 
-			var updates = [];
-			//设置当前链上一级依赖
-			if (keys.indexOf('.') != -1) {
-				var newKeys = keys.split('.');
-				for (var index = 0, len = newKeys.length; index < len; index++) {
-					updates.push(newKeys.join('.'));
-					newKeys.pop();
-				}
-			} else {
-				//当前的数据依赖
-				updates.push(keys);
+			_tools.setDep.call(this, keys);
+
+			console.log(this.updateList);
+
+			for (var index = 0; index < this.updateList.length; index++) {
+				this.update(this.updateList[index]);
 			}
 
-			//设置当前链下面的所有依赖数据
-			Object.keys(this.__ob__.bind).forEach(function (index) {
-				var key = _this.__ob__.bind[index];
-				if (key.indexOf(keys + '.') != -1) {
-					updates.push(key);
-				}
-			});
-
-			updates.forEach(function (keyLine) {
-				_this.update(keyLine);
-			});
+			this.updateList = [];
 		}
 	}, {
 		key: 'update',
@@ -1395,17 +1412,6 @@ var View = function () {
 			//清楚节点中的缓存
 			new _tools.ElementCache(this).removeCache();
 		}
-		//	_update(keys){
-		//		watchUpdate.call(this,keys);
-		//		ifUpdate.call(this,keys);
-		//		modelUpdate.call(this,keys);
-		//		attrUpdate.call(this,keys);
-		//		showUpdate.call(this,keys);
-		//		domUpdate.call(this,keys);
-		//		//清楚节点中的缓存
-		//		new ElementCache(this).removeCache();
-		//	}
-
 	}, {
 		key: '_get',
 		value: function _get(keyLink, element) {
@@ -1523,7 +1529,7 @@ var View = function () {
 	}, {
 		key: 'createTemplate',
 		value: function createTemplate(vals, appendEl) {
-			var _this2 = this;
+			var _this = this;
 
 			if (typeof appendEl === 'string') {
 				appendEl = document.getElementById(appendEl);
@@ -1541,21 +1547,21 @@ var View = function () {
 
 				Object.keys(vals).forEach(function (key, index) {
 					//更新模板的index
-					_this2.el.$scope.$index++;
+					_this.el.$scope.$index++;
 					//设置数据流更新
-					_this2.data.templateData = vals[key];
+					_this.data.templateData = vals[key];
 					//复制临时节点
-					var tempNode = _this2.el.cloneNode(true);
+					var tempNode = _this.el.cloneNode(true);
 					//设置模板中的index属性
-					tempNode.setAttribute('data-index', _this2.__bind__.templateIndex++);
+					tempNode.setAttribute('data-index', _this.__bind__.templateIndex++);
 					//添加到对应节点上
 					appendEl.appendChild(tempNode);
 					//绑定当前节点事件
 					if (tempNode.nodeType == 1) {
-						_event.setEvent.call(_this2, tempNode);
+						_event.setEvent.call(_this, tempNode);
 					}
 					//模板添加事件
-					_event.setChildTemplateEvent.call(_this2, tempNode);
+					_event.setChildTemplateEvent.call(_this, tempNode);
 				});
 			} catch (e) {
 				console.warn('createTemplate方法中的第一个参数只能为的数组或者对象');
@@ -1754,7 +1760,7 @@ function setAttr(element, vdom) {
 
 			attrKeys.forEach(function (key, index) {
 				key = _tools.findKeyLine.apply(_this, [element, key]);
-				key = (0, _tools.resolveKey)(key);
+				//				key = resolveKey(key);
 				if (!_this.__ob__.attr[key]) {
 					_this.__ob__.attr[key] = [];
 					_tools.setBind.call(_this, key);
@@ -1960,7 +1966,6 @@ function createTextNodeElements(textNodes, el) {
 					var re = new _tools.ResolveExpr(expr, element);
 					re.getKeys().forEach(function (key) {
 						key = _tools.findKeyLine.apply(_this2, [el, key]);
-						key = (0, _tools.resolveKey)(key);
 						if (!(_this2.__ob__.dom[key] instanceof Array)) {
 							_this2.__ob__.dom[key] = [];
 							_tools.setBind.call(_this2, key);
@@ -2147,6 +2152,16 @@ function setFor(element, propValue, propIndex) {
 	var parentNode = element.parentNode;
 	parentNode.insertBefore(presentSeize, element.nextSibling);
 
+	/*let keyLine = findKeyLine.apply(this,[element,forVal]);
+ //设置键值 
+ if(!this.__ob__.for[keyLine]) {
+ 	this.__ob__.for[keyLine] = [];
+ 	setBind.call(this, keyLine);
+ }
+ 
+ //写进观察者
+ this.__ob__.for[keyLine].push(element);*/
+
 	//设置键值 
 	if (!this.__ob__.for[filterForVal]) {
 		this.__ob__.for[filterForVal] = [];
@@ -2155,6 +2170,7 @@ function setFor(element, propValue, propIndex) {
 
 	//写进观察者
 	this.__ob__.for[filterForVal].push(element);
+
 	//存储循环组节点成员
 	element.__forElementGroup__ = [];
 	//存储父级的节点
@@ -2255,6 +2271,8 @@ exports.forUpdate = undefined;
 
 var _dom = __webpack_require__(2);
 
+var _tools = __webpack_require__(0);
+
 var _vdom = __webpack_require__(9);
 
 var _vdom2 = _interopRequireDefault(_vdom);
@@ -2322,10 +2340,6 @@ function updateFn(key) {
 			}
 			//添加到实际的dom中
 			element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
-
-			if (updateKeys.indexOf(element.__forKey__) === -1) {
-				updateKeys.push(element.__forKey__);
-			}
 		} else if (dataLength < forElementGroupLength) {
 			var _fragment = document.createDocumentFragment();
 			//移除已添加的节点
@@ -2344,10 +2358,6 @@ function updateFn(key) {
 			}
 			//添加到实际的dom中
 			element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
-
-			if (updateKeys.indexOf(element.__forKey__) === -1) {
-				updateKeys.push(element.__forKey__);
-			}
 		} else if (dataLength > forElementGroupLength) {
 
 			var cloneNodeElements = [];
@@ -2371,6 +2381,13 @@ function updateFn(key) {
 					keyLine: key + '.' + getDataKeys[_index4],
 					isAppend: true
 				};
+
+				if (!(cloneNode.__keyLine__ instanceof Object)) {
+					cloneNode.__keyLine__ = {};
+				}
+
+				cloneNode.__keyLine__[element.__forItem__] = key + '.' + getDataKeys[_index4];
+
 				cloneNode.$index = _index4;
 				element.__forElementGroup__.push(cloneNode);
 				fragment.appendChild(cloneNode);
@@ -2412,9 +2429,7 @@ function updateFn(key) {
 		}
 	});
 
-	updateKeys.forEach(function (key) {
-		_this3.dep(key);
-	});
+	_tools.setDep.call(this, key);
 }
 
 exports.forUpdate = forUpdate;
@@ -2454,7 +2469,6 @@ function nextSibling(element, ifCount) {
 						var ifKeys = re.getKeys();
 						var ifExpr = re.getExpr();
 						var filter = re.getFilter();
-
 						ifKeys.forEach(function (key, index) {
 							if (key) {
 								key = _tools.findKeyLine.apply(_this, [element, key]);
@@ -2513,8 +2527,9 @@ function setIf(element, propName, propValue) {
 	var filter = re.getFilter();
 
 	ifKeys.forEach(function (key, index) {
+		key = _tools.findKeyLine.apply(_this2, [element, key]);
 		if (key) {
-			key = (0, _tools.resolveKey)(key);
+			//			key = resolveKey(key);
 			//创建绑定的ob对象
 			if (!(_this2.__ob__.if[key] instanceof Array)) {
 				_this2.__ob__.if[key] = [];
@@ -2793,7 +2808,7 @@ function setShow(element, propValue) {
 
 	showKeys.forEach(function (key, index) {
 		key = _tools.findKeyLine.apply(_this, [element, key]);
-		key = (0, _tools.resolveKey)(key);
+		//		key = resolveKey(key);
 		if (!(_this.__ob__.show[key] instanceof Array)) {
 			_this.__ob__.show[key] = [];
 			_tools.setBind.call(_this, key);

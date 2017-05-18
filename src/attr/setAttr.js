@@ -30,7 +30,7 @@ function setAttr(element, vdom) {
 			
 			attrKeys.forEach((key, index) => {
 				key = findKeyLine.apply(this,[element,key]);
-				key = resolveKey(key);
+//				key = resolveKey(key);
 				if(!this.__ob__.attr[key]) {
 					this.__ob__.attr[key] = [];	
 					setBind.call(this,key);

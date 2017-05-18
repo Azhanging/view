@@ -1,7 +1,7 @@
 import Observer from './../observer';
 import method from './../method';
 import vdom from './../vdom';
-import { getEl, getKeyLink, deepCopy, getScope, getFirstElementChild, initRegExp,ElementCache} from './../tools';
+import { getEl,getKeyLink, deepCopy, getScope, getFirstElementChild, initRegExp,ElementCache,setDep} from './../tools';
 import { domUpdate, createTextNodes, replaceTextNode } from './../dom';
 import { attrUpdate } from './../attr';
 import { showUpdate } from './../show';
@@ -102,33 +102,20 @@ class View {
 		};
 		
 		this.cache = [];
+		//更新列表
+		this.updateList = [];
 	}
 	dep(keys) {
-		let updates = [];
-		//设置当前链上一级依赖
-		if(keys.indexOf('.') != -1) {
-			let newKeys = keys.split('.');
-			for(let index = 0,len = newKeys.length;index < len;index++){
-				updates.push(newKeys.join('.'));
-				newKeys.pop();
-			}
-		}else{			
-			//当前的数据依赖
-			updates.push(keys);
+		
+		setDep.call(this,keys);
+		
+		console.log(this.updateList);
+		
+		for(let index = 0;index < this.updateList.length;index++){
+			this.update(this.updateList[index]);
 		}
 		
-		
-		//设置当前链下面的所有依赖数据
-		Object.keys(this.__ob__.bind).forEach((index) => {
-			let key = this.__ob__.bind[index];
-			if(key.indexOf(keys + '.') != -1) {
-				updates.push(key);
-			}
-		});
-		
-		updates.forEach((keyLine) => {
-			this.update(keyLine);
-		});
+		this.updateList = [];
 	}
 	update(keys) {
 		watchUpdate.call(this, keys);
@@ -141,16 +128,6 @@ class View {
 		//清楚节点中的缓存
 		new ElementCache(this).removeCache();
 	}
-//	_update(keys){
-//		watchUpdate.call(this,keys);
-//		ifUpdate.call(this,keys);
-//		modelUpdate.call(this,keys);
-//		attrUpdate.call(this,keys);
-//		showUpdate.call(this,keys);
-//		domUpdate.call(this,keys);
-//		//清楚节点中的缓存
-//		new ElementCache(this).removeCache();
-//	}
 	_get(keyLink, element) {
 		//是否存在缓存节点信息
 		if(element == undefined || element.__cache__[keyLink] === undefined){

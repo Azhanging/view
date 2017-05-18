@@ -250,7 +250,7 @@ function getIndex(el) {
 
 //设置绑定的依赖
 function setBind(keyLine) {
-	if(this.__ob__.bind.indexOf(keyLine) == -1) {
+	if(this.__ob__.bind.indexOf(keyLine) == -1 && keyLine !== undefined) {
 		this.__ob__.bind.push(keyLine);
 	}
 }
@@ -338,12 +338,40 @@ function findKeyLine(element,key){
 		if(this.data[key] !== undefined){
 			return key;
 		}
-	}
-	if(element.__keyLine__ && element.__keyLine__[key] !== undefined){
+	}else if(element.__keyLine__ && element.__keyLine__[key] !== undefined){
 		return element.__keyLine__[key];
 	}else{
 		return findKeyLine.apply(this,[element.parentNode,key]);
 	}
+}
+
+//放回dep依赖链
+function setDep(keys){
+	//undefineed依赖for中的一些键值
+	//设置当前链上一级依赖
+	let newKeys = keys.split('.');
+	for(let index = 0,len = newKeys.length;index < len;index++){
+		if(hasItem(this.updateList,newKeys.join('.'))){				
+			this.updateList.push(newKeys.join('.'));
+			newKeys.pop();
+		}
+	}
+	
+	//设置当前链下面的所有依赖数据
+	Object.keys(this.__ob__.bind).forEach((index) => {
+		let key = this.__ob__.bind[index];
+		if(key.indexOf(keys + '.') != -1 && hasItem(this.updateList,key)) {
+			this.updateList.push(key);
+		}
+	});
+}
+
+//indexOf的封装
+function hasItem(arr,item){
+	if(arr.indexOf(item) !== -1){
+		return false;
+	}
+	return true;
 }
 
 export {
@@ -362,5 +390,6 @@ export {
 	initRegExp,
 	hasForAttr,
 	ElementCache,
-	findKeyLine
+	findKeyLine,
+	setDep
 }

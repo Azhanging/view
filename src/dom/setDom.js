@@ -1,9 +1,8 @@
-import {disassembly,setBind , ResolveExpr,resolveKey,getScope,findKeyLine} from './../tools';
-
+import { disassembly, setBind, ResolveExpr, resolveKey, getScope, findKeyLine } from './../tools';
 
 function setDom(element) {
 	//非空的节点才进入过滤赛选
-	if(element.textContent !== ''){
+	if(element.textContent !== '') {
 		let textNodes = disassembly(element.textContent);
 		this.__bind__.textNodeLists.push([textNodes, element]);
 	}
@@ -26,16 +25,15 @@ function createTextNodeElements(textNodes, el) {
 	for(let i = 0; i < textNodes.length; i++) {
 		if(textNodes[i].trim() !== "") {
 			//查看是否为数据绑定
-			let element = document.createTextNode(textNodes[i]);			
+			let element = document.createTextNode(textNodes[i]);
 			if(/\{\{.*?\}\}/.test(textNodes[i]) == true) {
 				let expr = textNodes[i].replace(/(\{)?(\})?/g, '');
-				let re = new ResolveExpr(expr,element);
-				re.getKeys().forEach((key)=>{
-					key = findKeyLine.apply(this,[el,key]);
-					key = resolveKey(key);
+				let re = new ResolveExpr(expr, element);
+				re.getKeys().forEach((key) => {
+					key = findKeyLine.apply(this, [el, key]);
 					if(!(this.__ob__.dom[key] instanceof Array)) {
 						this.__ob__.dom[key] = [];
-						setBind.call(this,key);
+						setBind.call(this, key);
 					}
 					//设置dom的expr
 					if(!(element.__dom__ instanceof Object)) {
@@ -44,7 +42,7 @@ function createTextNodeElements(textNodes, el) {
 					//给element元素加上__dom__依赖,过滤器
 					element.__dom__.__bind__ = re.getExpr();
 					element.__dom__.__filter__ = re.getFilter();
-					
+
 					this.__ob__.dom[key].push(element);
 				});
 			}
@@ -67,5 +65,5 @@ function replaceTextNode() {
 export {
 	setDom,
 	createTextNodes,
-	replaceTextNode	
+	replaceTextNode
 };

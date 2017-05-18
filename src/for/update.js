@@ -1,4 +1,6 @@
 import { createTextNodes, replaceTextNode } from './../dom';
+import { setDep } from './../tools';
+
 import Vdom from './../vdom';
 
 function forUpdate(key) {
@@ -58,11 +60,6 @@ function updateFn(key) {
 			}
 			//添加到实际的dom中
 			element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
-			
-			if(updateKeys.indexOf(element.__forKey__) === -1){
-				updateKeys.push(element.__forKey__);
-			}
-
 		} else if(dataLength < forElementGroupLength) {
 			let _fragment = document.createDocumentFragment();
 			//移除已添加的节点
@@ -81,11 +78,6 @@ function updateFn(key) {
 			}
 			//添加到实际的dom中
 			element.__parentNode__.insertBefore(_fragment, element.__presentSeize__);
-			
-			if(updateKeys.indexOf(element.__forKey__) === -1){
-				updateKeys.push(element.__forKey__);
-			}
-
 		} else if(dataLength > forElementGroupLength) {
 
 			let cloneNodeElements = [];
@@ -109,6 +101,13 @@ function updateFn(key) {
 					keyLine: key + '.' + getDataKeys[index],
 					isAppend: true
 				};
+				
+				if(!(cloneNode.__keyLine__ instanceof Object)){
+					cloneNode.__keyLine__ = {};
+				}
+				
+				cloneNode.__keyLine__[element.__forItem__] = key + '.' + getDataKeys[index];
+				
 				cloneNode.$index = index;
 				element.__forElementGroup__.push(cloneNode);
 				fragment.appendChild(cloneNode);
@@ -150,9 +149,7 @@ function updateFn(key) {
 		}
 	});
 	
-	updateKeys.forEach((key)=>{
-		this.dep(key);	
-	});
+	setDep.call(this,key);
 }
 
 export {
