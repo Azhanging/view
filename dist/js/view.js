@@ -474,7 +474,9 @@ var ElementCache = function () {
 
 function findKeyLine(element, key) {
 	if (this.el === element) {
-		return key;
+		if (this.data[key] !== undefined) {
+			return key;
+		}
 	}
 	if (element.__keyLine__ && element.__keyLine__[key] !== undefined) {
 		return element.__keyLine__[key];

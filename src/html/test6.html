@@ -10,9 +10,12 @@
 		<div id="app">
 			{{show}}
 			<div _v-for="i,l in arr" _v-show="show" style="display: none;">
-				{{i}}
-				<div _v-for="n,k in i" :class="n">
-					{{n + 'adasda'}}-{{n}}-{{parseInt(n * 12)}}-{{n}}-{{n}}
+				<div _v-if="n == 1?true:false">
+					{{i}}
+					<div _v-for="n,k in i" :class="n">
+						{{n + 'adasda'}}-{{n}}-{{parseInt(n * 12)}}-{{n}}-{{n}}
+					</div>
+					{{n}}
 				</div>
 			</div>
 		</div>
@@ -21,7 +24,7 @@
 		<script type="text/javascript">
 			var time = new Date();
 			var arr = {};
-			for(var i = 0;i<2000;i++){
+			for(var i = 0;i<1000;i++){
 				arr[i] = [
 					Math.random(),
 					Math.random(),
@@ -33,7 +36,8 @@
 				el:"app",
 				data:{
 					arr:arr,
-					show:false
+					show:false,
+					n:1
 				},
 				ready:function(){
 					this.data.show = true;
