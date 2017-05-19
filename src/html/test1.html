@@ -6,14 +6,14 @@
 	</head>
 	<body>
 		<div id="vdom">
-			<div v-for="i in arr">
+			<div _v-for="i in arr">
 				<h3>{{i.b}}</h3>
 				<ul>
-					<li v-for="m in i.a" v-show="i.isShow" :class="i.class"  @click="alert($event,$index)">
+					<li _v-for="m in i.a" v-show="i.isShow" :class="i.class"  @click="alert($event,$index)">
 						{{m}}-{{mid}}
-						<div v-for="n in i.a" @click="alert($event,$index)">
+						<div _v-for="n in i.a" @click="alert($event,$index)">
 							{{n}}-{{mid}}
-							<div v-for="o in i.a" @click="alert($event,$index)">
+							<div _v-for="o in i.a" @click="alert($event,$index)">
 								{{o}}-{{mid}}
 							</div>
 						</div>
@@ -27,11 +27,11 @@
 		<button id="test3">减数据</button>
 		<button id="test4">再加数据数据</button>
 		<button id="test5">显示</button>
-		<!--<script src="dist/js/view.js" type="text/javascript" charset="utf-8"></script>-->
-		<script src="https://unpkg.com/vue/dist/vue.js"></script>
+		<script src="./../../dist/js/view.js" type="text/javascript" charset="utf-8"></script>
+		<!--<script src="https://unpkg.com/vue/dist/vue.js"></script>-->
 		<script type="text/javascript">
-			var v = new Vue({
-				el:"#vdom",
+			var v = new View({
+				el:"vdom",
 				data:{
 					arr:[
 						{
@@ -96,17 +96,16 @@
 				v.data.arr[0].a = [];
 			}
 			$('test2').onclick = function (){
-//				v.data.arr[0].a = [1,2,3,4,5,6,7,8,9,10,11];
-				v.arr[1].a = {a:1,b:2,c:3};
+				v.data.arr[1].a = {a:1,b:2,c:3};
 			}
 			$('test3').onclick = function (){
-				v.arr[0].a = [1,2,3,4];
+				v.data.arr[0].a = [1,2,3,4];
 			}
 			$('test4').onclick = function (){
-				v.arr[0].a = [1,2,3,4,5,6,7];
+				v.data.arr[0].a = [1,2,3,4,5,6,7];
 			}
 			$('test5').onclick = function(){
-				v.arr[0].isShow = true;
+				v.data.arr[0].isShow = true;
 			}
 		</script>
 	</body>

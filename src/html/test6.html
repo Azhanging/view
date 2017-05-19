@@ -8,8 +8,7 @@
 	</head>
 	<body>
 		<div id="app">
-			{{show}}
-			<div _v-for="i,l in arr" ><!--_v-show="show" style="display: none;"-->
+			<div _v-for="i,l in arr" _v-show="show" style="width:33%;float:left;display: none;">
 				{{i}}
 				<div _v-for="n,k in i" :class="n">
 					key:{{k}} - value:{{n}} - {{$index}}

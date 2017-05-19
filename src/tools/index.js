@@ -344,7 +344,11 @@ class KeyLine{
 			let firstKey = splitKeyLine[0];
 			return this.element.__keyLine__[firstKey] !== undefined ? true : false ;
 		}else{
-			return true;
+			if(this.element.__keyLine__[this.keyLine]){
+				return true;	
+			}else{
+				return false;
+			}
 		}
 	}
 	getKeyLine(){
