@@ -106,7 +106,7 @@ function updateFn(key) {
 					cloneNode.__keyLine__ = {};
 				}
 				
-				cloneNode.__keyLine__[element.__forItem__] = key + '.' + getDataKeys[index];
+				cloneNode.__keyLine__[element.__forItem__] = getData.__keyLine__ + '.' + getDataKeys[index];
 				
 				cloneNode.$index = index;
 				element.__forElementGroup__.push(cloneNode);

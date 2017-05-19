@@ -12,7 +12,7 @@
 					<li _v-for="m in i.a" :class="i.class"  @click="alert($event,$index)">
 						{{m}}-{{mid}}
 						<div _v-for="n in i.a" @click="alert($event,$index)">
-							{{n}}-{{mid}}
+							{{n}}-{{mid}}-{{mid1.m.a}}
 							<div _v-for="o in i.a" @click="alert($event,$index)">
 								{{o}}-{{mid}}
 							</div>
@@ -61,6 +61,11 @@
 					],
 					isShow:false,
 					mid:'一些测试的内容',
+					mid1:{
+						m:{
+							a:1
+						}
+					},
 					arr1:[1,2,3,4]
 				},
 				ready:function(){

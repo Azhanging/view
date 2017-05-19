@@ -39,6 +39,16 @@ class Observer {
 						if(val === newVal) {
 							return;
 						}
+						//数据类型改变
+						if(!(newVal.__keyLine__) && newVal instanceof Object){
+							Object.defineProperties(newVal, {
+								__keyLine__: {
+									enumerable: false,
+									configurable: false,
+									value: keyLine
+								}
+							});
+						}
 						//设置对象或数组对象
 						_this.setVal(newVal, keyLine, view);
 						//设置新值

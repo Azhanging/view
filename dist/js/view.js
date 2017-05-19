@@ -2426,7 +2426,7 @@ function updateFn(key) {
 					cloneNode.__keyLine__ = {};
 				}
 
-				cloneNode.__keyLine__[element.__forItem__] = key + '.' + getDataKeys[_index4];
+				cloneNode.__keyLine__[element.__forItem__] = getData.__keyLine__ + '.' + getDataKeys[_index4];
 
 				cloneNode.$index = _index4;
 				element.__forElementGroup__.push(cloneNode);
@@ -2797,6 +2797,16 @@ var Observer = function () {
 							//数据流没有任何变化,跳出set
 							if (val === newVal) {
 								return;
+							}
+							//数据类型改变
+							if (!newVal.__keyLine__ && newVal instanceof Object) {
+								Object.defineProperties(newVal, {
+									__keyLine__: {
+										enumerable: false,
+										configurable: false,
+										value: keyLine
+									}
+								});
 							}
 							//设置对象或数组对象
 							_this.setVal(newVal, keyLine, view);
