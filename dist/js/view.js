@@ -1450,6 +1450,7 @@ var View = function () {
 			this.updateList = [];
 			//清除节点中的缓存
 			new _tools.ElementCache(this).removeCache();
+			this._update();
 		}
 	}, {
 		key: 'update',
@@ -1461,6 +1462,16 @@ var View = function () {
 			_show.showUpdate.call(this, keys);
 			_if.ifUpdate.call(this, keys);
 			_dom.domUpdate.call(this, keys);
+		}
+	}, {
+		key: '_update',
+		value: function _update() {
+			_watch.watchUpdate.call(this);
+			_model.modelUpdate.call(this);
+			_attr.attrUpdate.call(this);
+			_show.showUpdate.call(this);
+			_if.ifUpdate.call(this);
+			_dom.domUpdate.call(this);
 		}
 	}, {
 		key: '_get',

@@ -117,6 +117,7 @@ class View {
 		this.updateList = [];
 		//清除节点中的缓存
 		new ElementCache(this).removeCache();
+		this._update();
 	}
 	update(keys) {
 		watchUpdate.call(this, keys);
@@ -126,6 +127,14 @@ class View {
 		showUpdate.call(this, keys);
 		ifUpdate.call(this, keys);
 		domUpdate.call(this, keys);
+	}
+	_update() {
+		watchUpdate.call(this);			
+		modelUpdate.call(this);
+		attrUpdate.call(this);
+		showUpdate.call(this);
+		ifUpdate.call(this);
+		domUpdate.call(this);
 	}
 	_get(keyLink, element) {
 		//是否存在缓存节点信息
