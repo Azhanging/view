@@ -332,35 +332,64 @@ class ElementCache{
 	}
 }
 
+//设定keyLine绑定时的键值链
+class KeyLine{
+	constructor(element,keyLine){
+		this.keyLine = keyLine;
+		this.element = element;
+	}
+	hasKeyLine(){
+		if(/\./g.test(this.keyLine)){
+			let splitKeyLine = this.keyLine.split('.'); 
+			let firstKey = splitKeyLine[0];
+			return this.element.__keyLine__[firstKey] !== undefined ? true : false ;
+		}else{
+			return true;
+		}
+	}
+	getKeyLine(){
+		if(/\./g.test(this.keyLine)){
+			let splitKeyLine = this.keyLine.split('.');
+			let firstKey = splitKeyLine[0];
+			splitKeyLine[0] = this.element.__keyLine__[firstKey]; 
+			return splitKeyLine.join('.');
+		}else{
+			return this.element.__keyLine__[this.keyLine];
+		}
+	}
+}
+
 //查找key链
 function findKeyLine(element,key){
+	let keyLine = new KeyLine(element,key);
 	if(this.el === element){
 		if(this.data[key] !== undefined){
 			return key;
 		}
-	}else if(element.__keyLine__ && element.__keyLine__[key] !== undefined){
-		return element.__keyLine__[key];
+		return '__key__';
+	}else if(element.__keyLine__ && keyLine.hasKeyLine()){
+		return keyLine.getKeyLine();
 	}else{
 		return findKeyLine.apply(this,[element.parentNode,key]);
 	}
 }
 
-//放回dep依赖链
+
+
+//设置dep更新的依赖链
 function setDep(keys){
-	//undefineed依赖for中的一些键值
-//	this.updateList.push('undefined');
 	//设置当前链上一级依赖
 	if(keys.indexOf('.') != -1) {
 		let newKeys = keys.split('.');
 		for(let index = 0,len = newKeys.length;index < len;index++){
-			if(hasItem(this.updateList,newKeys.join('.'))){				
+			if(arrayIndexOf(this.updateList,newKeys.join('.'))){				
 				this.updateList.push(newKeys.join('.'));
 				newKeys.pop();
 			}
 		}
 	}else{			
 		//当前的数据依赖
-		if(hasItem(this.updateList,keys)){
+		if(arrayIndexOf(this.updateList,keys)){
 			this.updateList.push(keys);
 		}
 	}
@@ -368,14 +397,14 @@ function setDep(keys){
 	//设置当前链下面的所有依赖数据
 	Object.keys(this.__ob__.bind).forEach((index) => {
 		let key = this.__ob__.bind[index];
-		if(key.indexOf(keys + '.') != -1 && hasItem(this.updateList,key)) {
+		if(key.indexOf(keys + '.') != -1 && arrayIndexOf(this.updateList,key)) {
 			this.updateList.push(key);
 		}
 	});
 }
 
 //indexOf的封装
-function hasItem(arr,item){
+function arrayIndexOf(arr,item){
 	if(arr.indexOf(item) !== -1){
 		return false;
 	}

@@ -118,6 +118,12 @@ function updateFn(key) {
 			element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
 			//解析新添加的节点
 			cloneNodeElements.forEach((element) => {
+				//把新增的节点键值添加到更新列表中
+				this.updateList.push(element.__for__.keyLine);
+				//for新增的节点中的key或者是$index的值
+				if(this.updateList.indexOf('__key__') === -1){
+					this.updateList.push('__key__');	
+				}
 				//解析节点
 				vdom.resolve(element, this);
 				//设置键值的作用域
@@ -148,8 +154,6 @@ function updateFn(key) {
 			replaceTextNode.call(this);
 		}
 	});
-	
-	setDep.call(this,key);
 }
 
 export {

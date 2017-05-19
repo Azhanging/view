@@ -46,17 +46,6 @@ function setFor(element, propValue, propIndex) {
 	//写进观察者
 	this.__ob__.for[keyLine].push(element);
 	
-	
-	//设置键值 
-	if(!this.__ob__.for[filterForVal]) {
-		this.__ob__.for[filterForVal] = [];
-		setBind.call(this, filterForVal);
-	}
-
-	//写进观察者
-	this.__ob__.for[filterForVal].push(element);
-	
-	
 	//存储循环组节点成员
 	element.__forElementGroup__ = [];
 	//存储父级的节点

@@ -48,7 +48,7 @@ module.exports = {
 	//	devtool: 'source-map',
 	plugins: [
 		new webpack.BannerPlugin(`
-			View.js v1.1.2
+			View.js v1.2.0
 			(c) 2016-2017 Blue
 			Released under the MIT License.
 		`),

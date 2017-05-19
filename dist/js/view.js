@@ -1,6 +1,6 @@
 /*!
  * 
- * 			View.js v1.1.2
+ * 			View.js v1.2.0
  * 			(c) 2016-2017 Blue
  * 			Released under the MIT License.
  * 		
@@ -469,39 +469,78 @@ var ElementCache = function () {
 	return ElementCache;
 }();
 
+//设定keyLine绑定时的键值链
+
+
+var KeyLine = function () {
+	function KeyLine(element, keyLine) {
+		_classCallCheck(this, KeyLine);
+
+		this.keyLine = keyLine;
+		this.element = element;
+	}
+
+	_createClass(KeyLine, [{
+		key: 'hasKeyLine',
+		value: function hasKeyLine() {
+			if (/\./g.test(this.keyLine)) {
+				var splitKeyLine = this.keyLine.split('.');
+				var firstKey = splitKeyLine[0];
+				return this.element.__keyLine__[firstKey] !== undefined ? true : false;
+			} else {
+				return true;
+			}
+		}
+	}, {
+		key: 'getKeyLine',
+		value: function getKeyLine() {
+			if (/\./g.test(this.keyLine)) {
+				var splitKeyLine = this.keyLine.split('.');
+				var firstKey = splitKeyLine[0];
+				splitKeyLine[0] = this.element.__keyLine__[firstKey];
+				return splitKeyLine.join('.');
+			} else {
+				return this.element.__keyLine__[this.keyLine];
+			}
+		}
+	}]);
+
+	return KeyLine;
+}();
+
 //查找key链
 
 
 function findKeyLine(element, key) {
+	var keyLine = new KeyLine(element, key);
 	if (this.el === element) {
 		if (this.data[key] !== undefined) {
 			return key;
 		}
-	} else if (element.__keyLine__ && element.__keyLine__[key] !== undefined) {
-		return element.__keyLine__[key];
+		return '__key__';
+	} else if (element.__keyLine__ && keyLine.hasKeyLine()) {
+		return keyLine.getKeyLine();
 	} else {
 		return findKeyLine.apply(this, [element.parentNode, key]);
 	}
 }
 
-//放回dep依赖链
+//设置dep更新的依赖链
 function setDep(keys) {
 	var _this2 = this;
 
-	//undefineed依赖for中的一些键值
-	//	this.updateList.push('undefined');
 	//设置当前链上一级依赖
 	if (keys.indexOf('.') != -1) {
 		var newKeys = keys.split('.');
 		for (var index = 0, len = newKeys.length; index < len; index++) {
-			if (hasItem(this.updateList, newKeys.join('.'))) {
+			if (arrayIndexOf(this.updateList, newKeys.join('.'))) {
 				this.updateList.push(newKeys.join('.'));
 				newKeys.pop();
 			}
 		}
 	} else {
 		//当前的数据依赖
-		if (hasItem(this.updateList, keys)) {
+		if (arrayIndexOf(this.updateList, keys)) {
 			this.updateList.push(keys);
 		}
 	}
@@ -509,14 +548,14 @@ function setDep(keys) {
 	//设置当前链下面的所有依赖数据
 	Object.keys(this.__ob__.bind).forEach(function (index) {
 		var key = _this2.__ob__.bind[index];
-		if (key.indexOf(keys + '.') != -1 && hasItem(_this2.updateList, key)) {
+		if (key.indexOf(keys + '.') != -1 && arrayIndexOf(_this2.updateList, key)) {
 			_this2.updateList.push(key);
 		}
 	});
 }
 
 //indexOf的封装
-function hasItem(arr, item) {
+function arrayIndexOf(arr, item) {
 	if (arr.indexOf(item) !== -1) {
 		return false;
 	}
@@ -1282,8 +1321,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ___index = 0;
-
 var View = function () {
 	function View() {
 		var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : options,
@@ -1367,6 +1404,8 @@ var View = function () {
 			this.created();
 			//初始化更新
 			this.update();
+			//清除节点中的缓存
+			new _tools.ElementCache(this).removeCache();
 			//准备钩子函数
 			this.ready();
 		}
@@ -1388,7 +1427,7 @@ var View = function () {
 				tempFragmentElements: [],
 				templateIndex: 0
 			};
-
+			//缓存
 			this.cache = [];
 			//更新列表
 			this.updateList = [];
@@ -1396,16 +1435,17 @@ var View = function () {
 	}, {
 		key: 'dep',
 		value: function dep(keys) {
-
+			//设置依赖链
 			_tools.setDep.call(this, keys);
-
+			//更新依赖链中的所有数据
 			console.log(this.updateList);
-
 			for (var index = 0; index < this.updateList.length; index++) {
 				this.update(this.updateList[index]);
 			}
-
+			//清除更新链
 			this.updateList = [];
+			//清除节点中的缓存
+			new _tools.ElementCache(this).removeCache();
 		}
 	}, {
 		key: 'update',
@@ -1417,8 +1457,6 @@ var View = function () {
 			_show.showUpdate.call(this, keys);
 			_if.ifUpdate.call(this, keys);
 			_dom.domUpdate.call(this, keys);
-			//清楚节点中的缓存
-			new _tools.ElementCache(this).removeCache();
 		}
 	}, {
 		key: '_get',
@@ -2055,7 +2093,6 @@ function updateFn(keyLine) {
 	var textNodes = this.__ob__.dom[keyLine];
 	textNodes.forEach(function (element) {
 		var data = new _filter2.default(_this2.expr(element.__dom__.__bind__, element), element.__dom__.__filter__).runFilter();
-
 		if (data instanceof Array && data.length > 0 && hasElement(data)) {
 			//走接点过滤处理
 			htmlNode(data, element);
@@ -2169,15 +2206,6 @@ function setFor(element, propValue, propIndex) {
 
 	//写进观察者
 	this.__ob__.for[keyLine].push(element);
-
-	//设置键值 
-	if (!this.__ob__.for[filterForVal]) {
-		this.__ob__.for[filterForVal] = [];
-		_tools.setBind.call(this, filterForVal);
-	}
-
-	//写进观察者
-	this.__ob__.for[filterForVal].push(element);
 
 	//存储循环组节点成员
 	element.__forElementGroup__ = [];
@@ -2406,6 +2434,12 @@ function updateFn(key) {
 			element.__parentNode__.insertBefore(fragment, element.__presentSeize__);
 			//解析新添加的节点
 			cloneNodeElements.forEach(function (element) {
+				//把新增的节点键值添加到更新列表中
+				_this3.updateList.push(element.__for__.keyLine);
+				//for新增的节点中的key或者是$index的值
+				if (_this3.updateList.indexOf('__key__') === -1) {
+					_this3.updateList.push('__key__');
+				}
 				//解析节点
 				vdom.resolve(element, _this3);
 				//设置键值的作用域
@@ -2436,8 +2470,6 @@ function updateFn(key) {
 			_dom.replaceTextNode.call(_this3);
 		}
 	});
-
-	_tools.setDep.call(this, key);
 }
 
 exports.forUpdate = forUpdate;

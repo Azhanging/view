@@ -19,7 +19,6 @@ function updateFn(keyLine){
 	let textNodes = this.__ob__.dom[keyLine];
 	textNodes.forEach((element) => {
 		let data = new Filter(this.expr(element.__dom__.__bind__,element),element.__dom__.__filter__).runFilter();
-	
 		if(data instanceof Array && data.length > 0 && hasElement(data)) {
 			//走接点过滤处理
 			htmlNode(data, element);
@@ -30,11 +29,9 @@ function updateFn(keyLine){
 			if(element.textContent != data){				
 				element.textContent = data;
 			}
-		}
-			
+		}	
 	});
 }
-
 
 //查看是否存在element
 function hasElement(elements){

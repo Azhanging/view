@@ -11,8 +11,6 @@ import { watchUpdate } from './../watch';
 import { setEvent, setChildTemplateEvent } from './../event';
 import { modelUpdate ,formElements} from './../model';
 
-let ___index = 0;
-
 class View {
 	constructor({
 		el = '',
@@ -81,6 +79,8 @@ class View {
 		this.created();
 		//初始化更新
 		this.update();
+		//清除节点中的缓存
+		new ElementCache(this).removeCache();
 		//准备钩子函数
 		this.ready();
 	}
@@ -100,22 +100,23 @@ class View {
 			tempFragmentElements: [],
 			templateIndex: 0
 		};
-		
+		//缓存
 		this.cache = [];
 		//更新列表
 		this.updateList = [];
 	}
 	dep(keys) {
-		
+		//设置依赖链
 		setDep.call(this,keys);
-		
+		//更新依赖链中的所有数据
 		console.log(this.updateList);
-		
 		for(let index = 0;index < this.updateList.length;index++){
 			this.update(this.updateList[index]);
 		}
-		
+		//清除更新链
 		this.updateList = [];
+		//清除节点中的缓存
+		new ElementCache(this).removeCache();
 	}
 	update(keys) {
 		watchUpdate.call(this, keys);
@@ -125,8 +126,6 @@ class View {
 		showUpdate.call(this, keys);
 		ifUpdate.call(this, keys);
 		domUpdate.call(this, keys);
-		//清楚节点中的缓存
-		new ElementCache(this).removeCache();
 	}
 	_get(keyLink, element) {
 		//是否存在缓存节点信息

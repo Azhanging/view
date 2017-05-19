@@ -12,22 +12,28 @@
 			<div _v-for="i,l in arr" ><!--_v-show="show" style="display: none;"-->
 				{{i}}
 				<div _v-for="n,k in i" :class="n">
-					key:{{k}} - value:{{n}}
+					key:{{k}} - value:{{n}} - {{$index}}
 					<div _v-if="n?true:false">
 						_v-if:{{n + 'adasda'}}<br />
 						item:{{n}}<br />
 						item*12:{{parseInt(n * 12)}}<br />
 						item:{{n}}<br />
+						temp:<my-temp></my-temp>
 					</div>
 				</div>
 			</div>
 		</div>
+		
+		<template id="temp">
+			<span>{{parseInt(n * 20)}}</span>
+		</template>
+		
 		<script src="./../../dist/js/view.js" type="text/javascript" charset="utf-8"></script>
 		<!--<script src="./../../dist/js/vue.js" type="text/javascript" charset="utf-8"></script>-->
 		<script type="text/javascript">
 			var time = new Date();
 			var arr = {};
-			for(var i = 0;i<500;i++){
+			for(var i = 0;i<1;i++){
 				arr[i] = [
 					Math.random(),
 					Math.random(),
@@ -44,6 +50,9 @@
 				},
 				ready:function(){
 					this.data.show = true;
+				},
+				components:{
+					'my-temp':'temp'
 				}
 			});
 			document.title = new Date()-time;
